@@ -79,3 +79,21 @@ describe('generateDistrict', () => {
     expect(s.district.structures.length).toBe(27);
   });
 });
+
+describe('walkability', () => {
+  it('every structure entrance is reachable from the plaza on foot', async () => {
+    const { buildWalkGrid, entranceOf } = await import('./walkGrid.ts');
+    const { findPath } = await import('../path/astar.ts');
+    for (const seed of ['w1', 'w2', 'w3', 'w4', 'w5']) {
+      const d = gen(seed);
+      const grid = buildWalkGrid(template, d, STRUCTURE_FOOTPRINTS);
+      const plaza = { x: template.plaza.x0, y: template.plaza.y1 };
+      for (const s of d.structures) {
+        if (s.kind === 'stage') continue;
+        const door = entranceOf(s, STRUCTURE_FOOTPRINTS, grid);
+        expect(door, `${seed}: ${s.kind} at ${s.x},${s.y} has no entrance`).not.toBeNull();
+        expect(findPath(grid, plaza, door!), `${seed}: ${s.kind} unreachable`).not.toBeNull();
+      }
+    }
+  });
+});

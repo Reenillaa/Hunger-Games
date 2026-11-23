@@ -1,5 +1,10 @@
 import * as Phaser from 'phaser';
 import type { DistrictState, PlacedProp, PlacedStructure } from '../../core/index.ts';
+import { buildWalkGrid } from '../../core/index.ts';
+import { TEMPLATES } from '../../content/maps/index.ts';
+import { Ambience } from '../district/ambience.ts';
+import type { CharacterSheet } from '../district/townsfolk.ts';
+import { Townsfolk } from '../district/townsfolk.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { GameSession } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
@@ -40,6 +45,8 @@ export class DistrictScene extends Phaser.Scene {
   private readonly tinted: (Phaser.GameObjects.Image | Phaser.GameObjects.Image)[] = [];
   private lastAmbient = -1;
   private readonly smoke: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
+  private townsfolk?: Townsfolk;
+  private ambience?: Ambience;
   private built = false;
 
   constructor(session: GameSession) {
@@ -52,6 +59,7 @@ export class DistrictScene extends Phaser.Scene {
     this.load.json('terrainManifest', `${ART_BASE}/terrain/${this.terrainScale}/manifest.json`);
     this.load.json('spriteManifest', `${ART_BASE}/sprites/manifest.json`);
     this.load.json('heights', `${ART_BASE}/terrain/heights.json`);
+    this.load.json('characterManifest', `${ART_BASE}/characters/manifest.json`);
   }
 
   create(): void {
@@ -66,6 +74,15 @@ export class DistrictScene extends Phaser.Scene {
     for (let r = 0; r < terrain.rows; r++) {
       for (let c = 0; c < terrain.cols; c++)
         this.load.image(`terrain_${r}_${c}`, `${base}/t_${r}_${c}.jpg`);
+    }
+    const characters = (
+      this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
+    ).characters;
+    for (const sheet of Object.values(characters)) {
+      this.load.spritesheet(`char_${sheet.name}`, `${ART_BASE}/characters/${sheet.name}.png`, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+      });
     }
     const kinds = new Set<string>([
       ...district.structures.map((s) => this.spriteKey(s, sprites)),
@@ -120,6 +137,21 @@ export class DistrictScene extends Phaser.Scene {
       );
     }
     for (const prop of district.props) this.placeProp(prop, sprites.assets[prop.kind]);
+
+    // Life: townsfolk on their daily routine and small ambient details.
+    const template = TEMPLATES[district.templateId];
+    if (template) {
+      const grid = buildWalkGrid(template, district, STRUCTURE_FOOTPRINTS);
+      const characters = (
+        this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
+      ).characters;
+      const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+      this.townsfolk = new Townsfolk(this, grid, district, characters, coarse ? 40 : 70);
+      const mines = district.structures
+        .filter((st) => st.kind === 'mine_headframe')
+        .map((st) => ({ x: st.x + 1, y: st.y + 1 }));
+      this.ambience = new Ambience(this, template, mines);
+    }
 
     this.hover = this.add.graphics().setDepth(100000);
     const bounds = mapBounds(MAP_SIZE, MAP_SIZE);
@@ -303,7 +335,7 @@ export class DistrictScene extends Phaser.Scene {
     this.smoke.push(emitter);
   }
 
-  override update(_time: number, delta: number): void {
+  override update(time: number, delta: number): void {
     if (!this.built) return;
     this.controller?.update(delta);
     const state = this.session.getState();
@@ -318,6 +350,9 @@ export class DistrictScene extends Phaser.Scene {
     }
     const smokeTint = light.night > 0.5 ? 0x4a4c58 : 0x9a9aa2;
     for (const s of this.smoke) s.particleTint = smokeTint;
+    const speed = state.phase.kind === 'district' ? this.session.getSpeed() : 0;
+    this.townsfolk?.update(delta, hour, speed, light.ambient);
+    this.ambience?.update(delta, speed, light.night, time);
   }
 
   private drawHover(pointer: Phaser.Input.Pointer): void {

@@ -1,0 +1,151 @@
+{
+  "characters": {
+    "miner": {
+      "name": "miner",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "woman": {
+      "name": "woman",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "worker": {
+      "name": "worker",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "woman_b": {
+      "name": "woman_b",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "child": {
+      "name": "child",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "elder": {
+      "name": "elder",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "warden": {
+      "name": "warden",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    }
+  }
+}

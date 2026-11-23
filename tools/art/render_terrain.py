@@ -45,6 +45,31 @@ LAYERS = {
 }
 
 
+def _proximity(codes: str, radius: float) -> dict[tuple[int, int], float]:
+    """1 on cells of `codes`, fading linearly to 0 at `radius` cells away."""
+    src = [(x, y) for y in range(H) for x in range(W) if CODES[y][x] in codes]
+    field = {}
+    r = int(math.ceil(radius))
+    for (sx, sy) in src:
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                d = math.hypot(dx, dy)
+                if d <= radius:
+                    k = (sx + dx, sy + dy)
+                    field[k] = max(field.get(k, 0.0), 1.0 - d / radius)
+    return field
+
+
+_FIELDS: dict[str, dict[tuple[int, int], float]] = {}
+
+
+def field_value(name: str, x: int, y: int) -> float:
+    if not _FIELDS:
+        _FIELDS["wet"] = _proximity("w", 2.6)
+        _FIELDS["soot"] = _proximity("rvt", 2.2)
+    return _FIELDS[name].get((x, y), 0.0)
+
+
 def code_at(x: int, y: int) -> str:
     x = min(max(x, 0), W - 1)
     y = min(max(y, 0), H - 1)
@@ -122,6 +147,7 @@ def build_terrain() -> bpy.types.Object:
     n = (W + 2 * EXT) * SUB + 1
     x_min, y_min = -0.5 - EXT, -0.5 - EXT  # in cell space
     verts, weights = [], {k: [] for k in LAYERS}
+    weights["wet"], weights["soot"] = [], []
     outside = []
     for j in range(n):
         for i in range(n):
@@ -130,6 +156,8 @@ def build_terrain() -> bpy.types.Object:
             verts.append((fx, -fy, height_at(fx, fy)))
             for key, table in LAYERS.items():
                 weights[key].append(bilinear(lambda x, y, t=table: t.get(code_at(x, y), 0.0), fx, fy))
+            for key in ("wet", "soot"):
+                weights[key].append(bilinear(lambda x, y, k=key: field_value(k, x, y), fx, fy))
             dist_out = max(-0.5 - fx, fx - (W - 0.5), -0.5 - fy, fy - (H - 0.5), 0.0)
             outside.append(smoothstep(0.0, EXT * 0.9, dist_out))
     faces = []
@@ -222,6 +250,56 @@ def terrain_material() -> bpy.types.Material:
     links.new(slope.outputs["Result"], mx.inputs[1])
     state = blend(state, tex("rock_dark", scale=0.3, normal_strength=1.6, saturation=0.35, value=0.6), mx.outputs["Value"])
 
+    # Life in the ground: large colour patches (greener / browner), wet banks, coal soot.
+    def noise_fac(scale: float, lo: float, hi: float, seed_w: float):
+        coord = nodes.new("ShaderNodeTexCoord")
+        tex = nodes.new("ShaderNodeTexNoise")
+        tex.noise_dimensions = "4D"
+        tex.inputs["W"].default_value = seed_w
+        tex.inputs["Scale"].default_value = scale
+        tex.inputs["Detail"].default_value = 3
+        links.new(coord.outputs["Object"], tex.inputs["Vector"])
+        rng = nodes.new("ShaderNodeMapRange")
+        rng.inputs["From Min"].default_value = lo
+        rng.inputs["From Max"].default_value = hi
+        links.new(tex.outputs["Fac"], rng.inputs["Value"])
+        return rng.outputs["Result"]
+
+    def tint(color_socket, factor, hex_color: str, mode: str = "MULTIPLY", amount: float = 1.0):
+        mix = nodes.new("ShaderNodeMix")
+        mix.data_type, mix.blend_type = "RGBA", mode
+        if amount != 1.0:
+            mul = nodes.new("ShaderNodeMath")
+            mul.operation = "MULTIPLY"
+            mul.inputs[1].default_value = amount
+            links.new(factor, mul.inputs[0])
+            factor = mul.outputs["Value"]
+        links.new(factor, mix.inputs["Factor"])
+        links.new(color_socket, mix.inputs["A"])
+        mix.inputs["B"].default_value = S.hex_rgba(hex_color)
+        return mix.outputs["Result"]
+
+    color = state["color"]
+    color = tint(color, noise_fac(0.06, 0.45, 0.75, 1.0), "#B9D08A", amount=0.55)  # lush patches
+    color = tint(color, noise_fac(0.08, 0.5, 0.8, 7.0), "#C9A97A", amount=0.5)  # parched patches
+    color = tint(color, noise_fac(0.9, 0.4, 0.7, 3.0), "#8C8C80", amount=0.25)  # fine mottling
+    wet_attr = nodes.new("ShaderNodeAttribute")
+    wet_attr.attribute_type, wet_attr.attribute_name = "GEOMETRY", "wet"
+    color = tint(color, wet_attr.outputs["Fac"], "#6E7660", amount=0.75)
+    soot_attr = nodes.new("ShaderNodeAttribute")
+    soot_attr.attribute_type, soot_attr.attribute_name = "GEOMETRY", "soot"
+    soot_mask = nodes.new("ShaderNodeMath")
+    soot_mask.operation = "MULTIPLY"
+    links.new(soot_attr.outputs["Fac"], soot_mask.inputs[0])
+    links.new(noise_fac(0.7, 0.3, 0.7, 11.0), soot_mask.inputs[1])
+    color = tint(color, soot_mask.outputs["Value"], "#2A2A2C", mode="MIX", amount=0.8)
+    wet_rough = nodes.new("ShaderNodeMix")
+    wet_rough.data_type = "FLOAT"
+    links.new(wet_attr.outputs["Fac"], wet_rough.inputs["Factor"])
+    links.new(state["roughness"], wet_rough.inputs["A"])
+    wet_rough.inputs["B"].default_value = 0.35
+    state = {**state, "color": color, "roughness": wet_rough.outputs["Result"]}
+
     # Fade towards the background beyond the playable map.
     out_attr = nodes.new("ShaderNodeAttribute")
     out_attr.attribute_type, out_attr.attribute_name = "GEOMETRY", "outside"
@@ -251,73 +329,129 @@ def camera_background(scene) -> None:
     links.new(mix.outputs["Shader"], nodes["World Output"].inputs["Surface"])
 
 
-def _grass_clump() -> bpy.types.Object:
-    """A clump of thin bent blades (source object for scattering)."""
-    verts, faces = [], []
-    blades = 9
-    for b in range(blades):
-        ang = b / blades * math.tau + 0.4 * math.sin(b * 7.1)
-        r = 0.02 + 0.03 * ((b * 37) % 7) / 7
-        h = 0.10 + 0.08 * ((b * 53) % 5) / 5
-        lean = 0.04 + 0.03 * ((b * 11) % 3)
-        bx, by = math.cos(ang) * r, math.sin(ang) * r
-        dx, dy = math.cos(ang) * lean, math.sin(ang) * lean
-        w = 0.012
-        px, py = -math.sin(ang) * w, math.cos(ang) * w
-        base = len(verts)
-        verts += [(bx - px, by - py, 0), (bx + px, by + py, 0), (bx + dx * 0.6, by + dy * 0.6, h * 0.6), (bx + dx, by + dy, h)]
-        faces += [(base, base + 1, base + 2), (base, base + 2, base + 3)]
-    mesh = bpy.data.meshes.new("GrassClump")
-    mesh.from_pydata(verts, [], faces)
-    obj = bpy.data.objects.new("GrassClump", mesh)
-    bpy.context.scene.collection.objects.link(obj)
-    mat = bpy.data.materials.new("GrassBlades")
+def _random_colour_material(name: str, colours: list[str], roughness: float = 0.85, constant: bool = False,
+                            glossy: bool = False) -> bpy.types.Material:
+    """Per-instance colour picked from a ramp by the instance's random value."""
+    mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
     bsdf = nodes["Principled BSDF"]
     info = nodes.new("ShaderNodeObjectInfo")
     ramp = nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].color = S.hex_rgba("#4C5634")
-    ramp.color_ramp.elements[1].color = S.hex_rgba("#8A8456")
+    if constant:
+        ramp.color_ramp.interpolation = "CONSTANT"
+    elements = ramp.color_ramp.elements
+    while len(elements) < len(colours):
+        elements.new(0.5)
+    for i, c in enumerate(colours):
+        elements[i].position = i / len(colours)
+        elements[i].color = S.hex_rgba(c)
     links.new(info.outputs["Random"], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
-    bsdf.inputs["Roughness"].default_value = 0.85
-    bsdf.inputs["Subsurface Weight"].default_value = 0.0
+    bsdf.inputs["Roughness"].default_value = roughness
+    if glossy:
+        bsdf.inputs["Coat Weight"].default_value = 0.8
+    return mat
+
+
+def _blades(name: str, blades: int, r_max: float, h_min: float, h_max: float, width: float,
+            mat: bpy.types.Material, salt: int = 0) -> bpy.types.Object:
+    """A clump of thin bent blades (source object for scattering)."""
+    verts, faces = [], []
+    for b in range(blades):
+        k = b + salt * 31
+        ang = b / blades * math.tau + 0.6 * math.sin(k * 7.1)
+        r = r_max * (0.3 + 0.7 * ((k * 37) % 7) / 7)
+        h = h_min + (h_max - h_min) * ((k * 53) % 5) / 5
+        lean = h * (0.25 + 0.2 * ((k * 11) % 3))
+        bx, by = math.cos(ang) * r, math.sin(ang) * r
+        dx, dy = math.cos(ang) * lean, math.sin(ang) * lean
+        px, py = -math.sin(ang) * width, math.cos(ang) * width
+        base = len(verts)
+        verts += [(bx - px, by - py, 0), (bx + px, by + py, 0), (bx + dx * 0.5, by + dy * 0.5, h * 0.65), (bx + dx, by + dy, h)]
+        faces += [(base, base + 1, base + 2), (base, base + 2, base + 3)]
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(verts, [], faces)
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
     obj.data.materials.append(mat)
     obj.hide_render = True
     obj.location = (0, 0, -50)
     return obj
 
 
-def _pebble() -> bpy.types.Object:
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=0.05, location=(0, 0, -50))
+def _blob(name: str, radius: float, squash: float, mat: bpy.types.Material, lumps: float = 0.4,
+          subdiv: int = 2) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=subdiv, radius=radius, location=(0, 0, -50))
     obj = bpy.context.active_object
-    obj.name = "Pebble"
-    obj.scale = (1.0, 0.8, 0.45)
-    obj.data.materials.append(M.district_materials()["stone"])
+    obj.name = name
+    obj.scale = (1.0, 0.9, squash)
+    if lumps > 0:
+        tex = bpy.data.textures.new(name + "Tex", type="VORONOI")
+        tex.noise_scale = radius * 0.6
+        disp = obj.modifiers.new("Disp", "DISPLACE")
+        disp.texture, disp.strength = tex, radius * lumps
+    obj.data.materials.append(mat)
+    bpy.ops.object.shade_smooth()
+    obj.hide_render = True
+    return obj
+
+
+def _puddle(mat) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_circle_add(vertices=24, radius=0.14, fill_type="NGON", location=(0, 0, -50))
+    obj = bpy.context.active_object
+    obj.name = "Puddle"
+    obj.scale = (1.0, 0.65, 1.0)
+    for i, v in enumerate(obj.data.vertices):
+        v.co.x *= 1 + 0.25 * math.sin(i * 1.7)
+        v.co.y *= 1 + 0.25 * math.cos(i * 2.3)
+        v.co.z = 0.004
+    obj.data.materials.append(mat)
     obj.hide_render = True
     return obj
 
 
 def scatter(terrain: bpy.types.Object) -> None:
-    """Hair-particle instancing of grass clumps and pebbles, density from the terrain layers."""
+    """Hair-particle instancing of vegetation and ground detail; density from terrain layers."""
     mesh = terrain.data
-    attrs = {k: [0.0] * len(mesh.vertices) for k in ("grass", "pebble")}
-    get = lambda name: [v.value for v in mesh.attributes[name].data]
-    dry, dirt, coal, gravel, cobble, rock, forest, out = (get(n) for n in ("dry", "dirt", "coal", "gravel", "cobble", "rock", "forest", "outside"))
+    n = len(mesh.vertices)
+    names = ("dry", "dirt", "coal", "gravel", "cobble", "rock", "forest", "outside", "wet", "soot")
+    L = {k: [v.value for v in mesh.attributes[k].data] for k in names}
+    dens = {k: [0.0] * n for k in ("grass", "tall", "bush", "flower", "reed", "puddle", "pebble")}
     for i, v in enumerate(mesh.vertices):
-        bare = max(dirt[i], coal[i], gravel[i], cobble[i], rock[i])
-        wet = 1.0 if v.co.z < -0.05 else 0.0
-        attrs["grass"][i] = max(0.0, (1 - bare) * (1 - wet) * (1 - out[i]) * (0.55 + 0.45 * dry[i]))
-        attrs["pebble"][i] = max(0.0, min(1.0, 0.6 * dirt[i] + 0.5 * forest[i] + 0.8 * rock[i] * 0.3) * (1 - wet) * (1 - cobble[i]))
-    for name, values in attrs.items():
+        bare = max(L["dirt"][i], L["coal"][i], L["gravel"][i], L["cobble"][i], L["rock"][i])
+        water = 1.0 if v.co.z < -0.05 else 0.0
+        alive = (1 - bare) * (1 - water) * (1 - L["outside"][i]) * (1 - 0.7 * L["soot"][i])
+        wild = noise.noise(Vector((v.co.x * 0.25, v.co.y * 0.25, 5.0))) * 0.5 + 0.5
+        dens["grass"][i] = alive * (0.6 + 0.4 * L["dry"][i])
+        dens["tall"][i] = alive * (0.1 + 0.9 * L["dry"][i]) * wild ** 2
+        dens["bush"][i] = alive * (0.2 + 0.8 * L["forest"][i]) * wild ** 2
+        dens["flower"][i] = alive * (1 - L["forest"][i]) * (1 - wild) ** 1.5
+        dens["reed"][i] = L["wet"][i] ** 1.5 * (1 - water) * (1 - L["cobble"][i]) * (1 - L["rock"][i])
+        dens["puddle"][i] = L["coal"][i] * (1 - water) * (1 - L["outside"][i])
+        dens["pebble"][i] = min(1.0, 0.5 * L["dirt"][i] + 0.4 * L["forest"][i] + 0.4 * L["rock"][i] + 0.3 * L["soot"][i]) * (1 - water) * (1 - L["cobble"][i])
+    for name, values in dens.items():
         group = terrain.vertex_groups.new(name=name)
         for i, w in enumerate(values):
             if w > 0.02:
-                group.add([i], w, "REPLACE")
+                group.add([i], min(1.0, w), "REPLACE")
 
-    clump, pebble = _grass_clump(), _pebble()
-    for name, obj, count, size in (("grass", clump, 150000, 1.15), ("pebble", pebble, 9000, 1.0)):
+    blade_mat = _random_colour_material("GrassBlades", ["#344526", "#3F5230", "#4E5E34", "#5E6A3C", "#77764A"])
+    dry_mat = _random_colour_material("DryBlades", ["#7A7048", "#9A8C5C", "#6A6440"])
+    reed_mat = _random_colour_material("Reeds", ["#4E5A36", "#6A6A3E", "#5A4E34"])
+    bush_mat = _random_colour_material("Bush", ["#28361F", "#334227", "#3F4A2A", "#2E3324"], roughness=0.9)
+    flower_mat = _random_colour_material("Flowers", ["#D8D2C0", "#C9B458", "#8E7AA0", "#D8D2C0", "#B86A4A"], 0.7, constant=True)
+    puddle_mat = _random_colour_material("PuddleWater", ["#1E2427", "#262C2E"], roughness=0.05, glossy=True)
+    sources = [
+        ("grass", _blades("Clump", 10, 0.05, 0.05, 0.11, 0.012, blade_mat), 260000, 1.0, 1),
+        ("tall", _blades("TallClump", 12, 0.06, 0.14, 0.24, 0.01, dry_mat, 3), 18000, 1.0, 2),
+        ("reed", _blades("ReedClump", 14, 0.06, 0.28, 0.45, 0.009, reed_mat, 5), 9000, 1.0, 3),
+        ("bush", _blob("Bush", 0.13, 0.75, bush_mat, 0.7), 2600, 1.0, 4),
+        ("flower", _blob("Flower", 0.022, 1.0, flower_mat, 0.0, 1), 40000, 1.0, 5),
+        ("puddle", _puddle(puddle_mat), 260, 1.0, 6),
+        ("pebble", _blob("Pebble", 0.05, 0.45, M.district_materials()["stone"], 0.2, 1), 14000, 1.0, 7),
+    ]
+    for name, obj, count, size, seed in sources:
         mod = terrain.modifiers.new(name, "PARTICLE_SYSTEM")
         settings = mod.particle_system.settings
         settings.type = "HAIR"
@@ -327,14 +461,14 @@ def scatter(terrain: bpy.types.Object) -> None:
         settings.render_type = "OBJECT"
         settings.instance_object = obj
         settings.particle_size = size
-        settings.size_random = 0.6
+        settings.size_random = 0.6 if name != "puddle" else 0.5
         settings.use_rotations = True
         settings.rotation_mode = "OB_Z"
         settings.phase_factor_random = 2.0
         settings.distribution = "RAND"
         settings.use_emit_random = True
         mod.particle_system.vertex_group_density = name
-        mod.particle_system.seed = 12 if name == "grass" else 31
+        mod.particle_system.seed = seed * 17
 
 
 def build_water() -> None:

@@ -8,3 +8,5 @@ export * from './systems/simulation.ts';
 export * from './commands/commands.ts';
 export * from './district/template.ts';
 export * from './district/generate.ts';
+export * from './district/walkGrid.ts';
+export * from './path/astar.ts';
