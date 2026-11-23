@@ -11,3 +11,7 @@ export * from './district/generate.ts';
 export * from './district/walkGrid.ts';
 export * from './path/astar.ts';
 export * from './economy/economy.ts';
+export * from './population/types.ts';
+export * from './population/generate.ts';
+export * from './population/simulate.ts';
+export { populate } from './state/newGame.ts';

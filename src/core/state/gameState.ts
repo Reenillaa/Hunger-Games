@@ -1,9 +1,10 @@
 import type { DistrictState } from '../district/generate.ts';
 import type { EconomyState } from '../economy/economy.ts';
+import type { PopulationState } from '../population/types.ts';
 import type { RngState, RngStreamId } from '../rng/rng.ts';
 
 /** Bumped whenever the shape of GameState changes; saves migrate across versions. */
-export const STATE_SCHEMA_VERSION = 3;
+export const STATE_SCHEMA_VERSION = 4;
 
 export const PHASE_KINDS = ['district', 'selection', 'capital', 'arena', 'aftermath'] as const;
 export type PhaseKind = (typeof PHASE_KINDS)[number];
@@ -50,6 +51,8 @@ export interface GameState {
   district: DistrictState;
   /** Resources, quota, abstract population, morale and regime attention (v3). */
   economy: EconomyState;
+  /** Every citizen, alive or dead, with family, traits, skills and history (v4). */
+  population: PopulationState;
   rng: Record<RngStreamId, RngState>;
   ids: { next: number };
   chronicle: ChronicleEntry[];

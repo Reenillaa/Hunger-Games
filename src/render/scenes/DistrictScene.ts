@@ -3,7 +3,7 @@ import type { DistrictState, PlacedProp, PlacedStructure } from '../../core/inde
 import { buildWalkGrid } from '../../core/index.ts';
 import { TEMPLATES } from '../../content/maps/index.ts';
 import { Ambience } from '../district/ambience.ts';
-import type { CharacterSheet } from '../district/townsfolk.ts';
+import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts';
 import { Townsfolk } from '../district/townsfolk.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { GameSession } from '../../game/session.ts';
@@ -17,7 +17,7 @@ import type {
 import { ART_BASE, SMOKE_POINTS, pickTerrainScale } from '../district/assets.ts';
 import { daylightAt } from '../district/daylight.ts';
 import { BUILDINGS } from '../../content/buildings.ts';
-import { checkPlacement } from '../../core/index.ts';
+import { ageOf, checkPlacement, livingCitizens } from '../../core/index.ts';
 import { TILE_H, TILE_W, cellToWorld, depthOf, mapBounds, pickCell } from '../iso/projection.ts';
 import { PALETTE } from '../palette.ts';
 
@@ -155,7 +155,15 @@ export class DistrictScene extends Phaser.Scene {
         this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
       ).characters;
       const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;
-      this.townsfolk = new Townsfolk(this, grid, district, characters, coarse ? 40 : 70);
+      this.townsfolk = new Townsfolk(
+        this,
+        grid,
+        district,
+        characters,
+        coarse ? 40 : 70,
+        this.townspeople(),
+        (id) => this.session.ui.openCitizen(id),
+      );
       const mines = district.structures
         .filter((st) => st.kind === 'mine_headframe')
         .map((st) => ({ x: st.x + 1, y: st.y + 1 }));
@@ -266,6 +274,33 @@ export class DistrictScene extends Phaser.Scene {
     }
     const template = TEMPLATES[district.templateId];
     if (template) this.townsfolk?.setGrid(buildWalkGrid(template, district, STRUCTURE_FOOTPRINTS));
+  }
+
+  /** Citizens who walk the streets: working adults first, then children and elders. */
+  private townspeople(): TownsPerson[] {
+    const state = this.session.getState();
+    const day = Math.floor(state.clock.tick / 24);
+    const structures = new Map(state.district.structures.map((st) => [st.id, st]));
+    const people = livingCitizens(state.population)
+      .filter((c) => c.homeId)
+      .map((c): TownsPerson => {
+        const age = ageOf(c, day);
+        const job = c.jobId ? structures.get(c.jobId) : undefined;
+        const role: Role =
+          job?.kind === 'mine_headframe' || job?.kind === 'quarry'
+            ? 'miner'
+            : age < 13
+              ? 'child'
+              : age >= 62
+                ? 'elder'
+                : c.sex === 'F'
+                  ? c.genes.hair % 2 === 0
+                    ? 'woman'
+                    : 'woman_b'
+                  : 'worker';
+        return { id: c.id, role, homeId: c.homeId!, jobId: c.jobId };
+      });
+    return people.sort((a, b) => Number(!!b.jobId) - Number(!!a.jobId) || (a.id < b.id ? -1 : 1));
   }
 
   private placeSite(s: PlacedStructure, pct: number): void {

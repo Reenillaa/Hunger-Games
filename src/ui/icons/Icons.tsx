@@ -95,3 +95,9 @@ export const HammerIcon = () => (
     <path d="M14 4l6 6-3 3-6-6zM12 8L4 16l3 3 8-8" />
   </Icon>
 );
+export const PeopleIcon = () => (
+  <Icon>
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3 19c0-3 3-5 6-5s6 2 6 5M16 5.5a3 3 0 0 1 0 5.5M18 14c2 .6 3 2.4 3 5" />
+  </Icon>
+);

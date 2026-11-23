@@ -1,5 +1,5 @@
 import type { ResourceId } from '../../core/index.ts';
-import { maxWorkers } from '../../core/index.ts';
+import { livingCitizens, maxWorkers } from '../../core/index.ts';
 import { BUILDINGS, PRICES } from '../../content/buildings.ts';
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
@@ -8,6 +8,7 @@ import { CloseIcon } from '../icons/Icons.tsx';
 import { useSession } from '../useSession.ts';
 import { useUi } from '../useUi.ts';
 import { costText } from './BuildMenu.tsx';
+import { PersonLink } from './CitizenCard.tsx';
 import styles from '../ui.module.css';
 
 const UPGRADE_FACTOR = [0, 1.5, 2.5];
@@ -64,6 +65,26 @@ export function SelectionPanel({ session }: { session: GameSession }) {
       {def.storage && (
         <p className={styles.sheetBody}>{t('sel.storage', { n: def.storage * s.level })}</p>
       )}
+      {(() => {
+        const people = livingCitizens(state.population).filter(
+          (c) => c.homeId === s.id || c.jobId === s.id,
+        );
+        if (people.length === 0) return null;
+        return (
+          <>
+            <h3 className={styles.cardSection}>
+              {def.housing
+                ? t('card.residents')
+                : t('sel.workers', { workers: people.length, max: maxWorkers(s) })}
+            </h3>
+            <div className={styles.people}>
+              {people.map((c) => (
+                <PersonLink key={c.id} session={session} c={c} />
+              ))}
+            </div>
+          </>
+        );
+      })()}
       {s.kind === 'economato' && s.built && (
         <div className={styles.trade}>
           <p className={styles.regimeLine}>{t('trade.title')}</p>

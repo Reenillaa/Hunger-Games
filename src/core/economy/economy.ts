@@ -17,6 +17,7 @@ import { terrainAt } from '../district/template.ts';
 import type { SimContext } from '../events.ts';
 import type { GameState } from '../state/gameState.ts';
 import type { CalendarDate } from '../time/calendar.ts';
+import { assignJobs, syncCounts } from '../population/simulate.ts';
 
 export interface EconomyState {
   resources: Record<ResourceId, number>;
@@ -34,6 +35,8 @@ export interface EconomyState {
   attention: number;
   /** Days in a row without enough food. */
   hungerDays: number;
+  /** Fraction of yesterday's food need that could not be met (0 = fed, 1 = nothing). */
+  shortage: number;
 }
 
 export const MAX_BUILDERS_PER_SITE = 4;
@@ -46,6 +49,7 @@ export function initialEconomy(): EconomyState {
     morale: 60,
     attention: 10,
     hungerDays: 0,
+    shortage: 0,
   };
 }
 
@@ -81,7 +85,6 @@ export function maxWorkers(s: PlacedStructure): number {
  * production, then services. Deterministic; recomputed daily and after every build command.
  */
 export function allocateLabor(state: GameState): void {
-  let free = state.economy.population.adults;
   const order = (s: PlacedStructure) =>
     !s.built
       ? 0
@@ -90,11 +93,16 @@ export function allocateLabor(state: GameState): void {
         : def(s.kind).category === 'service'
           ? 2
           : 3;
+  if (state.population && Object.keys(state.population.citizens).length > 0) {
+    assignJobs(state, maxWorkers, order);
+    return;
+  }
+  let free = state.economy.population.adults;
   const sorted = [...state.district.structures].sort((a, b) => order(a) - order(b));
   for (const s of sorted) {
-    const want = maxWorkers(s);
-    const assigned = Math.min(want, free);
+    const assigned = Math.min(maxWorkers(s), free);
     s.workers = assigned;
+    s.efficiency = 1;
     free -= assigned;
   }
 }
@@ -119,7 +127,7 @@ export function economyHour(state: GameState, date: CalendarDate, ctx: SimContex
   for (const s of state.district.structures) {
     if (s.workers === 0) continue;
     if (!s.built) {
-      s.progress += s.workers;
+      s.progress += s.workers * (s.efficiency || 1);
       if (s.progress >= def(s.kind).buildWork) {
         s.built = true;
         s.progress = def(s.kind).buildWork;
@@ -131,7 +139,7 @@ export function economyHour(state: GameState, date: CalendarDate, ctx: SimContex
     const d = def(s.kind);
     if (!d.produces || (d.seasonal && date.season === 'winter')) continue;
     for (const [res, rate] of Object.entries(d.produces) as [ResourceId, number][]) {
-      addResource(state, res, s.workers * rate * moraleFactor, cap);
+      addResource(state, res, s.workers * rate * moraleFactor * (s.efficiency || 1), cap);
     }
   }
 }
@@ -144,15 +152,18 @@ export function dailyFoodNeed(state: Readonly<GameState>): number {
 /** Daily: eating, morale drift, labour allocation, and the seasonal coal quota. */
 export function economyDay(state: GameState, date: CalendarDate, ctx: SimContext): void {
   const e = state.economy;
+  if (state.population) syncCounts(state);
   const need = dailyFoodNeed(state);
-  if (e.resources.food >= need) {
-    e.resources.food -= need;
+  // Whatever there is gets shared: hunger is proportional to the shortfall.
+  const eaten = Math.min(e.resources.food, need);
+  e.resources.food -= eaten;
+  e.shortage = need > 0 ? 1 - eaten / need : 0;
+  if (e.shortage < 0.02) {
     e.hungerDays = 0;
     e.morale = Math.min(100, e.morale + 0.5);
   } else {
-    e.resources.food = 0;
     e.hungerDays += 1;
-    e.morale = Math.max(0, e.morale - 4 - e.hungerDays);
+    e.morale = Math.max(0, e.morale - 1 - 6 * e.shortage);
     ctx.emit({ type: 'economy/hunger', days: e.hungerDays });
   }
   // Winter: homes burn a little coal for heat.

@@ -5,6 +5,7 @@ import {
   allocateLabor,
   generateDistrict,
   initialEconomy,
+  populate,
   seedFromString,
 } from '../core/index.ts';
 import type { GameState } from '../core/index.ts';
@@ -54,6 +55,19 @@ export const MIGRATIONS: readonly Migration[] = [
         s.workers ??= 0;
       }
       const next = { ...state, economy: initialEconomy() } as unknown as GameState;
+      allocateLabor(next);
+      return next as unknown as RawState;
+    },
+  },
+  {
+    from: 3,
+    to: 4,
+    description: 'Phase 4: individual citizens with families replace the abstract population.',
+    migrate(state) {
+      const next = structuredClone(state) as unknown as GameState;
+      for (const st of next.district.structures) st.efficiency ??= 1;
+      next.economy.shortage ??= 0;
+      populate(next);
       allocateLabor(next);
       return next as unknown as RawState;
     },

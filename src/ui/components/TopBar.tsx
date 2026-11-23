@@ -6,6 +6,7 @@ import {
   LedgerIcon,
   MenuIcon,
   PauseIcon,
+  PeopleIcon,
   PlayIcon,
 } from '../icons/Icons.tsx';
 import { formatCountdown, formatDate, formatHour } from '../format.ts';
@@ -65,6 +66,15 @@ export function TopBar({ session, onSave, onMenu }: Props) {
         </div>
       )}
       <div className={styles.group}>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={t('pop.title')}
+          title={t('pop.title')}
+          onClick={() => session.ui.togglePanel('population')}
+        >
+          <PeopleIcon />
+        </button>
         <button
           type="button"
           className={styles.iconButton}

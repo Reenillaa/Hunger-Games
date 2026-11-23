@@ -4,6 +4,7 @@ import type { GameState } from '../state/gameState.ts';
 import { editionOfYear } from '../state/gameState.ts';
 import { enterPhase } from '../state/phases.ts';
 import { economyDay, economyHour } from '../economy/economy.ts';
+import { populationDay, populationSeason, populationYear } from '../population/simulate.ts';
 import type { CalendarDate } from '../time/calendar.ts';
 import { TICKS_PER_DAY, dateFromTick, selectionTickOfYear } from '../time/calendar.ts';
 
@@ -41,7 +42,17 @@ const economy: System = {
   onTick: (state, ctx, date) => economyHour(state, date, ctx),
 };
 
-export const SYSTEMS: readonly System[] = [economy, selectionTrigger];
+/** Citizens: daily life, seasonal couples and births, yearly ageing (Phase 4). */
+const population: System = {
+  id: 'population',
+  onDayStart(state, ctx, date) {
+    populationDay(state, date, ctx);
+    if (date.dayOfSeason === 1 && date.absoluteDay > 0) populationSeason(state, date, ctx);
+    if (date.dayOfYear === 1 && date.absoluteDay > 0) populationYear(state, date, ctx);
+  },
+};
+
+export const SYSTEMS: readonly System[] = [economy, population, selectionTrigger];
 
 export class SimulationError extends Error {}
 

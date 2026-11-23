@@ -39,6 +39,8 @@ export function validateGameState(value: unknown): string[] {
   if (!isRecord(value.ids) || !isInt(value.ids.next)) problems.push('ids');
   if (!Array.isArray(value.chronicle)) problems.push('chronicle');
   if (!isRecord(value.economy) || !isRecord(value.economy.resources)) problems.push('economy');
+  if (!isRecord(value.population) || !isRecord(value.population.citizens))
+    problems.push('population');
   const district = value.district;
   if (
     !isRecord(district) ||

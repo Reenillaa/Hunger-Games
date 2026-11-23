@@ -84,6 +84,9 @@ for (let y = 0; y < years; y++) {
     morale: Math.round(e.morale),
     attention: e.attention,
     hungerDays: e.hungerDays,
+    alive: Object.values(state.population.citizens).filter((c) => c.alive).length,
+    dead: Object.values(state.population.citizens).filter((c) => !c.alive && (c.deathDay ?? -1) >= 0).length,
+    born: Object.values(state.population.citizens).filter((c) => c.history.some((h) => h.key === 'hist.born')).length,
     quotaMet:
       e.quota.history.filter((q) => q.delivered >= q.required).length +
       '/' +

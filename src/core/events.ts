@@ -12,7 +12,10 @@ export type DomainEvent =
   | { type: 'building/completed'; id: string; kind: string }
   | { type: 'building/removed'; id: string }
   | { type: 'economy/hunger'; days: number }
-  | { type: 'economy/quota'; required: number; delivered: number };
+  | { type: 'economy/quota'; required: number; delivered: number }
+  | { type: 'citizen/born'; id: string; name: string }
+  | { type: 'citizen/died'; id: string; name: string; cause: string }
+  | { type: 'citizen/coupled'; a: string; b: string };
 
 export type DomainEventType = DomainEvent['type'];
 

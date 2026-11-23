@@ -1,6 +1,12 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
-import { TICKS_PER_DAY, advanceTicks, createNewGame, hashState } from '../core/index.ts';
+import {
+  STATE_SCHEMA_VERSION,
+  TICKS_PER_DAY,
+  advanceTicks,
+  createNewGame,
+  hashState,
+} from '../core/index.ts';
 import { GameSession } from '../game/session.ts';
 import { decodeSave, encodeSave } from './codec.ts';
 import { SaveError } from './errors.ts';
@@ -29,7 +35,7 @@ describe('codec', () => {
     const s = createNewGame({ seed: 'plain' });
     const json = JSON.stringify({
       format: 'diezmo-save',
-      saveVersion: 2,
+      saveVersion: STATE_SCHEMA_VERSION,
       gameVersion: 'x',
       savedAt: '',
       state: s,
@@ -50,7 +56,11 @@ describe('codec', () => {
     });
     await expect(
       decodeSave(
-        enc({ format: 'diezmo-save', saveVersion: 2, state: { ...s, clock: { tick: -5 } } }),
+        enc({
+          format: 'diezmo-save',
+          saveVersion: STATE_SCHEMA_VERSION,
+          state: { ...s, clock: { tick: -5 } },
+        }),
       ),
     ).rejects.toMatchObject({ code: 'invalid-state' });
   });
@@ -62,7 +72,8 @@ describe('production migration v1 → v2', () => {
     const v1 = { ...rest, schemaVersion: 1 };
     const json = JSON.stringify({ format: 'diezmo-save', saveVersion: 1, state: v1 });
     const { state } = await decodeSave(new TextEncoder().encode(json));
-    expect(state.schemaVersion).toBe(3);
+    expect(state.schemaVersion).toBe(STATE_SCHEMA_VERSION);
+    expect(Object.keys(state.population.citizens).length).toBeGreaterThan(100);
     expect(state.economy.resources.food).toBeGreaterThan(0);
     expect(state.district.structures.length).toBeGreaterThan(20);
     expect(state.clock).toEqual(v1.clock);

@@ -97,6 +97,7 @@ const HANDLERS: HandlerMap = {
         built: false,
         progress: 0,
         workers: 0,
+        efficiency: 1,
       });
       // Clear trees and rocks under the new footprint.
       const { w, d } = STRUCTURE_FOOTPRINTS[cmd.kind];

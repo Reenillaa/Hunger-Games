@@ -7,10 +7,21 @@ export interface UiState {
   selectedId: string | null;
   /** Last placement validation result while hovering, for the HUD hint. */
   placementHint: string | null;
+  /** Citizen whose sheet is open. */
+  citizenId: string | null;
+  /** Side panel open from the HUD. */
+  panel: 'population' | null;
 }
 
 export class UiStore {
-  private state: UiState = { mode: 'view', placeKind: null, selectedId: null, placementHint: null };
+  private state: UiState = {
+    mode: 'view',
+    placeKind: null,
+    selectedId: null,
+    placementHint: null,
+    citizenId: null,
+    panel: null,
+  };
   private readonly listeners = new Set<() => void>();
 
   get = (): UiState => this.state;
@@ -35,6 +46,14 @@ export class UiStore {
 
   select(id: string | null): void {
     this.set({ selectedId: id, mode: 'view', placeKind: null });
+  }
+
+  openCitizen(id: string | null): void {
+    this.set({ citizenId: id });
+  }
+
+  togglePanel(panel: UiState['panel']): void {
+    this.set({ panel: this.state.panel === panel ? null : panel });
   }
 
   hint(text: string | null): void {

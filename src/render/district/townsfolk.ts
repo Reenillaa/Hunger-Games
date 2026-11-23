@@ -14,7 +14,14 @@ export interface CharacterSheet {
   walkFrames: number;
 }
 
-type Role = 'miner' | 'worker' | 'woman' | 'woman_b' | 'child' | 'elder' | 'warden';
+export type Role = 'miner' | 'worker' | 'woman' | 'woman_b' | 'child' | 'elder' | 'warden';
+
+export interface TownsPerson {
+  id: string;
+  role: Role;
+  homeId: string;
+  jobId: string | null;
+}
 
 interface Agent {
   role: Role;
@@ -54,6 +61,7 @@ export function directionIndex(dx: number, dy: number): number {
  */
 export class Townsfolk {
   private readonly agents: Agent[] = [];
+  private readonly onPick: (citizenId: string) => void;
   private readonly scene: Phaser.Scene;
   private grid: PathGrid;
   private readonly places: {
@@ -70,7 +78,10 @@ export class Townsfolk {
     district: DistrictState,
     sheets: Record<string, CharacterSheet>,
     maxAgents: number,
+    people: TownsPerson[],
+    onPick: (citizenId: string) => void,
   ) {
+    this.onPick = onPick;
     this.scene = scene;
     this.grid = grid;
     const entrance = (s: PlacedStructure) => entranceOf(s, STRUCTURE_FOOTPRINTS, grid);
@@ -90,32 +101,15 @@ export class Townsfolk {
     this.makeAnimations(sheets);
     this.makeShadowTexture();
 
-    const roles: Role[] = [
-      'miner',
-      'miner',
-      'woman',
-      'worker',
-      'child',
-      'woman_b',
-      'elder',
-      'miner',
-    ];
-    let n = 0;
-    homes.forEach((house, i) => {
-      const home = entrance(house);
-      if (!home) return;
-      const residents = house.kind === 'house_terrace' ? 3 : 2;
-      for (let r = 0; r < residents && n < maxAgents - 3; r++) {
-        const role = roles[(i * 3 + r) % roles.length]!;
-        this.spawn(
-          role,
-          home,
-          role === 'miner' ? this.pick(this.places.mine, i) : this.pick(this.places.shops, i + r),
-          i * 97 + r * 13 + 7,
-          sheets,
-        );
-        n++;
-      }
+    // Every walker is the visible avatar of a real citizen (capped for performance).
+    const byId = new Map(district.structures.map((st) => [st.id, st]));
+    people.slice(0, Math.max(0, maxAgents - 3)).forEach((p, i) => {
+      const home = byId.get(p.homeId);
+      const homeCell = home ? entrance(home) : null;
+      if (!homeCell) return;
+      const job = p.jobId ? byId.get(p.jobId) : undefined;
+      const work = (job && entrance(job)) ?? this.pick(this.places.shops, i);
+      this.spawn(p.role, homeCell, work, i * 97 + 7, sheets, p.id);
     });
     for (let k = 0; k < 3; k++) {
       const start = this.pick(this.places.patrol, k);
@@ -133,6 +127,7 @@ export class Townsfolk {
     work: Cell,
     seed: number,
     sheets: Record<string, CharacterSheet>,
+    citizenId: string | null = null,
   ): void {
     const sheet = sheets[role];
     if (!sheet) return;
@@ -141,6 +136,10 @@ export class Townsfolk {
       .setOrigin(sheet.anchor[0] / sheet.frameWidth, sheet.anchor[1] / sheet.frameHeight)
       .setScale(1 / sheet.scale)
       .setVisible(false);
+    if (citizenId) {
+      sprite.setInteractive({ useHandCursor: true, pixelPerfect: false });
+      sprite.on('pointerup', () => this.onPick(citizenId));
+    }
     const shadow = this.scene.add
       .image(0, 0, 'blob_shadow')
       .setAlpha(0.45)

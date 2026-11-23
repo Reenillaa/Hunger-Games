@@ -18,6 +18,8 @@ export interface PlacedStructure {
   progress: number;
   /** Workers currently assigned (recomputed by the labour allocator). */
   workers: number;
+  /** Productivity from the assigned workers' skill (0.6–1.6). */
+  efficiency: number;
 }
 
 export interface PlacedProp {
@@ -84,6 +86,7 @@ export function generateDistrict(
       built: true,
       progress: 0,
       workers: 0,
+      efficiency: 1,
     });
   };
 

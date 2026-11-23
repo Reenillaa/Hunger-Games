@@ -135,3 +135,21 @@ test('economy HUD, build menu and construction', async ({ page }) => {
   await expect(page.getByTestId('res-wood')).toHaveText(String(wood - 15));
   expect(errors).toEqual([]);
 });
+
+test('population list and citizen sheet with family links', async ({ page }) => {
+  const errors = trackErrors(page);
+  await startNewGame(page);
+  await page.getByRole('button', { name: 'Pausa' }).click();
+  await page.getByRole('button', { name: 'Población' }).click();
+  const list = page.getByTestId('population-list');
+  await expect(list.getByRole('button').first()).toBeVisible();
+  expect(await list.getByRole('button').count()).toBeGreaterThan(80);
+  await page.getByRole('button', { name: 'Todos' }).click();
+  const eligible = await list.getByRole('button').count();
+  expect(eligible).toBeGreaterThan(5);
+  expect(eligible).toBeLessThan(60);
+  await list.getByRole('button').first().click();
+  await expect(page.getByTestId('citizen-card')).toBeVisible();
+  await expect(page.getByText('Personalidad').or(page.getByText('Atributos'))).toBeVisible();
+  expect(errors).toEqual([]);
+});
