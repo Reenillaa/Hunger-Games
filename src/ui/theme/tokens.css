@@ -1,0 +1,48 @@
+/* Design tokens (ART_BIBLE.md §4 and §7). Fonts arrive in Phase 2; system stacks for now. */
+:root {
+  --c-coal: #16161a;
+  --c-soot: #2b2a2e;
+  --c-soot-2: #232226;
+  --c-stone: #4a4d52;
+  --c-wood: #6b5443;
+  --c-rust: #8e4b2e;
+  --c-lamp: #e8a24a;
+  --c-moss: #5c6b4a;
+  --c-ash: #9aa0a6;
+  --c-paper: #d9d2c3;
+  --c-ink: #ece6da;
+  --c-ink-dim: #a8a196;
+  --c-marble: #efe9dc;
+  --c-gold: #c9a44c;
+  --c-gold-dark: #8c6b22;
+  --c-power: #1f2a44;
+  --c-danger: #b0413e;
+
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Arial Narrow', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --radius: 3px;
+  --border: 1px solid rgb(154 160 166 / 0.22);
+  --shadow: 0 8px 28px rgb(0 0 0 / 0.45);
+  --touch: 44px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

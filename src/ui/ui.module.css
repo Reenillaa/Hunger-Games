@@ -1,0 +1,393 @@
+/* ---------- Shell ---------- */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvasHost {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--space-2) + var(--safe-top)) calc(var(--space-2) + var(--safe-right))
+    calc(var(--space-2) + var(--safe-bottom)) calc(var(--space-2) + var(--safe-left));
+  gap: var(--space-2);
+}
+
+.overlay > * {
+  pointer-events: auto;
+}
+
+/* ---------- Ledger panel (player UI language) ---------- */
+.panel {
+  background: linear-gradient(180deg, rgb(43 42 46 / 0.96), rgb(30 29 33 / 0.96));
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Top bar ---------- */
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.district {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--c-ink-dim);
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.date {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.countdown {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--c-lamp);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.group {
+  display: flex;
+  gap: 2px;
+}
+
+.iconButton {
+  min-width: var(--touch);
+  min-height: var(--touch);
+  display: inline-grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--c-ink-dim);
+}
+
+.iconButton:hover {
+  color: var(--c-ink);
+  border-color: rgb(154 160 166 / 0.25);
+}
+
+.iconButton[aria-pressed='true'] {
+  color: var(--c-coal);
+  background: var(--c-lamp);
+}
+
+@media (pointer: fine) {
+  .iconButton {
+    min-width: 34px;
+    min-height: 34px;
+  }
+}
+
+/* ---------- Buttons ---------- */
+.button {
+  min-height: var(--touch);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-stone);
+  background: var(--c-soot);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+.button:hover {
+  border-color: var(--c-ash);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.primary {
+  background: var(--c-lamp);
+  border-color: var(--c-lamp);
+  color: var(--c-coal);
+  font-weight: 600;
+}
+
+.primary:hover {
+  border-color: #f5c27f;
+  background: #f0b05e;
+}
+
+/* ---------- Phase sheet ---------- */
+.sheetArea {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.sheet {
+  width: min(560px, 100%);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.sheetTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px dashed var(--c-ash);
+  color: var(--c-ash);
+  border-radius: 2px;
+}
+
+.sheetBody {
+  margin: 0;
+  color: var(--c-ink-dim);
+}
+
+.regimeLine {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--c-gold);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Main menu ---------- */
+.menu {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--space-5) + var(--safe-top)) var(--space-5)
+    calc(var(--space-5) + var(--safe-bottom));
+  background:
+    radial-gradient(ellipse at 50% 35%, rgb(232 162 74 / 0.12), transparent 55%),
+    linear-gradient(180deg, #1b1b20, var(--c-coal));
+  overflow-y: auto;
+}
+
+.menuInner {
+  width: min(380px, 100%);
+  display: grid;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.emblem {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  color: var(--c-lamp);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(44px, 12vw, 72px);
+  letter-spacing: 0.22em;
+  padding-left: 0.22em;
+  font-weight: 700;
+}
+
+.tagline {
+  margin: var(--space-2) 0 0;
+  color: var(--c-ink-dim);
+  font-style: italic;
+}
+
+.menuButtons {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-ink-dim);
+}
+
+.warning {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-lamp);
+}
+
+/* ---------- Dialogs ---------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.55);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  z-index: 10;
+}
+
+.dialog {
+  width: min(460px, 100%);
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 18px;
+}
+
+.slotList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: rgb(22 22 26 / 0.55);
+}
+
+.slotInfo {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  text-align: left;
+}
+
+.slotName {
+  font-weight: 600;
+}
+
+.slotMeta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--c-ink-dim);
+}
+
+/* ---------- Toast & debug ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--space-5) + var(--safe-bottom));
+  transform: translateX(-50%);
+  padding: var(--space-2) var(--space-4);
+  z-index: 20;
+}
+
+.debug {
+  position: absolute;
+  right: calc(var(--space-2) + var(--safe-right));
+  bottom: calc(var(--space-2) + var(--safe-bottom));
+  padding: var(--space-2);
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: 12px;
+}
+
+/* ---------- Error ---------- */
+.error {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(10 10 12 / 0.92);
+  z-index: 50;
+  padding: var(--space-5);
+}
+
+/* Phones: landscape is short, portrait is narrow. Keep the HUD to one row. */
+@media (max-width: 560px), (max-height: 500px) {
+  .topBar {
+    gap: var(--space-2);
+  }
+  .iconButton {
+    min-width: 38px;
+  }
+}
+
+@media (max-width: 900px) and (max-height: 500px) {
+  .district {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .topBar {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+  .calendar {
+    flex-basis: 100%;
+    padding-top: var(--space-1);
+  }
+  .spacer {
+    display: none;
+  }
+  .topBar > .group:last-child {
+    margin-left: auto;
+  }
+  .sheet {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+  .district {
+    display: none;
+  }
+}
