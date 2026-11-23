@@ -120,6 +120,14 @@ Modelos CC0 / modelado por script (Blender bpy, headless)
 
 Scripts en `tools/art/`; fuentes en `assets/src/`; resultados en `assets/build/` (no versionados si son regenerables, o con Git LFS si fuera necesario; decisión en Fase 2).
 
+### 11.1 Lecciones del spike (Fase 1, `tools/art/spike_render.py`)
+
+- Cámara: ortográfica, `ortho_scale = lado_px / (256/√2)` a escala 2×; azimut 45° desde +X/−Y; elevación 30°. Mapeo lógico: celda (cx, cy) ↔ mundo Blender (X = cx, Y = −cy).
+- Normal map en espacio de cámara, convención OpenGL (+X derecha, +Y arriba, +Z hacia el espectador). En Cycles la Z de cámara apunta hacia dentro: hay que invertirla. Render con *view transform* `Raw` y sin denoiser.
+- **Capas obligatorias** por sprite: albedo (solo luz ambiente y oclusión, sin sol), sombra (sprite aparte), emisión (aditiva, sin iluminar), normales.
+- Margen de lienzo suficiente para que la sombra no se recorte.
+- Coste medido: ~5 s por pase de un edificio 640 px; ~0,45 s por pase de un fotograma de personaje de 192 px (CPU, 48 muestras + denoiser).
+
 ## 12. Checklist de calidad de un asset
 
 - [ ] Ángulo y escala correctos (rejilla de comprobación).

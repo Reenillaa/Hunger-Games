@@ -7,18 +7,20 @@
 
 ## 1. Stack (verificado en npm el 2026-11-23)
 
-| Pieza | Versión objetivo | Papel |
+> Versiones exactas instaladas y motivos: `DECISIONS.md` D-03.
+
+| Pieza | Versión | Papel |
 |---|---|---|
 | Node.js | ≥ 22.12 (contenedor: 22.23) | Desarrollo, tests, simulador headless |
-| TypeScript | **6.0.3** (fijado; TS 7 incompatible con typescript-eslint 8.74) | Todo el código |
-| Phaser | **4.2.x** | Render WebGL, escenas, cámaras, tweens, input, carga, audio, partículas, iluminación |
-| React + React DOM | **19.x** (versión con ≥ 2 semanas) | Interfaz (HUD, paneles, fichas, menús) superpuesta al canvas |
-| Vite | **8.x** | Dev server y build |
-| Vitest | **5.x** | Tests unitarios/integración (entorno Node) |
-| idb | **8.0.x** | Envoltorio fino y tipado de IndexedDB |
-| vite-plugin-pwa | **2.0.x** | Service worker (Workbox) y manifiesto |
-| Playwright | la del proyecto, contra Chromium preinstalado | Tests E2E de humo |
-| fake-indexeddb | 6.x (solo tests) | IndexedDB en Node |
+| TypeScript | **6.0.3** (fijado; TS 7 incompatible con typescript-eslint) | Todo el código |
+| Phaser | **4.2.1** (renderer `AUTO`; Canvas está obsoleto en v4) | Render WebGL, escenas, cámaras, tweens, input, carga, audio, partículas, iluminación |
+| React + React DOM | **19.3.1** | Interfaz (HUD, paneles, fichas, menús) superpuesta al canvas |
+| Vite | **8.3.6** | Dev server y build |
+| Vitest | **5.1.0** | Tests unitarios/integración (entorno Node) |
+| idb | **8.0.4** | Envoltorio fino y tipado de IndexedDB |
+| vite-plugin-pwa | **2.0.0** | Service worker (Workbox) y manifiesto |
+| @playwright/test | **1.63.0** (misma versión que el Chromium preinstalado del contenedor) | Tests E2E de humo |
+| fake-indexeddb | 6.2.8 (solo tests) | IndexedDB en Node |
 | ESLint + typescript-eslint, Prettier | últimas compatibles | Calidad de código |
 
 Nota: Phaser 4.2 incluye en el paquete una carpeta `skills/` con guías para agentes de IA (tilemaps, render…). Se consultarán en la Fase 1 como documentación oficial.
@@ -54,14 +56,14 @@ Reglas de dependencia (se comprueban con una regla de lint de imports):
 - `render` y `ui` **nunca mutan** el estado: envían comandos y leen instantáneas/consultas.
 - `render` y `ui` no se importan entre sí; se comunican por `game` (bus de eventos + selección actual).
 
-## 3. Estructura de carpetas (objetivo de la Fase 1)
+## 3. Estructura de carpetas (implantada en la Fase 1)
 
 ```
 /
 ├─ index.html
 ├─ public/                    # iconos PWA, manifest base
 ├─ assets/                    # fuentes de arte (Blender, SVG de retratos), LICENSES.md
-├─ tools/                     # pipeline de assets (scripts Blender), simulador headless
+├─ tools/                     # art/ (Blender bpy + visor), sim/ (simulador headless), icons/
 ├─ src/
 │  ├─ core/
 │  │  ├─ state/               # tipos del estado (GameState, DistrictState, Citizen…)
@@ -73,12 +75,12 @@ Reglas de dependencia (se comprueban con una regla de lint de imports):
 │  │  └─ index.ts
 │  ├─ content/                # buildings, resources, traits, laws, events, selection rules,
 │  │  └─ locales/es/          #   weapons, arenas, districts, names… + textos
-│  ├─ game/                   # GameSession, scheduler, event bus, autosave, phase machine
+│  ├─ game/                   # GameSession (tiempo real→ticks, velocidades), event bus, autosave, contrato del renderer
 │  ├─ render/                 # Phaser: scenes/, iso/, camera/, entities/, fx/, cinematic/
 │  ├─ ui/                     # React: hud/, panels/, sheets/, dialogs/, theme/, hooks/
 │  ├─ persistence/            # db.ts, saveSlots, migrations/, export/import
 │  ├─ platform/               # input unificado, detección de calidad, safe areas, audio unlock
-│  └─ main.tsx
+│  └─ main.tsx               # raíz de composición: único módulo que une ui, render y persistence
 ├─ tests/                     # e2e (Playwright); los unit tests van junto al código (*.test.ts)
 └─ docs/
 ```
@@ -132,8 +134,9 @@ Reglas de dependencia (se comprueban con una regla de lint de imports):
 
 - `vite-plugin-pwa` con precarga del *shell* y **caché bajo demanda** de atlas por escena (no precachear todas las arenas).
 - Manifiesto con iconos propios, `display: standalone`, orientación preferente horizontal (D-08), `theme_color` de la paleta.
-- **GitHub Actions**: `lint → typecheck → test → build → deploy` en cada push a la rama principal; en PR solo verificación. Publicación con la acción oficial de GitHub Pages.
+- **GitHub Actions** (`.github/workflows/ci.yml`): `lint → format → typecheck → test → sim → build → e2e` en cada push y PR; despliegue a Pages solo desde la **rama por defecto** (I-13). Requiere *Settings → Pages → Source: GitHub Actions*.
 - `vite.config` con `base: './'` y sin router (I-07) → funciona bajo `https://reenillaa.github.io/Hunger-Games/`.
+- Phaser se carga con `import()` dinámico tras el menú (I-17).
 - Gestión de errores: *error boundary* de React, manejador global de errores que ofrece **guardar copia de emergencia** y exportar el informe; recuperación de pérdida de contexto WebGL (nativa de Phaser 4).
 
 ## 10. Móvil

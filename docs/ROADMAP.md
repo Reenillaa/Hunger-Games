@@ -25,8 +25,8 @@ Una partida en la que se puede, desde el navegador del ordenador o del iPhone:
 
 | Fase | Nombre | Estado | Depende de |
 |---|---|---|---|
-| 0 | Auditoría y diseño | 🟡 Documentación entregada, **pendiente de aprobación** | — |
-| 1 | Fundación técnica + esqueleto andante | ⬜ | 0 aprobada |
+| 0 | Auditoría y diseño | ✅ Aprobada el 2026-11-23 | — |
+| 1 | Fundación técnica + esqueleto andante | 🟡 Terminada y verificada en CI; falta activar GitHub Pages (acción del cliente) | 0 aprobada |
 | 2 | Prototipo visual del distrito | ⬜ | 1 |
 | 3 | Construcción y economía | ⬜ | 2 |
 | 4 | Población (+ prototipo headless de IA de arena) | ⬜ | 3 |
