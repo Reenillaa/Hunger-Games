@@ -22,9 +22,13 @@ function basicGovernor(state: GameState): void {
   const e = state.economy;
   const need = dailyFoodNeed(state);
   const spareCoal = Math.floor(e.resources.coal - e.quota.required * 0.9);
-  if (spareCoal > 5) applyCommand(state, { type: 'trade', action: 'sell', resource: 'coal', amount: spareCoal });
+  if (spareCoal > 5)
+    applyCommand(state, { type: 'trade', action: 'sell', resource: 'coal', amount: spareCoal });
   if (e.resources.food < need * 3) {
-    const amount = Math.min(Math.floor(e.resources.credits / 2), Math.ceil(need * 3 - e.resources.food));
+    const amount = Math.min(
+      Math.floor(e.resources.credits / 2),
+      Math.ceil(need * 3 - e.resources.food),
+    );
     if (amount > 0) applyCommand(state, { type: 'trade', action: 'buy', resource: 'food', amount });
   }
   const gardens = state.district.structures.filter((s) => s.kind === 'garden').length;
@@ -80,7 +84,10 @@ for (let y = 0; y < years; y++) {
     morale: Math.round(e.morale),
     attention: e.attention,
     hungerDays: e.hungerDays,
-    quotaMet: e.quota.history.filter((q) => q.delivered >= q.required).length + '/' + e.quota.history.length,
+    quotaMet:
+      e.quota.history.filter((q) => q.delivered >= q.required).length +
+      '/' +
+      e.quota.history.length,
   });
   if (state.phase.kind !== 'selection') throw new Error(`Year ${y + 1}: selection did not start`);
   for (const cmd of competition) {
