@@ -19,7 +19,8 @@ test('boots, starts a new game and renders the district', async ({ page }) => {
   const errors = trackErrors(page);
   await startNewGame(page);
   await expect(page.getByTestId('date')).toContainText('Año 1 · Primavera · Día 1');
-  await expect(page.getByTestId('countdown')).toContainText('La Criba en 19 d 16 h');
+  // The clock runs from the start: allow a few in-game hours to pass before this check.
+  await expect(page.getByTestId('countdown')).toContainText(/La Criba en 19 d 1[0-6] h/);
   await expect(page.getByTestId('game-canvas').locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -56,6 +57,7 @@ test('a manual save survives a page reload', async ({ page }) => {
 test('walking skeleton: district → selection → capital → arena → return', async ({ page }) => {
   const errors = trackErrors(page);
   await startNewGame(page, '?debug');
+  await page.getByRole('button', { name: 'Pausa' }).click();
   await page.getByRole('button', { name: 'Ir a la Criba' }).click();
 
   const sheet = page.getByTestId('phase-sheet');
