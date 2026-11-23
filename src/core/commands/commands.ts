@@ -9,6 +9,8 @@ import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { ResourceId, StructureKind } from '../district/template.ts';
 import { allocateLabor, checkPlacement, def, storageCapacity } from '../economy/economy.ts';
 import { nextId } from '../state/gameState.ts';
+import { createGames, resolveCapitalDay } from '../games/capital.ts';
+import type { Interview, OpeningPlan, Outfit, Posture, TrainingFocus } from '../games/types.ts';
 
 /**
  * Every player decision is a serializable command. UI and renderer never mutate state:
@@ -19,6 +21,13 @@ export type Command =
   | { type: 'capital/advance-day' }
   | { type: 'arena/conclude' }
   | { type: 'home/return' }
+  | {
+      type: 'capital/choose';
+      contestantId: string;
+      choice: 'posture' | 'outfit' | 'training' | 'hidden' | 'interview' | 'plan';
+      value: string;
+      budget?: number;
+    }
   | { type: 'build/place'; kind: StructureKind; x: number; y: number }
   | { type: 'build/demolish'; id: string }
   | { type: 'build/upgrade'; id: string }
@@ -76,7 +85,73 @@ function pay(state: GameState, cost: Partial<Record<ResourceId, number>>, sign =
 
 const inDistrict = (state: GameState) => requirePhase(state, 'district');
 
+const DAY_OF_CHOICE: Record<string, number[]> = {
+  posture: [1],
+  outfit: [2],
+  training: [3, 4, 5],
+  hidden: [5],
+  interview: [6],
+  plan: [7],
+};
+
+const OPTIONS: Record<string, readonly string[]> = {
+  posture: ['reserved', 'friendly', 'intimidating'],
+  outfit: ['identity', 'bold', 'traditional'],
+  training: ['combat', 'survival', 'stealth', 'endurance', 'allies', 'scout'],
+  hidden: ['yes', 'no'],
+  interview: ['humble', 'charming', 'defiant', 'mysterious', 'tragic'],
+  plan: ['flee', 'fight'],
+};
+
 const HANDLERS: HandlerMap = {
+  'capital/choose': {
+    validate(state, cmd) {
+      if (state.phase.kind !== 'capital') return requirePhase(state, 'capital');
+      const c = state.games?.contestants[cmd.contestantId];
+      if (!c?.player) return { code: 'not-found', message: cmd.contestantId };
+      if (!DAY_OF_CHOICE[cmd.choice]?.includes(state.phase.day))
+        return { code: 'invalid', message: 'Not today' };
+      if (!OPTIONS[cmd.choice]?.includes(cmd.value))
+        return { code: 'invalid', message: 'Unknown option' };
+      const budget = cmd.budget ?? 0;
+      const available = state.economy.resources.credits + (state.games?.outfitBudget ?? 0);
+      if (cmd.choice === 'outfit' && (budget < 0 || budget > available)) {
+        return { code: 'cost', message: 'Not enough credits' };
+      }
+      return null;
+    },
+    apply(state, cmd) {
+      if (state.phase.kind !== 'capital' || !state.games) return;
+      const games = state.games;
+      const c = games.contestants[cmd.contestantId]!;
+      switch (cmd.choice) {
+        case 'posture':
+          c.choices.posture = cmd.value as Posture;
+          break;
+        case 'outfit': {
+          // One designer for the whole delegation: the concept and the budget are shared.
+          const budget = cmd.budget ?? 0;
+          state.economy.resources.credits += games.outfitBudget - budget;
+          games.outfitBudget = budget;
+          for (const t of Object.values(games.contestants))
+            if (t.player) t.choices.outfit = cmd.value as Outfit;
+          break;
+        }
+        case 'training':
+          c.choices.training[state.phase.day - 3] = cmd.value as TrainingFocus;
+          break;
+        case 'hidden':
+          c.choices.hidden = cmd.value === 'yes';
+          break;
+        case 'interview':
+          c.choices.interview = cmd.value as Interview;
+          break;
+        case 'plan':
+          c.choices.plan = cmd.value as OpeningPlan;
+          break;
+      }
+    },
+  },
   'build/place': {
     validate(state, cmd) {
       const phase = inDistrict(state);
@@ -190,6 +265,7 @@ const HANDLERS: HandlerMap = {
     apply(state, _cmd, ctx) {
       if (state.phase.kind !== 'selection') return;
       state.away.days = 0;
+      state.games = createGames(state);
       enterPhase(
         state,
         { kind: 'capital', edition: state.phase.edition, day: 1 },
@@ -203,6 +279,10 @@ const HANDLERS: HandlerMap = {
     apply(state, _cmd, ctx) {
       if (state.phase.kind !== 'capital') return;
       state.away.days += 1;
+      state.economy.attention = Math.min(
+        100,
+        state.economy.attention + resolveCapitalDay(state, state.phase.day),
+      );
       if (state.phase.day < CAPITAL_DAYS) {
         enterPhase(state, { ...state.phase, day: state.phase.day + 1 }, null, ctx);
       } else {
@@ -225,6 +305,7 @@ const HANDLERS: HandlerMap = {
       runAutopilotDays(state, days, ctx.emit);
       state.away.days = 0;
       state.competition.current = null;
+      state.games = null;
       allocateLabor(state);
     },
   },

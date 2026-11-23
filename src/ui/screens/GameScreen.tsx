@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameSession, GameSpeed } from '../../game/session.ts';
 import { BuildMenu } from '../components/BuildMenu.tsx';
+import { CapitalPanel } from '../components/CapitalPanel.tsx';
 import { CitizenCard } from '../components/CitizenCard.tsx';
 import { CinematicOverlay } from '../components/CinematicOverlay.tsx';
 import { PopulationPanel } from '../components/PopulationPanel.tsx';
@@ -69,6 +70,7 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
         <BuildMenu session={session} />
         <SelectionPanel session={session} />
         <PhaseSheet session={session} />
+        <CapitalPanel session={session} />
         {debug && <DebugPanel session={session} />}
       </div>
       <CinematicOverlay session={session} />

@@ -1,4 +1,3 @@
-import { CAPITAL_DAYS } from '../../core/index.ts';
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
 import type { GameSession } from '../../game/session.ts';
@@ -12,7 +11,7 @@ import styles from '../ui.module.css';
 export function PhaseSheet({ session }: { session: GameSession }) {
   const { state } = useSession(session);
   const phase = state.phase;
-  if (phase.kind === 'district' || session.cinematic) return null;
+  if (phase.kind === 'district' || phase.kind === 'capital' || session.cinematic) return null;
 
   let body = '';
   let action: LocaleKey;
@@ -28,11 +27,6 @@ export function PhaseSheet({ session }: { session: GameSession }) {
       });
       action = 'phase.selection.action';
       onAction = () => session.dispatch({ type: 'capital/depart' });
-      break;
-    case 'capital':
-      body = t('phase.capital.body', { day: phase.day, total: CAPITAL_DAYS });
-      action = phase.day < CAPITAL_DAYS ? 'phase.capital.action' : 'phase.capital.launch';
-      onAction = () => session.dispatch({ type: 'capital/advance-day' });
       break;
     case 'arena':
       body = t('phase.arena.body');

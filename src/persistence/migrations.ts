@@ -84,6 +84,14 @@ export const MIGRATIONS: readonly Migration[] = [
       };
     },
   },
+  {
+    from: 5,
+    to: 6,
+    description: 'Phase 6: the games state (contestants in the capital and the arena).',
+    migrate(state) {
+      return { ...state, games: null };
+    },
+  },
 ];
 
 /** Upgrades a raw state from `fromVersion` to `targetVersion` by chaining migrations. */

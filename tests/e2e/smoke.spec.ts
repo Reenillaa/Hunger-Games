@@ -70,12 +70,15 @@ test('walking skeleton: district → selection → capital → arena → return'
   await expect(sheet).toContainText('Ofrendas:');
   await sheet.getByRole('button', { name: 'Partir hacia Áurea' }).click();
 
+  const capital = page.getByTestId('capital');
   for (let day = 1; day <= 7; day++) {
-    await expect(sheet).toHaveAttribute('data-phase', 'capital');
-    await expect(sheet).toContainText(`Día ${day} de 7`);
-    await sheet
-      .getByRole('button', { name: day < 7 ? 'Siguiente día' : 'Ceremonia de lanzamiento' })
-      .click();
+    await expect(capital).toContainText(`Día ${day} de 7`);
+    // Make the first offered choice for every contestant, then end the day.
+    const contestants = capital.getByTestId('contestant');
+    for (let i = 0; i < (await contestants.count()); i++) {
+      await contestants.nth(i).locator('button[aria-pressed]').first().click();
+    }
+    await capital.getByRole('button', { name: day < 7 ? 'Terminar el día' : 'A la arena' }).click();
   }
   await expect(sheet).toHaveAttribute('data-phase', 'arena');
   await sheet.getByRole('button', { name: /Cerrar los juegos/ }).click();

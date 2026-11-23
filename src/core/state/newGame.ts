@@ -51,6 +51,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     district: generateDistrict(template, STRUCTURE_FOOTPRINTS, rng.world),
     economy: initialEconomy(),
     population: { citizens: {} },
+    games: null,
     rng,
     ids: { next: 1 },
     chronicle: [],
