@@ -24,7 +24,13 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
     scene: [new DistrictScene(session), new PhaseScene()],
   });
 
-  game.events.on(Phaser.Core.Events.STEP, (_time: number, delta: number) => session.update(delta));
+  // Simulation time is real time: use raw timestamps, not Phaser's smoothed/capped delta,
+  // so a slow device renders fewer frames but the in-game clock keeps the same pace.
+  let last: number | null = null;
+  game.events.on(Phaser.Core.Events.STEP, (time: number) => {
+    if (last !== null) session.update(Math.min(time - last, 1000));
+    last = time;
+  });
 
   let current: PhaseKind | null = null;
   const sync = () => {

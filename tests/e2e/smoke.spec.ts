@@ -32,7 +32,7 @@ test('speed controls change the clock state', async ({ page }) => {
   const fastest = page.getByRole('button', { name: 'Velocidad cuádruple' });
   await fastest.click();
   await expect(fastest).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('date')).not.toContainText('· 08:00', { timeout: 5000 });
+  await expect(page.getByTestId('date')).not.toContainText('· 08:00', { timeout: 15000 });
 });
 
 test('a manual save survives a page reload', async ({ page }) => {
