@@ -1,4 +1,4 @@
-import * as Phaser from 'phaser';
+import type * as Phaser from 'phaser';
 import type { Cell, DistrictState, PathGrid, PlacedStructure } from '../../core/index.ts';
 import { entranceOf, findPath } from '../../core/index.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
