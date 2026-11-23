@@ -76,7 +76,7 @@ describe('generateDistrict', () => {
   it('is part of every new game', () => {
     const s = createNewGame({ seed: 'district' });
     expect(s.district.templateId).toBe('d12');
-    expect(s.district.structures.length).toBe(27);
+    expect(s.district.structures.length).toBe(31);
   });
 });
 

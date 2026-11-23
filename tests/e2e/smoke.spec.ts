@@ -104,3 +104,34 @@ test('exports a backup and imports it back', async ({ page }) => {
   await page.getByTestId('import-input').setInputFiles(file);
   await expect(page.getByTestId('date')).toContainText('Primavera · Día 5');
 });
+
+test('economy HUD, build menu and construction', async ({ page }) => {
+  const errors = trackErrors(page);
+  await startNewGame(page, '?debug');
+  await page.getByRole('button', { name: 'Pausa' }).click();
+  await expect(page.getByTestId('res-food')).toBeVisible();
+  const wood = Number(await page.getByTestId('res-wood').textContent());
+
+  await page.getByRole('button', { name: 'Construir' }).click();
+  await page.getByRole('menuitem', { name: /Huerto comunal/ }).click();
+  await expect(page.getByTestId('place-hint')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('place-hint')).toHaveCount(0);
+
+  // Place through the session (positions on screen depend on the viewport).
+  const placed = await page.evaluate(() => {
+    const d = (
+      window as unknown as {
+        __diezmo: {
+          session: { dispatch: (c: unknown) => { ok: boolean } };
+          findSpot: (k: string) => { x: number; y: number };
+        };
+      }
+    ).__diezmo;
+    const spot = d.findSpot('garden');
+    return d.session.dispatch({ type: 'build/place', kind: 'garden', ...spot }).ok;
+  });
+  expect(placed).toBe(true);
+  await expect(page.getByTestId('res-wood')).toHaveText(String(wood - 15));
+  expect(errors).toEqual([]);
+});

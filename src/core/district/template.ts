@@ -19,7 +19,14 @@ export type StructureKind =
   | 'town_hall'
   | 'warehouse'
   | 'economato'
-  | 'stage';
+  | 'stage'
+  | 'lumber_camp'
+  | 'quarry'
+  | 'garden'
+  | 'infirmary'
+  | 'school';
+
+export type ResourceId = 'food' | 'wood' | 'stone' | 'coal' | 'credits';
 
 export type PropKind =
   | 'pine_a'

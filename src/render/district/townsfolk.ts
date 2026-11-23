@@ -55,7 +55,7 @@ export function directionIndex(dx: number, dy: number): number {
 export class Townsfolk {
   private readonly agents: Agent[] = [];
   private readonly scene: Phaser.Scene;
-  private readonly grid: PathGrid;
+  private grid: PathGrid;
   private readonly places: {
     mine: Cell[];
     plaza: Cell[];
@@ -284,6 +284,11 @@ export class Townsfolk {
     } else if (a.sprite.anims.isPaused) {
       a.sprite.anims.resume();
     }
+  }
+
+  /** New buildings or demolitions change where people can walk. */
+  setGrid(grid: PathGrid): void {
+    this.grid = grid;
   }
 
   get count(): number {

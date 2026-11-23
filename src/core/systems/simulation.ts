@@ -3,6 +3,7 @@ import { collectingContext } from '../events.ts';
 import type { GameState } from '../state/gameState.ts';
 import { editionOfYear } from '../state/gameState.ts';
 import { enterPhase } from '../state/phases.ts';
+import { economyDay, economyHour } from '../economy/economy.ts';
 import type { CalendarDate } from '../time/calendar.ts';
 import { TICKS_PER_DAY, dateFromTick, selectionTickOfYear } from '../time/calendar.ts';
 
@@ -33,7 +34,14 @@ const selectionTrigger: System = {
   },
 };
 
-export const SYSTEMS: readonly System[] = [selectionTrigger];
+/** Production, construction, food, labour and the seasonal coal quota (Phase 3). */
+const economy: System = {
+  id: 'economy',
+  onDayStart: (state, ctx, date) => economyDay(state, date, ctx),
+  onTick: (state, ctx, date) => economyHour(state, date, ctx),
+};
+
+export const SYSTEMS: readonly System[] = [economy, selectionTrigger];
 
 export class SimulationError extends Error {}
 

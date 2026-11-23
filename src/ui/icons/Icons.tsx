@@ -62,3 +62,36 @@ export const EmblemIcon = (props: SVGProps<SVGSVGElement>) => (
     <circle cx="32" cy="34" r="5" fill="currentColor" />
   </svg>
 );
+
+/* ---- resources (same grid and stroke as the HUD icons) ---- */
+export const FoodIcon = () => (
+  <Icon>
+    <path d="M4 14c0-4 3.5-7 8-7s8 3 8 7v3H4zM8 10v3M12 9v4M16 10v3" />
+  </Icon>
+);
+export const WoodIcon = () => (
+  <Icon>
+    <path d="M3 9h14l4 3-4 3H3zM7 9v6M17 9a2 3 0 0 1 0 6" />
+  </Icon>
+);
+export const StoneIcon = () => (
+  <Icon>
+    <path d="M4 16l3-8 6-2 6 4 1 6-8 3zM7 8l5 4 7-2M12 12l0 7" />
+  </Icon>
+);
+export const CoalIcon = () => (
+  <Icon>
+    <path d="M5 15l2-6 5-3 6 3 1 6-6 4z" fill="currentColor" fillOpacity="0.35" />
+  </Icon>
+);
+export const CreditsIcon = () => (
+  <Icon>
+    <circle cx="12" cy="12" r="7" />
+    <path d="M12 7v10M9 10h6" />
+  </Icon>
+);
+export const HammerIcon = () => (
+  <Icon>
+    <path d="M14 4l6 6-3 3-6-6zM12 8L4 16l3 3 8-8" />
+  </Icon>
+);

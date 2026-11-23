@@ -4,6 +4,11 @@ import type { GameState, PhaseKind } from '../state/gameState.ts';
 import { enterPhase } from '../state/phases.ts';
 import { runAutopilotDays } from '../systems/simulation.ts';
 import { CAPITAL_DAYS } from '../time/calendar.ts';
+import { PRICES } from '../../content/buildings.ts';
+import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
+import type { ResourceId, StructureKind } from '../district/template.ts';
+import { allocateLabor, checkPlacement, def, storageCapacity } from '../economy/economy.ts';
+import { nextId } from '../state/gameState.ts';
 
 /**
  * Every player decision is a serializable command. UI and renderer never mutate state:
@@ -13,12 +18,21 @@ export type Command =
   | { type: 'capital/depart' }
   | { type: 'capital/advance-day' }
   | { type: 'arena/conclude' }
-  | { type: 'home/return' };
+  | { type: 'home/return' }
+  | { type: 'build/place'; kind: StructureKind; x: number; y: number }
+  | { type: 'build/demolish'; id: string }
+  | { type: 'build/upgrade'; id: string }
+  | {
+      type: 'trade';
+      action: 'sell' | 'buy';
+      resource: Exclude<ResourceId, 'credits'>;
+      amount: number;
+    };
 
 export type CommandType = Command['type'];
 
 export interface CommandError {
-  code: 'wrong-phase' | 'invalid';
+  code: 'wrong-phase' | 'invalid' | 'placement' | 'cost' | 'not-found';
   message: string;
 }
 
@@ -41,7 +55,135 @@ function requirePhase(state: GameState, kind: PhaseKind): CommandError | null {
       };
 }
 
+const UPGRADE_COST_FACTOR = [0, 1.5, 2.5];
+
+function upgradeCost(kind: StructureKind, toLevel: number): Partial<Record<ResourceId, number>> {
+  const base = def(kind).cost;
+  const f = UPGRADE_COST_FACTOR[toLevel - 1] ?? 3;
+  return Object.fromEntries(Object.entries(base).map(([r, n]) => [r, Math.ceil((n ?? 0) * f)]));
+}
+
+function payable(state: GameState, cost: Partial<Record<ResourceId, number>>): boolean {
+  return Object.entries(cost).every(
+    ([r, n]) => state.economy.resources[r as ResourceId] >= (n ?? 0),
+  );
+}
+
+function pay(state: GameState, cost: Partial<Record<ResourceId, number>>, sign = -1): void {
+  for (const [r, n] of Object.entries(cost))
+    state.economy.resources[r as ResourceId] += sign * (n ?? 0);
+}
+
+const inDistrict = (state: GameState) => requirePhase(state, 'district');
+
 const HANDLERS: HandlerMap = {
+  'build/place': {
+    validate(state, cmd) {
+      const phase = inDistrict(state);
+      if (phase) return phase;
+      const problem = checkPlacement(state, cmd.kind, cmd.x, cmd.y);
+      if (problem === 'cost') return { code: 'cost', message: 'Not enough resources' };
+      return problem ? { code: 'placement', message: problem } : null;
+    },
+    apply(state, cmd, ctx) {
+      pay(state, def(cmd.kind).cost);
+      const id = nextId(state, 'b');
+      state.district.structures.push({
+        id,
+        kind: cmd.kind,
+        x: cmd.x,
+        y: cmd.y,
+        level: 1,
+        built: false,
+        progress: 0,
+        workers: 0,
+      });
+      // Clear trees and rocks under the new footprint.
+      const { w, d } = STRUCTURE_FOOTPRINTS[cmd.kind];
+      state.district.props = state.district.props.filter(
+        (p) => p.x < cmd.x || p.y < cmd.y || p.x >= cmd.x + w || p.y >= cmd.y + d,
+      );
+      allocateLabor(state);
+      ctx.emit({ type: 'building/placed', id, kind: cmd.kind });
+    },
+  },
+  'build/demolish': {
+    validate(state, cmd) {
+      const phase = inDistrict(state);
+      if (phase) return phase;
+      const s = state.district.structures.find((x) => x.id === cmd.id);
+      if (!s) return { code: 'not-found', message: cmd.id };
+      return def(s.kind).buildable
+        ? null
+        : { code: 'invalid', message: 'Landmarks cannot be demolished' };
+    },
+    apply(state, cmd, ctx) {
+      const s = state.district.structures.find((x) => x.id === cmd.id);
+      if (!s) return;
+      // Refund half (or everything if construction never started).
+      const refund = Object.fromEntries(
+        Object.entries(def(s.kind).cost).map(([r, n]) => [
+          r,
+          Math.floor((n ?? 0) * (s.progress === 0 ? 1 : 0.5)),
+        ]),
+      );
+      pay(state, refund, 1);
+      state.district.structures = state.district.structures.filter((x) => x.id !== cmd.id);
+      allocateLabor(state);
+      ctx.emit({ type: 'building/removed', id: cmd.id });
+    },
+  },
+  'build/upgrade': {
+    validate(state, cmd) {
+      const phase = inDistrict(state);
+      if (phase) return phase;
+      const s = state.district.structures.find((x) => x.id === cmd.id);
+      if (!s) return { code: 'not-found', message: cmd.id };
+      if (!s.built || s.level >= 3 || !def(s.kind).buildable)
+        return { code: 'invalid', message: 'Cannot upgrade' };
+      return payable(state, upgradeCost(s.kind, s.level + 1))
+        ? null
+        : { code: 'cost', message: 'Not enough resources' };
+    },
+    apply(state, cmd) {
+      const s = state.district.structures.find((x) => x.id === cmd.id);
+      if (!s) return;
+      pay(state, upgradeCost(s.kind, s.level + 1));
+      s.level += 1;
+      allocateLabor(state);
+    },
+  },
+  trade: {
+    validate(state, cmd) {
+      const phase = inDistrict(state);
+      if (phase) return phase;
+      if (!Number.isInteger(cmd.amount) || cmd.amount <= 0)
+        return { code: 'invalid', message: 'amount' };
+      if (!state.district.structures.some((s) => s.kind === 'economato' && s.built))
+        return { code: 'invalid', message: 'No economato' };
+      const price = PRICES[cmd.resource];
+      if (!price) return { code: 'invalid', message: 'resource' };
+      const r = state.economy.resources;
+      if (cmd.action === 'sell' && r[cmd.resource] < cmd.amount)
+        return { code: 'cost', message: 'Not enough goods' };
+      if (cmd.action === 'buy' && r.credits < cmd.amount * price.buy)
+        return { code: 'cost', message: 'Not enough credits' };
+      if (cmd.action === 'buy' && r[cmd.resource] + cmd.amount > storageCapacity(state))
+        return { code: 'invalid', message: 'Storage full' };
+      return null;
+    },
+    apply(state, cmd) {
+      const r = state.economy.resources;
+      const price = PRICES[cmd.resource];
+      if (cmd.action === 'sell') {
+        r[cmd.resource] -= cmd.amount;
+        r.credits += cmd.amount * price.sell;
+      } else {
+        r[cmd.resource] += cmd.amount;
+        r.credits -= cmd.amount * price.buy;
+      }
+    },
+  },
   'capital/depart': {
     validate: (state) => requirePhase(state, 'selection'),
     apply(state, _cmd, ctx) {

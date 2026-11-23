@@ -278,6 +278,131 @@ def stage(m) -> None:
     K.lamppost((W / 2 + 0.2, -D / 2 - 0.2, 0), m, height=1.3)
 
 
+def lumber_camp(m) -> None:
+    # Open shed with a log pile, saw horse and chopping block.
+    for x in (-0.7, 0.1):
+        for y in (-0.5, 0.5):
+            K.box((0.07, 0.07, 0.8), (x, y, 0.4), m["beam"])
+    sheet = K.corrugated_sheet(1.1, 1.2, m["roof_rust"], name="ShedRoof")
+    sheet.location = (-0.3, 0, 0.86)
+    sheet.rotation_euler = (0, math.radians(8), math.radians(90))
+    K.woodpile((-0.3, 0.1, 0), m, length=0.9, rows=4)
+    for k in range(5):
+        K.cylinder(0.07, 1.1, (0.6, -0.55 + k * 0.17, 0.07), m["bark"], rot=(0, math.radians(90), 0), verts=10, name="Log")
+    K.box((0.5, 0.06, 0.06), (0.55, 0.5, 0.35), m["beam"], name="SawHorse")
+    for x in (0.35, 0.75):
+        K.box((0.05, 0.25, 0.05), (x, 0.5, 0.18), m["beam"], rot=(math.radians(25), 0, 0))
+    K.cylinder(0.14, 0.25, (0.2, -0.8, 0.125), m["bark"], verts=12, name="Block")
+    K.box((0.03, 0.03, 0.4), (0.25, -0.8, 0.4), m["beam"], rot=(0, math.radians(25), 0), name="AxeHandle")
+    K.box((0.12, 0.02, 0.07), (0.32, -0.8, 0.58), m["iron"], name="AxeHead")
+
+
+def quarry(m) -> None:
+    for i, (x, y, s) in enumerate(((-0.4, 0.3, 0.32), (0.1, 0.45, 0.28), (-0.6, -0.3, 0.22), (0.5, -0.2, 0.25))):
+        K.box((s * 1.3, s, s * 0.9), (x, y, s * 0.45), m["stone"], rot=(0, 0, 0.4 * i), bevel=0.02, name="Block")
+    K.box((0.28, 0.28, 0.22), (-0.4, 0.3, 0.68), m["stone"], rot=(0, 0, 0.2), bevel=0.02)
+    rock(m, 47, 0.35)
+    # Tripod hoist.
+    for a in (0, 2.1, 4.2):
+        vec = Vector((math.cos(a) * 0.5, math.sin(a) * 0.5, -1.3))
+        leg = K.box((0.06, 0.06, vec.length), Vector((0.3, -0.5, 0.65)) + Vector((vec.x / 2, vec.y / 2, 0)), m["beam"])
+        leg.rotation_mode = "QUATERNION"
+        leg.rotation_quaternion = vec.to_track_quat("Z", "Y")
+    K.cylinder(0.006, 0.9, (0.3, -0.5, 0.75), m["soot"], verts=6, name="Chain")
+    K.box((0.25, 0.2, 0.15), (0.3, -0.5, 0.25), m["stone"], name="Hanging")
+    K.barrel((-0.7, -0.75, 0), m)
+
+
+def garden(m) -> None:
+    soil = M.flat("Soil", "#3B3126", roughness=1.0)
+    K.box((1.7, 1.6, 0.05), (0, 0, 0.025), soil, name="Bed")
+    leaf = [M.flat("Cabbage", "#4E6A36", roughness=0.8), M.flat("Potato", "#3E5A2C", roughness=0.85)]
+    for r in range(5):
+        y = -0.6 + r * 0.3
+        K.box((1.5, 0.12, 0.05), (0, y, 0.07), soil, name="Row")
+        for k in range(6):
+            bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=0.08 + 0.02 * K.jitter(k + r * 7, 3), location=(-0.62 + k * 0.25, y, 0.13))
+            plant = bpy.context.active_object
+            plant.scale = (1, 1, 0.7)
+            plant.data.materials.append(leaf[(k + r) % 2])
+            bpy.ops.object.shade_smooth()
+    # Picket fence and scarecrow.
+    for k in range(9):
+        K.box((0.04, 0.03, 0.32), (-0.85 + k * 0.21, -0.85, 0.16), m["planks_pale"])
+        K.box((0.03, 0.04, 0.32), (0.88, -0.85 + k * 0.21, 0.16), m["planks_pale"])
+    K.box((1.75, 0.025, 0.04), (0, -0.86, 0.24), m["beam"])
+    K.box((0.025, 1.75, 0.04), (0.89, 0, 0.24), m["beam"])
+    K.box((0.04, 0.04, 0.9), (-0.6, 0.6, 0.45), m["beam"], name="Scarecrow")
+    K.box((0.5, 0.04, 0.04), (-0.6, 0.6, 0.65), m["beam"])
+    K.box((0.22, 0.12, 0.3), (-0.6, 0.6, 0.62), m["cloth"])
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.08, location=(-0.6, 0.6, 0.86))
+    bpy.context.active_object.data.materials.append(M.flat("Sack", "#8A7A5A"))
+    K.box((0.2, 0.2, 0.04), (-0.6, 0.6, 0.94), m["cloth_red"])
+
+
+def infirmary(m) -> None:
+    W, D, H = 1.5, 1.3, 1.0
+    white = M.flat("Whitewash", "#B8B4A8", roughness=0.85)
+    K.box((W + 0.1, D + 0.1, 0.12), (0, 0, 0.06), m["stone"], name="Base")
+    K.box((W, D, H), (0, 0, 0.12 + H / 2), white, bevel=0.01, name="Walls")
+    for x in (-W / 2, W / 2):
+        g = K.gable_infill(0.02, D, 0.12 + H, 0.45, white)
+        g.location.x = x
+    K.sheet_roof(W, D, 0.12 + H, 0.45, m["roof_dark"], sheets_per_side=4, salt=51, ridge_mat=m["iron"])
+    K.door(Vector((-0.3, -D / 2 - 0.03, 0.53)), "-y", m)
+    K.window(Vector((0.3, -D / 2 - 0.03, 0.65)), "-y", m, lit=True)
+    K.window(Vector((W / 2 + 0.03, 0, 0.65)), "+x", m, lit=True)
+    # Original sign: a green plate with a white leaf (not a protected emblem).
+    K.box((0.32, 0.03, 0.32), (-0.3, -D / 2 - 0.05, 1.05), M.flat("MedPlate", "#2F5A44", roughness=0.6))
+    K.box((0.06, 0.02, 0.2), (-0.3, -D / 2 - 0.07, 1.05), white)
+    K.box((0.2, 0.02, 0.06), (-0.3, -D / 2 - 0.07, 1.05), white)
+    for i in range(2):
+        K.box((0.5, 0.18, 0.08), (0.95, -0.4 + i * 0.3, 0.25), m["cloth"], name="Cot")
+    K.lamppost((-W / 2 - 0.2, -D / 2 - 0.2, 0), m)
+
+
+def school(m) -> None:
+    W, D, H = 2.4, 1.3, 1.0
+    K.box((W + 0.1, D + 0.1, 0.1), (0, 0, 0.05), m["stone"], name="Base")
+    K.box((W - 0.06, D - 0.06, H), (0, 0, 0.1 + H / 2), m["soot"], name="Core")
+    K.board_wall(Vector((-W / 2, -D / 2, 0.1)), W, H, "x", m["planks_pale"], salt=61, outward=-1)
+    K.board_wall(Vector((-W / 2, D / 2, 0.1)), W, H, "x", m["planks_pale"], salt=62, outward=1)
+    K.board_wall(Vector((W / 2, -D / 2, 0.1)), D, H, "y", m["planks_pale"], salt=63, outward=1)
+    K.board_wall(Vector((-W / 2, -D / 2, 0.1)), D, H, "y", m["planks_pale"], salt=64, outward=-1)
+    for x in (-W / 2, W / 2):
+        g = K.gable_infill(0.02, D, 0.1 + H, 0.5, m["planks_pale"])
+        g.location.x = x
+    K.sheet_roof(W, D, 0.1 + H, 0.5, m["roof_rust"], sheets_per_side=6, salt=67, ridge_mat=m["metal_rust"])
+    for x in (-0.7, 0.0, 0.7):
+        K.window(Vector((x, -D / 2 - 0.03, 0.62)), "-y", m, lit=x == 0.0)
+    K.door(Vector((W / 2 + 0.03, 0.1, 0.5)), "+x", m)
+    # Bell tower.
+    K.box((0.35, 0.35, 0.5), (0.8, 0, 0.1 + H + 0.6), m["planks"], name="Belfry")
+    K.cylinder(0.08, 0.12, (0.8, 0, 0.1 + H + 0.62), M.flat("Bronze", "#8C6B3A", roughness=0.4, metallic=0.9), verts=12, name="Bell")
+    bpy.ops.mesh.primitive_cone_add(vertices=4, radius1=0.32, depth=0.35, location=(0.8, 0, 0.1 + H + 1.02), rotation=(0, 0, math.radians(45)))
+    bpy.context.active_object.data.materials.append(m["roof_rust"])
+    K.box((0.6, 0.04, 0.45), (-W / 2 - 0.3, -0.3, 0.4), M.flat("Chalk", "#2B3A33"), name="Board")
+
+
+def site(w: int, d: int):
+    """Construction site: foundation, scaffolding, stacked planks (same model for every building)."""
+    def build(m) -> None:
+        W, D = w * 0.85, d * 0.85
+        K.box((W, D, 0.1), (0, 0, 0.05), m["stone"], name="Footing")
+        for x in (-W / 2, 0, W / 2):
+            for y in (-D / 2, D / 2):
+                K.box((0.06, 0.06, 1.1), (x, y, 0.55), m["beam"], name="Pole")
+        for z in (0.5, 1.0):
+            K.box((W, 0.05, 0.05), (0, -D / 2, z), m["beam"])
+            K.box((0.05, D, 0.05), (W / 2, 0, z), m["beam"])
+            K.box((W, 0.25, 0.03), (0, -D / 2 - 0.12, z - 0.02), m["planks_pale"], name="Walkway")
+        K.box((W * 0.6, D * 0.5, 0.35), (-W * 0.1, D * 0.1, 0.27), m["planks"], name="Frame")
+        for k in range(4):
+            K.box((0.7, 0.12, 0.04), (W / 2 + 0.25, -D / 2 + 0.2, 0.03 + k * 0.045), m["planks_pale"], rot=(0, 0, 0.05 * k))
+        K.barrel((-W / 2 - 0.2, -D / 2 - 0.15, 0), m)
+    return build
+
+
 # ----------------------------------------------------------------------------- nature & props
 
 def pine(m, height: float, salt: int) -> None:
@@ -367,6 +492,14 @@ CATALOGUE = {
     "warehouse": (warehouse, (3, 3), "building"),
     "economato": (economato, (2, 2), "building"),
     "stage": (stage, (3, 2), "building"),
+    "lumber_camp": (lumber_camp, (2, 2), "building"),
+    "quarry": (quarry, (2, 2), "building"),
+    "garden": (garden, (2, 2), "building"),
+    "infirmary": (infirmary, (2, 2), "building"),
+    "school": (school, (3, 2), "building"),
+    "site_2x2": (site(2, 2), (2, 2), "building"),
+    "site_3x2": (site(3, 2), (3, 2), "building"),
+    "site_3x3": (site(3, 3), (3, 3), "building"),
     "pine_a": (pine_a, (1, 1), "tree"),
     "pine_b": (pine_b, (1, 1), "tree"),
     "pine_c": (pine_c, (1, 1), "tree"),

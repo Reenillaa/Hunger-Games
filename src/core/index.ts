@@ -10,3 +10,4 @@ export * from './district/template.ts';
 export * from './district/generate.ts';
 export * from './district/walkGrid.ts';
 export * from './path/astar.ts';
+export * from './economy/economy.ts';

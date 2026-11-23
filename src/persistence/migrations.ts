@@ -1,6 +1,13 @@
 import { STRUCTURE_FOOTPRINTS } from '../content/structures.ts';
 import { TEMPLATES } from '../content/maps/index.ts';
-import { STATE_SCHEMA_VERSION, generateDistrict, seedFromString } from '../core/index.ts';
+import {
+  STATE_SCHEMA_VERSION,
+  allocateLabor,
+  generateDistrict,
+  initialEconomy,
+  seedFromString,
+} from '../core/index.ts';
+import type { GameState } from '../core/index.ts';
 import { SaveError } from './errors.ts';
 
 export type RawState = Record<string, unknown>;
@@ -32,6 +39,23 @@ export const MIGRATIONS: readonly Migration[] = [
         seedFromString(`${seed}::migrate-v2`),
       );
       return { ...state, district };
+    },
+  },
+  {
+    from: 2,
+    to: 3,
+    description: 'Phase 3: structure construction fields and the economy.',
+    migrate(state) {
+      const district = state.district as { structures: Record<string, unknown>[] };
+      for (const s of district.structures) {
+        s.level ??= 1;
+        s.built ??= true;
+        s.progress ??= 0;
+        s.workers ??= 0;
+      }
+      const next = { ...state, economy: initialEconomy() } as unknown as GameState;
+      allocateLabor(next);
+      return next as unknown as RawState;
     },
   },
 ];

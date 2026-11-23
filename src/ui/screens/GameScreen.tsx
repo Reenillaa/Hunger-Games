@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameSession, GameSpeed } from '../../game/session.ts';
+import { BuildMenu } from '../components/BuildMenu.tsx';
 import { DebugPanel } from '../components/DebugPanel.tsx';
+import { ResourceBar } from '../components/ResourceBar.tsx';
+import { SelectionPanel } from '../components/SelectionPanel.tsx';
 import { PhaseSheet } from '../components/PhaseSheet.tsx';
 import { SaveDialog } from '../components/SaveDialog.tsx';
 import { TopBar } from '../components/TopBar.tsx';
@@ -39,6 +42,7 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (saveOpen || e.target instanceof HTMLInputElement) return;
+      if (e.key === 'Escape') session.ui.cancel();
       const speedByKey: Record<string, GameSpeed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
       if (e.code === 'Space') {
         e.preventDefault();
@@ -58,6 +62,9 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
       <div ref={host} className={styles.canvasHost} data-testid="game-canvas" />
       <div className={styles.overlay}>
         <TopBar session={session} onSave={() => setSaveOpen(true)} onMenu={onExit} />
+        <ResourceBar session={session} />
+        <BuildMenu session={session} />
+        <SelectionPanel session={session} />
         <PhaseSheet session={session} />
         {debug && <DebugPanel session={session} />}
       </div>

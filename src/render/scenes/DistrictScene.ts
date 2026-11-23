@@ -16,6 +16,8 @@ import type {
 } from '../district/assets.ts';
 import { ART_BASE, SMOKE_POINTS, pickTerrainScale } from '../district/assets.ts';
 import { daylightAt } from '../district/daylight.ts';
+import { BUILDINGS } from '../../content/buildings.ts';
+import { checkPlacement } from '../../core/index.ts';
 import { TILE_H, TILE_W, cellToWorld, depthOf, mapBounds, pickCell } from '../iso/projection.ts';
 import { PALETTE } from '../palette.ts';
 
@@ -46,6 +48,17 @@ export class DistrictScene extends Phaser.Scene {
   private lastAmbient = -1;
   private readonly smoke: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
   private townsfolk?: Townsfolk;
+  private sprites?: SpriteManifest;
+  /** Objects created while building one structure/prop view (see track()). */
+  private collecting: Phaser.GameObjects.GameObject[] | null = null;
+  private readonly structureViews = new Map<
+    string,
+    { sig: string; objects: Phaser.GameObjects.GameObject[] }
+  >();
+  private readonly propViews = new Map<string, Phaser.GameObjects.GameObject[]>();
+  private lastVersion = -1;
+  private ghost?: Phaser.GameObjects.Image;
+  private marker?: Phaser.GameObjects.Graphics;
   private ambience?: Ambience;
   private built = false;
 
@@ -85,7 +98,9 @@ export class DistrictScene extends Phaser.Scene {
       });
     }
     const kinds = new Set<string>([
-      ...district.structures.map((s) => this.spriteKey(s, sprites)),
+      ...Object.entries(sprites.assets)
+        .filter(([, a]) => a.kind === 'building')
+        .map(([k]) => k),
       ...district.props.map((p) => p.kind),
     ]);
     for (const kind of kinds) {
@@ -129,14 +144,8 @@ export class DistrictScene extends Phaser.Scene {
       }
     }
 
-    for (const structure of district.structures) {
-      this.placeStructure(
-        structure,
-        this.spriteKey(structure, sprites),
-        sprites.assets[this.spriteKey(structure, sprites)],
-      );
-    }
-    for (const prop of district.props) this.placeProp(prop, sprites.assets[prop.kind]);
+    this.sprites = sprites;
+    this.syncWorld();
 
     // Life: townsfolk on their daily routine and small ambient details.
     const template = TEMPLATES[district.templateId];
@@ -171,6 +180,8 @@ export class DistrictScene extends Phaser.Scene {
     const fit = Math.min(this.scale.width, this.scale.height) / 1100;
     this.cameras.main.setZoom(Phaser.Math.Clamp(fit, 0.45, 0.75)).centerOn(plaza.x, plaza.y);
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.drawHover(p));
+    this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
+    this.marker = this.add.graphics().setDepth(100001);
     this.built = true;
   }
 
@@ -189,6 +200,85 @@ export class DistrictScene extends Phaser.Scene {
     );
     variants.sort();
     return variants[(s.x * 31 + s.y * 17) % variants.length] ?? s.kind;
+  }
+
+  /** Registers objects created for the view currently being built. */
+  private track<T extends Phaser.GameObjects.GameObject>(obj: T): T {
+    this.collecting?.push(obj);
+    return obj;
+  }
+
+  private destroyObjects(objects: Phaser.GameObjects.GameObject[]): void {
+    for (const o of objects) o.destroy();
+    const alive = (o: { active: boolean }) => o.active;
+    this.tinted.splice(0, this.tinted.length, ...this.tinted.filter(alive));
+    this.shadows.splice(0, this.shadows.length, ...this.shadows.filter(alive));
+    this.emissive.splice(0, this.emissive.length, ...this.emissive.filter(alive));
+    this.glows.splice(0, this.glows.length, ...this.glows.filter((g) => g.image.active));
+    this.smoke.splice(0, this.smoke.length, ...this.smoke.filter(alive));
+  }
+
+  /** Brings structures and props on screen in line with the game state (cheap diff). */
+  private syncWorld(): void {
+    const sprites = this.sprites;
+    if (!sprites) return;
+    const district = this.session.getState().district;
+    const seen = new Set<string>();
+    for (const s of district.structures) {
+      seen.add(s.id);
+      const def = BUILDINGS[s.kind];
+      const pct = s.built ? 1 : Math.floor((s.progress / Math.max(1, def.buildWork)) * 20) / 20;
+      const sig = `${s.built}:${s.level}:${s.x},${s.y}:${pct}`;
+      const view = this.structureViews.get(s.id);
+      if (view?.sig === sig) continue;
+      if (view) this.destroyObjects(view.objects);
+      this.collecting = [];
+      if (s.built) {
+        const key = this.spriteKey(s, sprites);
+        this.placeStructure(s, key, sprites.assets[key]);
+      } else {
+        this.placeSite(s, pct);
+      }
+      this.structureViews.set(s.id, { sig, objects: this.collecting });
+      this.collecting = null;
+    }
+    for (const [id, view] of this.structureViews) {
+      if (!seen.has(id)) {
+        this.destroyObjects(view.objects);
+        this.structureViews.delete(id);
+      }
+    }
+    const propKeys = new Set<string>();
+    for (const p of district.props) {
+      const k = `${p.kind}@${p.x},${p.y}`;
+      propKeys.add(k);
+      if (this.propViews.has(k)) continue;
+      this.collecting = [];
+      this.placeProp(p, sprites.assets[p.kind]);
+      this.propViews.set(k, this.collecting);
+      this.collecting = null;
+    }
+    for (const [k, objects] of this.propViews) {
+      if (!propKeys.has(k)) {
+        this.destroyObjects(objects);
+        this.propViews.delete(k);
+      }
+    }
+    const template = TEMPLATES[district.templateId];
+    if (template) this.townsfolk?.setGrid(buildWalkGrid(template, district, STRUCTURE_FOOTPRINTS));
+  }
+
+  private placeSite(s: PlacedStructure, pct: number): void {
+    const { w, d } = STRUCTURE_FOOTPRINTS[s.kind];
+    const key = `site_${w}x${d}`;
+    const asset = this.sprites?.assets[key];
+    if (!asset) return;
+    const cx = s.x + (w - 1) / 2;
+    const cy = s.y + (d - 1) / 2;
+    const img = this.addLayers(key, asset, cx, cy, 0, depthOf(s.x + w - 1, s.y + d - 1) + 8);
+    const bar = this.track(this.add.graphics().setDepth(90000));
+    bar.fillStyle(0x16161a, 0.85).fillRect(img.x - 40, img.y - 120, 80, 8);
+    bar.fillStyle(PALETTE.lampOchre, 1).fillRect(img.x - 39, img.y - 119, 78 * pct, 6);
   }
 
   private placeStructure(s: PlacedStructure, key: string, asset: SpriteAsset | undefined): void {
@@ -245,22 +335,19 @@ export class DistrictScene extends Phaser.Scene {
     ];
     const scale = 1 / asset.scale;
     if (asset.layers.includes('shadow')) {
-      const shadow = this.add
-        .image(pos.x, pos.y, `${key}_s`)
+      const shadow = this.track(this.add.image(pos.x, pos.y, `${key}_s`))
         .setOrigin(...origin)
         .setScale(scale)
         .setDepth(-5000);
       this.shadows.push(shadow);
     }
-    const img = this.add
-      .image(pos.x, pos.y, key)
+    const img = this.track(this.add.image(pos.x, pos.y, key))
       .setOrigin(...origin)
       .setScale(scale)
       .setDepth(depth);
     this.tinted.push(img);
     if (asset.layers.includes('emission')) {
-      const glow = this.add
-        .image(pos.x, pos.y, `${key}_e`)
+      const glow = this.track(this.add.image(pos.x, pos.y, `${key}_e`))
         .setOrigin(...origin)
         .setScale(scale)
         .setDepth(depth + 0.5)
@@ -280,8 +367,7 @@ export class DistrictScene extends Phaser.Scene {
     strength: number,
     depth: number,
   ): void {
-    const image = this.add
-      .image(x, y, 'glow')
+    const image = this.track(this.add.image(x, y, 'glow'))
       .setScale(size, depth < 0 ? size / 2 : size)
       .setTint(color)
       .setBlendMode(Phaser.BlendModes.ADD)
@@ -321,16 +407,18 @@ export class DistrictScene extends Phaser.Scene {
   }
 
   private addSmoke(x: number, y: number, depth: number): void {
-    const emitter = this.add.particles(x, y, 'smoke', {
-      lifespan: { min: 3500, max: 5500 },
-      speedY: { min: -26, max: -14 },
-      speedX: { min: -4, max: 12 },
-      scale: { start: 0.18, end: 1.1 },
-      alpha: { start: 0.38, end: 0 },
-      rotate: { min: 0, max: 360 },
-      frequency: 340,
-      tint: 0x9a9aa2,
-    });
+    const emitter = this.track(
+      this.add.particles(x, y, 'smoke', {
+        lifespan: { min: 3500, max: 5500 },
+        speedY: { min: -26, max: -14 },
+        speedX: { min: -4, max: 12 },
+        scale: { start: 0.18, end: 1.1 },
+        alpha: { start: 0.38, end: 0 },
+        rotate: { min: 0, max: 360 },
+        frequency: 340,
+        tint: 0x9a9aa2,
+      }),
+    );
     emitter.setDepth(depth);
     this.smoke.push(emitter);
   }
@@ -338,6 +426,12 @@ export class DistrictScene extends Phaser.Scene {
   override update(time: number, delta: number): void {
     if (!this.built) return;
     this.controller?.update(delta);
+    const version = this.session.getSnapshot().version;
+    if (version !== this.lastVersion) {
+      this.lastVersion = version;
+      this.syncWorld();
+    }
+    this.updatePlacement();
     const state = this.session.getState();
     const hour = (state.clock.tick % 24) + this.session.getTickProgress();
     const light = daylightAt(hour);
@@ -353,6 +447,106 @@ export class DistrictScene extends Phaser.Scene {
     const speed = state.phase.kind === 'district' ? this.session.getSpeed() : 0;
     this.townsfolk?.update(delta, hour, speed, light.ambient);
     this.ambience?.update(delta, speed, light.night, time);
+  }
+
+  private pointerCell(pointer: Phaser.Input.Pointer): { cx: number; cy: number } {
+    const world = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    return pickCell(world.x, world.y);
+  }
+
+  /** Ghost of the building being placed, green when valid, red otherwise. */
+  private updatePlacement(): void {
+    const ui = this.session.ui.get();
+    const marker = this.marker;
+    if (!marker) return;
+    marker.clear();
+    if (ui.mode !== 'place' || !ui.placeKind) {
+      this.ghost?.setVisible(false);
+    } else {
+      const kind = ui.placeKind;
+      const { w, d } = STRUCTURE_FOOTPRINTS[kind];
+      const { cx, cy } = this.pointerCell(this.input.activePointer);
+      const x = cx - Math.floor((w - 1) / 2);
+      const y = cy - Math.floor((d - 1) / 2);
+      const problem = checkPlacement(this.session.getState(), kind, x, y);
+      this.session.ui.hint(problem);
+      const asset = this.sprites?.assets[kind];
+      if (asset) {
+        const pos = cellToWorld(x + (w - 1) / 2, y + (d - 1) / 2, 0);
+        if (!this.ghost) this.ghost = this.add.image(0, 0, kind).setDepth(99999);
+        this.ghost
+          .setTexture(kind)
+          .setVisible(true)
+          .setPosition(pos.x, pos.y)
+          .setOrigin(asset.anchor[0] / asset.size[0], asset.anchor[1] / asset.size[1])
+          .setScale(1 / asset.scale)
+          .setAlpha(0.7)
+          .setTint(problem ? 0xff6a5a : 0x9be08a);
+      }
+      this.outline(marker, x, y, w, d, problem ? 0xe0533f : 0x9be08a);
+    }
+    const selected = ui.selectedId
+      ? this.session.getState().district.structures.find((s) => s.id === ui.selectedId)
+      : null;
+    if (selected) {
+      const { w, d } = STRUCTURE_FOOTPRINTS[selected.kind];
+      this.outline(marker, selected.x, selected.y, w, d, PALETTE.lampOchre);
+    }
+  }
+
+  private outline(
+    g: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    w: number,
+    d: number,
+    color: number,
+  ): void {
+    const a = cellToWorld(x - 0.5, y - 0.5);
+    const b = cellToWorld(x + w - 0.5, y - 0.5);
+    const c = cellToWorld(x + w - 0.5, y + d - 0.5);
+    const e = cellToWorld(x - 0.5, y + d - 0.5);
+    g.lineStyle(3, color, 0.95).strokePoints(
+      [
+        new Phaser.Math.Vector2(a.x, a.y),
+        new Phaser.Math.Vector2(b.x, b.y),
+        new Phaser.Math.Vector2(c.x, c.y),
+        new Phaser.Math.Vector2(e.x, e.y),
+      ],
+      true,
+    );
+    g.fillStyle(color, 0.12).fillPoints(
+      [
+        new Phaser.Math.Vector2(a.x, a.y),
+        new Phaser.Math.Vector2(b.x, b.y),
+        new Phaser.Math.Vector2(c.x, c.y),
+        new Phaser.Math.Vector2(e.x, e.y),
+      ],
+      true,
+    );
+  }
+
+  /** A tap (not a drag) places the building in placement mode, or selects one in view mode. */
+  private onTap(pointer: Phaser.Input.Pointer): void {
+    if (this.controller?.gestureConsumed || pointer.rightButtonReleased()) {
+      if (pointer.rightButtonReleased()) this.session.ui.cancel();
+      return;
+    }
+    const ui = this.session.ui.get();
+    const { cx, cy } = this.pointerCell(pointer);
+    if (ui.mode === 'place' && ui.placeKind) {
+      const { w, d } = STRUCTURE_FOOTPRINTS[ui.placeKind];
+      const x = cx - Math.floor((w - 1) / 2);
+      const y = cy - Math.floor((d - 1) / 2);
+      const result = this.session.dispatch({ type: 'build/place', kind: ui.placeKind, x, y });
+      if (result.ok) this.session.ui.cancel();
+      return;
+    }
+    const hit = this.session.getState().district.structures.find((s) => {
+      const { w, d } = STRUCTURE_FOOTPRINTS[s.kind];
+      return cx >= s.x && cy >= s.y && cx < s.x + w && cy < s.y + d;
+    });
+    this.session.ui.select(hit?.id ?? null);
   }
 
   private drawHover(pointer: Phaser.Input.Pointer): void {

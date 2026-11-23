@@ -472,6 +472,184 @@
         "normal",
         "emission"
       ]
+    },
+    "lumber_camp": {
+      "name": "lumber_camp",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        411,
+        351
+      ],
+      "anchor": [
+        205.5,
+        227.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "quarry": {
+      "name": "quarry",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        440,
+        295
+      ],
+      "anchor": [
+        220.0,
+        196.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "garden": {
+      "name": "garden",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        511,
+        378
+      ],
+      "anchor": [
+        255.5,
+        252.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "infirmary": {
+      "name": "infirmary",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        586,
+        436
+      ],
+      "anchor": [
+        293.0,
+        327.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "school": {
+      "name": "school",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        702,
+        498
+      ],
+      "anchor": [
+        351.0,
+        360.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "site_2x2": {
+      "name": "site_2x2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        609,
+        447
+      ],
+      "anchor": [
+        304.5,
+        297.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "site_3x2": {
+      "name": "site_3x2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        718,
+        502
+      ],
+      "anchor": [
+        359.0,
+        324.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "site_3x3": {
+      "name": "site_3x3",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        827,
+        556
+      ],
+      "anchor": [
+        413.5,
+        351.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
     }
   }
 }

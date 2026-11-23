@@ -1,6 +1,7 @@
 import type { Command, CommandResult, DomainEvent, GameState } from '../core/index.ts';
 import { advanceTick, applyCommand, collectingContext } from '../core/index.ts';
 import { EventBus } from './eventBus.ts';
+import { UiStore } from './uiStore.ts';
 
 export const GAME_SPEEDS = [0, 1, 2, 4] as const;
 export type GameSpeed = (typeof GAME_SPEEDS)[number];
@@ -22,6 +23,8 @@ export interface SessionSnapshot {
  */
 export class GameSession {
   readonly events = new EventBus();
+  /** Interaction state (placement, selection): shared by UI and renderer, not saved. */
+  readonly ui = new UiStore();
   private state: GameState;
   private version = 0;
   private speed: GameSpeed = 1;

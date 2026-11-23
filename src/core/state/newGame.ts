@@ -1,6 +1,7 @@
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import { TEMPLATES } from '../../content/maps/index.ts';
 import { generateDistrict } from '../district/generate.ts';
+import { allocateLabor, initialEconomy } from '../economy/economy.ts';
 import { createStreams, nextInt } from '../rng/rng.ts';
 import type { GameState } from './gameState.ts';
 import { STATE_SCHEMA_VERSION, nextId } from './gameState.ts';
@@ -34,10 +35,12 @@ export function createNewGame(options: NewGameOptions): GameState {
     away: { days: 0 },
     competition: { lastSelectionYear: null },
     district: generateDistrict(template, STRUCTURE_FOOTPRINTS, rng.world),
+    economy: initialEconomy(),
     rng,
     ids: { next: 1 },
     chronicle: [],
   };
   state.chronicle.push({ id: nextId(state, 'h'), tick: START_HOUR, kind: 'gameStarted' });
+  allocateLabor(state);
   return state;
 }

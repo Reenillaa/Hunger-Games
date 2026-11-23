@@ -12,6 +12,11 @@ export const STRUCTURE_FOOTPRINTS: Record<StructureKind, { w: number; d: number 
   warehouse: { w: 3, d: 3 },
   economato: { w: 2, d: 2 },
   stage: { w: 3, d: 2 },
+  lumber_camp: { w: 2, d: 2 },
+  quarry: { w: 2, d: 2 },
+  garden: { w: 2, d: 2 },
+  infirmary: { w: 2, d: 2 },
+  school: { w: 3, d: 2 },
 };
 
 export const PROP_KINDS: readonly PropKind[] = [

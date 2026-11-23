@@ -2,6 +2,7 @@ import type { RngState } from '../rng/rng.ts';
 import { nextFloat, pick } from '../rng/rng.ts';
 import type { DistrictTemplate, PropKind, StructureKind, TerrainCode } from './template.ts';
 import { isBuildable, terrainAt } from './template.ts';
+import { buildWalkGrid, entranceOf } from './walkGrid.ts';
 
 export interface PlacedStructure {
   id: string;
@@ -9,6 +10,14 @@ export interface PlacedStructure {
   /** Top-left cell of the footprint. */
   x: number;
   y: number;
+  /** 1–3; upgrades change capacity (and, from Phase 10, the sprite). */
+  level: number;
+  /** False while under construction. */
+  built: boolean;
+  /** Construction progress in worker-hours. */
+  progress: number;
+  /** Workers currently assigned (recomputed by the labour allocator). */
+  workers: number;
 }
 
 export interface PlacedProp {
@@ -35,6 +44,8 @@ const LANDMARKS: { kind: StructureKind; x: number; y: number }[] = [
   { kind: 'mine_headframe', x: 15, y: 7 },
   { kind: 'warehouse', x: 38, y: 20 },
   { kind: 'economato', x: 31, y: 25 },
+  { kind: 'lumber_camp', x: 12, y: 31 },
+  { kind: 'quarry', x: 37, y: 9 },
 ];
 
 const HOUSES = { house_terrace: 9, house_shack: 13 } as const;
@@ -64,7 +75,16 @@ export function generateDistrict(
   };
   const place = (kind: StructureKind, x: number, y: number) => {
     for (const [cx, cy] of cellsOf(kind, x, y)) occupied.add(key(cx, cy));
-    structures.push({ id: `s_${(counter++).toString(36)}`, kind, x, y });
+    structures.push({
+      id: `s_${(counter++).toString(36)}`,
+      kind,
+      x,
+      y,
+      level: 1,
+      built: true,
+      progress: 0,
+      workers: 0,
+    });
   };
 
   for (const l of LANDMARKS) place(l.kind, l.x, l.y);
@@ -96,18 +116,66 @@ export function generateDistrict(
     }
   }
   candidates.sort((a, b) => a.score - b.score || a.y - b.y || a.x - b.x);
+  // A house must never cut the town in two (e.g. by blocking the bridge): flood-fill check.
+  const stillConnected = (): boolean => {
+    const district = { templateId: template.id, structures, props: [] };
+    const grid = buildWalkGrid(template, district, footprints);
+    const start = template.plaza.y1 * grid.width + template.plaza.x0;
+    const seen = new Uint8Array(grid.width * grid.height);
+    const stack = [start];
+    seen[start] = 1;
+    while (stack.length > 0) {
+      const n = stack.pop()!;
+      const x = n % grid.width;
+      const y = Math.floor(n / grid.width);
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= grid.width || ny >= grid.height) continue;
+        const k = ny * grid.width + nx;
+        if (!seen[k] && Number.isFinite(grid.cost[k]!)) {
+          seen[k] = 1;
+          stack.push(k);
+        }
+      }
+    }
+    return structures.every((s) => {
+      if (s.kind === 'stage') return true;
+      const door = entranceOf(s, footprints, grid);
+      return door !== null && seen[door.y * grid.width + door.x] === 1;
+    });
+  };
+  const tryPlace = (kind: StructureKind, x: number, y: number): boolean => {
+    place(kind, x, y);
+    if (stillConnected()) return true;
+    const removed = structures.pop()!;
+    for (const [cx, cy] of cellsOf(removed.kind, removed.x, removed.y))
+      occupied.delete(key(cx, cy));
+    return false;
+  };
   const remaining: Record<'house_terrace' | 'house_shack', number> = { ...HOUSES };
   for (const c of candidates) {
     if (remaining.house_terrace + remaining.house_shack === 0) break;
     const order: ('house_terrace' | 'house_shack')[] =
       nextFloat(rng) < 0.45 ? ['house_terrace', 'house_shack'] : ['house_shack', 'house_terrace'];
     for (const kind of order) {
-      if (remaining[kind] > 0 && canHouse(kind, c.x, c.y)) {
-        place(kind, c.x, c.y);
+      if (remaining[kind] > 0 && canHouse(kind, c.x, c.y) && tryPlace(kind, c.x, c.y)) {
         remaining[kind] -= 1;
         break;
       }
     }
+  }
+
+  // Two vegetable gardens next to the houses.
+  let gardens = 2;
+  for (const c of candidates) {
+    if (gardens === 0) break;
+    if (canHouse('garden', c.x, c.y) && tryPlace('garden', c.x, c.y)) gardens -= 1;
   }
 
   // Props.

@@ -7,7 +7,12 @@ export type DomainEvent =
   | { type: 'time/season-started'; tick: number; date: CalendarDate }
   | { type: 'time/year-started'; tick: number; date: CalendarDate }
   | { type: 'phase/changed'; from: PhaseKind; to: PhaseKind; edition: number | null }
-  | { type: 'autopilot/completed'; days: number };
+  | { type: 'autopilot/completed'; days: number }
+  | { type: 'building/placed'; id: string; kind: string }
+  | { type: 'building/completed'; id: string; kind: string }
+  | { type: 'building/removed'; id: string }
+  | { type: 'economy/hunger'; days: number }
+  | { type: 'economy/quota'; required: number; delivered: number };
 
 export type DomainEventType = DomainEvent['type'];
 

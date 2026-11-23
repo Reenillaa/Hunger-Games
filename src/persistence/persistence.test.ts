@@ -62,7 +62,8 @@ describe('production migration v1 → v2', () => {
     const v1 = { ...rest, schemaVersion: 1 };
     const json = JSON.stringify({ format: 'diezmo-save', saveVersion: 1, state: v1 });
     const { state } = await decodeSave(new TextEncoder().encode(json));
-    expect(state.schemaVersion).toBe(2);
+    expect(state.schemaVersion).toBe(3);
+    expect(state.economy.resources.food).toBeGreaterThan(0);
     expect(state.district.structures.length).toBeGreaterThan(20);
     expect(state.clock).toEqual(v1.clock);
   });
