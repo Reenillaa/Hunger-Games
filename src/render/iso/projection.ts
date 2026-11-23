@@ -4,7 +4,8 @@
  */
 export const TILE_W = 128;
 export const TILE_H = 64;
-export const ELEVATION_PX = 32;
+/** Screen pixels per world unit of height (orthographic camera at 30° elevation): TILE_W/√2 · cos 30°. */
+export const ELEVATION_PX = (TILE_W / Math.SQRT2) * Math.cos(Math.PI / 6);
 
 export interface ScreenPoint {
   x: number;

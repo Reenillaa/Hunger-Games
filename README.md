@@ -4,17 +4,15 @@ Videojuego de estrategia, gestión, simulación social y supervivencia para nave
 
 Gobiernas el Distrito XII · Veta Negra, un valle minero bajo **la Concordia**, un régimen que cada año exige su diezmo: carbón… y dos de tus jóvenes para los Juegos del Diezmo en la capital, **Áurea**. Construyes una sociedad que conoces persona a persona, con familias, relaciones y generaciones, sabiendo que no puedes elegir a quién perderás. Gane quien gane, el distrito sigue vivo… y el año que viene habrá otra Criba.
 
-> **Estado:** Fase 1 terminada (base técnica y esqueleto jugable del ciclo anual). Todavía no hay mecánicas de juego: el distrito es una cuadrícula provisional. Estado real en [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
+> **Estado:** Fase 2 en curso (prototipo visual del distrito). El Distrito XII ya se ve: valle pre-renderizado, edificios y vegetación detallados, día y noche. Aún no hay mecánicas de construcción ni población. Estado real en [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 
-| Menú | Distrito (provisional) | iPhone |
-|---|---|---|
-| ![Menú](docs/images/phase1-menu.png) | ![Distrito](docs/images/phase1-district.png) | ![iPhone](docs/images/phase1-iphone-capital.png) |
-
-Spike del pipeline de arte: sprites renderizados desde 3D con normal maps e iluminados en tiempo real por Phaser 4 (modelos provisionales).
-
-| Luz a la izquierda | Luz a la derecha |
+| Día | Noche |
 |---|---|
-| ![Spike izquierda](docs/images/spike-light-left.png) | ![Spike derecha](docs/images/spike-light-right.png) |
+| ![Distrito de día](docs/images/phase2-day.jpg) | ![Distrito de noche](docs/images/phase2-night.jpg) |
+
+| El valle | iPhone (horizontal) | Menú |
+|---|---|---|
+| ![Valle](docs/images/phase2-valley.jpg) | ![iPhone](docs/images/phase2-iphone.jpg) | ![Menú](docs/images/phase1-menu.png) |
 
 ## Jugar
 
@@ -46,14 +44,18 @@ npm run build && npm run e2e
 npm run sim -- --years 50 --seed 123
 ```
 
-Pipeline de arte (opcional; requiere `pip install bpy==5.3.0` en un entorno de Python 3.13):
+Pipeline de arte (opcional; Python 3.13 con `pip install bpy==5.3.0 pillow==11.3.0`). Los resultados ya están versionados en `public/assets/`; solo hace falta para regenerarlos:
 
 ```bash
-python tools/art/spike_render.py --out assets/build/spike
+python3 tools/art/fetch_textures.py
 ```
 
 ```bash
-npx vite --config tools/art/viewer/vite.config.ts
+python tools/art/render_terrain.py --scale 1 --samples 16
+```
+
+```bash
+python tools/art/render_district_assets.py --samples 40
 ```
 
 ## Documentación

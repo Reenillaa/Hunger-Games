@@ -36,16 +36,18 @@
 
 | ID | Tarea | Prio | Criterio de aceptación |
 |---|---|---|---|
-| F2-01 | Pipeline de arte definitivo: albedo sin luz direccional + capa de sombra + capa de emisión + márgenes (requisitos del spike) + empaquetado en atlas 1×/2× | P0 | Script reproducible; un edificio y un personaje animado con las 4 capas se ven bien de día y de noche |
-| F2-02 | Fuentes de modelos CC0 (personajes con rig y animaciones; props) y registro en `assets/LICENSES.md` | P0 | Descarga verificada desde el entorno; licencias registradas |
-| F2-03 | Modelo de datos del mapa del distrito (terreno, elevación, rasgos, zonas) + plantilla 48×48 + variación por semilla, en `src/core` | P0 | Tests: mapa determinista por semilla, zonas válidas |
-| F2-04 | Render del terreno por chunks 16×16 horneados, transiciones y elevación | P0 | ≥ 30 fps en iPhone emulado con el mapa completo |
-| F2-05 | Edificios iniciales estáticos (8) con niveles visuales 1–3 | P1 | Revisión contra `ART_BIBLE.md §12` |
-| F2-06 | Iluminación día/noche con normal maps, farolas y lámparas; *grading* por hora | P1 | Capturas a 4 horas distintas |
-| F2-07 | Partículas: humo, polvo de carbón, ceniza | P1 | Desactivables en calidad baja |
-| F2-08 | Habitantes de demostración caminando por caminos (solo visual) | P1 | 40 agentes en móvil sin bajar de 30 fps |
-| F2-09 | Tipografías OFL, iconos y tokens definitivos; maquetas de HUD | P1 | Aprobación visual del cliente |
-| F2-10 | Presets de calidad Bajo/Medio/Alto con detección inicial | P2 | Cambio en caliente sin recargar |
+| F2-01 | Pipeline de arte v2 (capas color/sombra/emisión/normal, holdout, variantes) | P0 | ✅ Hecho (ART_BIBLE §11.2). Pendiente: atlas y WebP |
+| F2-02 | Personajes: modelos CC0 con rig y animaciones (o modelado propio) + registro de licencias | P0 | Pendiente. Quaternius accesible desde el entorno; descarga de modelos sin verificar |
+| F2-03 | Modelo de datos del distrito + plantilla 48×48 + variación por semilla en `src/core` | P0 | ✅ Hecho: `d12.json`, `generateDistrict`, 7 tests, migración v1→v2 |
+| F2-04 | Terreno pre-renderizado con relieve, capas y detalle instanciado | P0 | ✅ Hecho (en lugar de tiles horneados por chunks: mejor calidad, plantilla fija). Pendiente: ≥ 30 fps medidos en iPhone real |
+| F2-05 | Edificios iniciales con niveles visuales 1–3 | P1 | 🟡 7 edificios nivel 1 + 3 variantes. Faltan niveles 2–3, enfermería y centro de formación |
+| F2-06 | Día/noche | P1 | ✅ Tintado por hora + ventanas y farolas con halo. Capturas día/noche en `docs/images/` |
+| F2-07 | Partículas: humo ✅, polvo de carbón, ceniza, agua del río animada | P1 | 🟡 Solo humo |
+| F2-08 | Habitantes de demostración caminando por caminos | P1 | Pendiente (depende de F2-02) |
+| F2-09 | Tipografías OFL, iconos y tokens definitivos; maquetas de HUD | P1 | Pendiente |
+| F2-10 | Presets de calidad Bajo/Medio/Alto | P2 | 🟡 Terreno 1x/0,5x automático o con `?quality=` |
+| F2-11 | Sprites a WebP + atlas por escena | P1 | Pendiente (13 MB en PNG hoy) |
+| F2-12 | Pulido del castillete (chapa del cuarto de máquinas, radios de la polea) | P2 | Pendiente |
 
 ## Investigación (cuando exista la Reverse Engineering Skill)
 

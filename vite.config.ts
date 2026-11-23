@@ -35,7 +35,16 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,woff2}', 'icons/*.png'],
+        globIgnores: ['assets/**'],
+        // Art is large: cached on first use instead of precached at install.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/assets/district/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'district-art', expiration: { maxEntries: 400 } },
+          },
+        ],
         // The engine chunk is ~1.3 MB minified; precache it so the game works offline.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: 'index.html',

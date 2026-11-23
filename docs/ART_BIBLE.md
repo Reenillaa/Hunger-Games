@@ -26,7 +26,7 @@
 | Altura de un nivel de elevación | 32 px a 1× |
 | Personaje adulto (distrito) | ~72 px de alto a 1×; niños ~50 px |
 | Direcciones de personajes | 8 |
-| Luz principal | Arriba-izquierda de pantalla (noroeste), constante en todos los renders |
+| Luz principal | Desde delante-izquierda del espectador (dirección de viaje mundo `(-0.28, 0.9, -1.3)`), constante en todos los renders (DECISIONS I-19) |
 | Pases por sprite | Color (albedo + sombra suave horneada), normal map, máscara de emisión (ventanas, lámparas) |
 | Formato | PNG en atlas por escena; 1× (calidad baja/media) y 2× (alta/retina) |
 | Animación de personajes | 12 fps; idle 8 frames, caminar 8, correr 8, trabajar 8–12, atacar 6–8, herido 4, morir 8–10 |
@@ -127,6 +127,18 @@ Scripts en `tools/art/`; fuentes en `assets/src/`; resultados en `assets/build/`
 - **Capas obligatorias** por sprite: albedo (solo luz ambiente y oclusión, sin sol), sombra (sprite aparte), emisión (aditiva, sin iluminar), normales.
 - Margen de lienzo suficiente para que la sombra no se recorte.
 - Coste medido: ~5 s por pase de un edificio 640 px; ~0,45 s por pase de un fotograma de personaje de 192 px (CPU, 48 muestras + denoiser).
+
+### 11.2 Pipeline v2 (Fase 2)
+
+| Paso | Script | Salida |
+|---|---|---|
+| Texturas CC0 | `tools/art/fetch_textures.py` + `textures.json` | `assets/src/textures/` (no versionado) |
+| Plantilla del mapa | `tools/art/generate_d12_template.py` | `src/content/maps/d12.json` |
+| Terreno | `tools/art/render_terrain.py` | `public/assets/district/terrain/{1x,0.5x}/` + `heights.json` |
+| Edificios y props | `tools/art/render_district_assets.py` | `public/assets/district/sprites/*.png` + `manifest.json` |
+
+- Librería común en `tools/art/lib/` (`scene.py`: cámara, sol, pases; `materials.py`: PBR con gradación; `kit.py`: piezas modulares).
+- Reglas aprendidas: el suelo es *holdout* en los pases de color/emisión/normales (nada bajo tierra se ve); la emisión se apaga en el pase de color; las texturas se agrandan respecto a la escala real para que se lean en isométrico; los trozos de terreno se solapan 2 px.
 
 ## 12. Checklist de calidad de un asset
 

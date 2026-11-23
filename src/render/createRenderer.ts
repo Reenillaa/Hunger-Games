@@ -19,6 +19,7 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
       height: parent.clientHeight || 600,
     },
     input: { activePointers: 3 },
+    maxLights: 16,
     audio: { noAudio: true },
     scene: [new DistrictScene(session), new PhaseScene()],
   });

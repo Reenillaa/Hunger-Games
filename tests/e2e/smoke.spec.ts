@@ -19,7 +19,7 @@ test('boots, starts a new game and renders the district', async ({ page }) => {
   const errors = trackErrors(page);
   await startNewGame(page);
   await expect(page.getByTestId('date')).toContainText('Año 1 · Primavera · Día 1');
-  await expect(page.getByTestId('countdown')).toContainText('La Criba en 20 d');
+  await expect(page.getByTestId('countdown')).toContainText('La Criba en 19 d 16 h');
   await expect(page.getByTestId('game-canvas').locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -32,7 +32,7 @@ test('speed controls change the clock state', async ({ page }) => {
   const fastest = page.getByRole('button', { name: 'Velocidad cuádruple' });
   await fastest.click();
   await expect(fastest).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('date')).not.toContainText('· 00:00', { timeout: 5000 });
+  await expect(page.getByTestId('date')).not.toContainText('· 08:00', { timeout: 5000 });
 });
 
 test('a manual save survives a page reload', async ({ page }) => {

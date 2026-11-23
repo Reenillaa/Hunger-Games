@@ -45,7 +45,7 @@ Cada partida tiene un *Año de la Concordia* (p. ej. "Año 74"). Las ediciones e
 - **48 × 48 celdas.** Valle estrecho entre laderas: montaña con bocaminas al norte, bosque fronterizo al sur tras una alambrada, río pequeño, núcleo urbano con plaza (escenario de la Criba) y estación de tren (llegadas/salidas).
 - **Plantilla diseñada a mano + variación por semilla** (posición de vetas, árboles, rocas, casas iniciales). Bonito por diseño, distinto en cada partida.
 - Zonas: núcleo (edificable), laderas (solo minería), bosque (leñadores, caza ilegal), vía del tren (no edificable), plaza (fija).
-- Autoría con **Tiled** (editor libre) en una capa lógica ortogonal; el juego la proyecta a isométrico.
+- **Implementado (Fase 2):** la plantilla se genera con `tools/art/generate_d12_template.py` → `src/content/maps/d12.json` (códigos de terreno + elevación) y es la fuente única para la lógica y el arte. Los hitos (ayuntamiento, escenario, mina, almacén, economato) tienen posición fija; 9 casas adosadas, 13 chabolas, árboles, rocas y farolas se colocan con la semilla (`generateDistrict`).
 
 ### 2.3 Arena forestal (MVP)
 - **56 × 56 celdas**, generada por semilla con reglas: claro central con el **Relicario**, río con vados, zonas rocosas (cuevas = escondite), bosque denso, matorral, ruinas de una estación de investigación, lago, acantilados.

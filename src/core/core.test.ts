@@ -12,6 +12,7 @@ import {
   hashState,
   selectionTickOfYear,
 } from './index.ts';
+import { START_HOUR } from './state/newGame.ts';
 import type { Command, GameState } from './index.ts';
 
 function runToSelection(state: GameState): void {
@@ -37,7 +38,7 @@ describe('new game', () => {
   it('starts in the district, spring of year 1, with a chronicle entry', () => {
     const s = createNewGame({ seed: 'abc' });
     expect(s.phase).toEqual({ kind: 'district' });
-    expect(s.clock.tick).toBe(0);
+    expect(s.clock.tick).toBe(START_HOUR);
     expect(s.chronicle).toHaveLength(1);
     expect(s.meta.firstEdition).toBeGreaterThanOrEqual(101);
     expect(s.meta.firstEdition).toBeLessThanOrEqual(160);

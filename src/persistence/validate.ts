@@ -38,6 +38,14 @@ export function validateGameState(value: unknown): string[] {
   }
   if (!isRecord(value.ids) || !isInt(value.ids.next)) problems.push('ids');
   if (!Array.isArray(value.chronicle)) problems.push('chronicle');
+  const district = value.district;
+  if (
+    !isRecord(district) ||
+    !Array.isArray(district.structures) ||
+    !Array.isArray(district.props)
+  ) {
+    problems.push('district');
+  }
   return problems;
 }
 

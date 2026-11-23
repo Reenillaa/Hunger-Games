@@ -1,4 +1,6 @@
-import { STATE_SCHEMA_VERSION } from '../core/index.ts';
+import { STRUCTURE_FOOTPRINTS } from '../content/structures.ts';
+import { TEMPLATES } from '../content/maps/index.ts';
+import { STATE_SCHEMA_VERSION, generateDistrict, seedFromString } from '../core/index.ts';
 import { SaveError } from './errors.ts';
 
 export type RawState = Record<string, unknown>;
@@ -12,9 +14,27 @@ export interface Migration {
 
 /**
  * Production migrations, in order. Each entry upgrades the state shape by exactly one version.
- * Version 1 is the first released shape, so the chain is empty for now.
  */
-export const MIGRATIONS: readonly Migration[] = [];
+export const MIGRATIONS: readonly Migration[] = [
+  {
+    from: 1,
+    to: 2,
+    description: 'Phase 2: add the home district layout (structures and props).',
+    migrate(state) {
+      const meta = state.meta as { seed?: unknown } | undefined;
+      const seed = typeof meta?.seed === 'string' ? meta.seed : 'unknown';
+      const template = TEMPLATES.d12;
+      if (!template) throw new SaveError('migration-missing', 'District template d12 missing');
+      // Old saves had no district: generate it from a stream derived from the original seed.
+      const district = generateDistrict(
+        template,
+        STRUCTURE_FOOTPRINTS,
+        seedFromString(`${seed}::migrate-v2`),
+      );
+      return { ...state, district };
+    },
+  },
+];
 
 /** Upgrades a raw state from `fromVersion` to `targetVersion` by chaining migrations. */
 export function migrateState(

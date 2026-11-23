@@ -57,3 +57,7 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-23 | 1 | Spike de arte: valores del normal map frente a los teóricos | Error ≤ 0,003 tras corregir el signo de Z |
 | 2026-11-23 | 1 | CI en GitHub Actions, ejecución nº 1 (`08a24b0`) | Job `verify` **correcto** (E2E en 24 s). Job `deploy` **falla**: 404, Pages no activado en el repositorio |
 | — | 1 | iPhone real / PWA instalada | **No ejecutado** (pendiente del cliente) |
+| 2026-11-23 | 2 | `npm test` | **59/59** (nuevos: distrito ×7, día/noche ×3, migración v1→v2) |
+| 2026-11-23 | 2 | `npm run e2e` | **10/10** con el distrito real cargando sus assets, sin errores de consola |
+| 2026-11-23 | 2 | FPS en Chromium + SwiftShader (sin GPU), 1280×720 | Luces por píxel: 4 FPS · tintado + halos: 13 FPS. No representa una GPU real |
+| 2026-11-23 | 2 | Revisión visual: capturas de día, noche, valle completo e iPhone horizontal | Corregidos: tejado invertido, pivote de rotación, objetos bajo tierra visibles, ventanas encendidas de día, costuras entre trozos, esquinas negras visibles |

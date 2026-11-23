@@ -1,0 +1,21 @@
+{
+  "source": "ambientCG (https://ambientcg.com) — CC0 1.0 Universal",
+  "resolution": "1K-JPG",
+  "materials": {
+    "wood_siding": "WoodSiding008",
+    "wood_beam": "WoodSiding006",
+    "corrugated_rust": "CorrugatedSteel007C",
+    "corrugated_dark": "CorrugatedSteel009",
+    "stone_blocks": "Bricks108A",
+    "rock_dark": "Rock058",
+    "rock_layered": "Rock051",
+    "dirt_coal": "Ground110",
+    "dirt_light": "Ground109",
+    "grass_patchy": "Grass004",
+    "grass_dry": "Ground037",
+    "gravel": "Gravel043",
+    "cobble": "PavingStones151",
+    "roof_tar": "RoofingTiles013A",
+    "metal_rust": "Metal064"
+  }
+}

@@ -8,3 +8,4 @@ playwright-report/
 .DS_Store
 .vite/
 assets/build/
+assets/src/textures/

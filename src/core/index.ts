@@ -6,3 +6,5 @@ export * from './state/hash.ts';
 export * from './events.ts';
 export * from './systems/simulation.ts';
 export * from './commands/commands.ts';
+export * from './district/template.ts';
+export * from './district/generate.ts';

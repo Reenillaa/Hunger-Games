@@ -75,6 +75,13 @@ Estados posibles:
   4. **Margen en el lienzo** de personajes para que la sombra no se recorte.
 - Pendiente: conseguir modelos CC0 reales (personajes con rig y animaciones) y comprobar su descarga desde este entorno.
 
+**Revisión Fase 2 (2026-11-23), tras el feedback "el mapa es feísimo y poco detallado":**
+- **Texturas fotográficas CC0** (ambientCG, 15 materiales) con gradación de color hacia la paleta → todo comparte look. Registro en `assets/LICENSES.md`; descarga reproducible con `tools/art/fetch_textures.py`.
+- **Terreno del distrito pre-renderizado entero** en Blender (relieve real, mezcla de capas por ruido, río, vía con traviesas, puente, ~150 000 matas de hierba y piedras instanciadas) y cortado en trozos JPEG de 1024 px. Plantilla fija (`src/content/maps/d12.json`); la variedad entre partidas viene de casas, árboles y rocas colocados por semilla.
+- **Edificios modelados por piezas** (tablón a tablón, chapa ondulada, ventanas con cruceta, chimeneas, barriles, leña) con 3 variantes de materiales para evitar repetición.
+- **Iluminación en juego por tintado + halos aditivos** en lugar de luces por píxel de Phaser: 3× más FPS medidos en renderizado por software (4 → 13 FPS). Los normal maps se siguen generando para un futuro preset "Ultra".
+- Se evaluaron plugins de generación con IA (SpriteCook, CellCog): el cliente los instaló pero **requieren autorización en claude.ai**; no se han usado. Si se usan, sus resultados pasan por la misma política de licencias y la biblia de arte.
+
 ---
 
 ### D-03 · Motor y stack — APROBADA (2026-11-23)
@@ -196,3 +203,7 @@ Auditoría del 2026-11-23: la skill **no está instalada** en esta sesión (no a
 | I-16 | Herramientas de depuración solo con `?debug` en la URL; aceleran la simulación real, nunca inventan estado. | Necesarias para probar ciclos completos en E2E sin esperar 16 minutos reales. |
 | I-17 | El motor (Phaser) se carga **bajo demanda** tras el menú. | Menú interactivo con 80 KB gzip; Phaser (359 KB gzip) llega después. |
 | I-18 | Extensión de las copias de seguridad: `.diezmo` (gzip interno). | Safari descomprime automáticamente los `.gz` al descargarlos. |
+| I-19 | **Luz del sol desde delante-izquierda** del espectador (viaja hacia +Y, −X). Sustituye a "arriba-izquierda". | Con luz desde atrás las dos fachadas visibles quedaban en sombra; así tejado > fachada izquierda > fachada derecha y los volúmenes se leen. |
+| I-20 | Arte versionado en `public/assets/` (~17 MB) y excluido de la precarga de la PWA (caché bajo demanda). | El CI no necesita Blender; la instalación de la PWA sigue siendo ligera. Pendiente: pasar los sprites a WebP. |
+| I-21 | Estado v2: `GameState.district` (estructuras y props). Migración real v1→v2 genera el distrito a partir de la semilla del guardado. | Las partidas de la Fase 1 siguen cargando. |
+| I-22 | La partida empieza a las 08:00 del primer día. | Empezar de noche daba una mala primera impresión. |

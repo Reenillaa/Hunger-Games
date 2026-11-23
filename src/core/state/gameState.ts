@@ -1,7 +1,8 @@
+import type { DistrictState } from '../district/generate.ts';
 import type { RngState, RngStreamId } from '../rng/rng.ts';
 
 /** Bumped whenever the shape of GameState changes; saves migrate across versions. */
-export const STATE_SCHEMA_VERSION = 1;
+export const STATE_SCHEMA_VERSION = 2;
 
 export const PHASE_KINDS = ['district', 'selection', 'capital', 'arena', 'aftermath'] as const;
 export type PhaseKind = (typeof PHASE_KINDS)[number];
@@ -44,6 +45,8 @@ export interface GameState {
   /** Bookkeeping while the delegation is away; the district catches up on return (autopilot). */
   away: { days: number };
   competition: { lastSelectionYear: number | null };
+  /** The player's home district: layout of structures and props (v2). */
+  district: DistrictState;
   rng: Record<RngStreamId, RngState>;
   ids: { next: number };
   chronicle: ChronicleEntry[];

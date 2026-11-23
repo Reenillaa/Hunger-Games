@@ -29,7 +29,7 @@ describe('codec', () => {
     const s = createNewGame({ seed: 'plain' });
     const json = JSON.stringify({
       format: 'diezmo-save',
-      saveVersion: 1,
+      saveVersion: 2,
       gameVersion: 'x',
       savedAt: '',
       state: s,
@@ -50,9 +50,21 @@ describe('codec', () => {
     });
     await expect(
       decodeSave(
-        enc({ format: 'diezmo-save', saveVersion: 1, state: { ...s, clock: { tick: -5 } } }),
+        enc({ format: 'diezmo-save', saveVersion: 2, state: { ...s, clock: { tick: -5 } } }),
       ),
     ).rejects.toMatchObject({ code: 'invalid-state' });
+  });
+});
+
+describe('production migration v1 → v2', () => {
+  it('adds the district layout to a Phase 1 save', async () => {
+    const { district: _drop, ...rest } = createNewGame({ seed: 'old-save' });
+    const v1 = { ...rest, schemaVersion: 1 };
+    const json = JSON.stringify({ format: 'diezmo-save', saveVersion: 1, state: v1 });
+    const { state } = await decodeSave(new TextEncoder().encode(json));
+    expect(state.schemaVersion).toBe(2);
+    expect(state.district.structures.length).toBeGreaterThan(20);
+    expect(state.clock).toEqual(v1.clock);
   });
 });
 
@@ -111,7 +123,7 @@ describe('SaveRepository (IndexedDB)', () => {
     expect(first.id).not.toBe(second.id);
     expect(third.id).toBe(first.id);
     const latest = await repo.loadLatestValid();
-    expect(latest?.state.clock.tick).toBe(20);
+    expect(latest?.state.clock.tick).toBe(s.clock.tick);
     repo.close();
   });
 

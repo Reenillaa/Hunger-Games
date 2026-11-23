@@ -6,25 +6,28 @@ import { GameSession, MS_PER_TICK_AT_X1 } from './session.ts';
 describe('GameSession', () => {
   it('converts real time into ticks according to speed', () => {
     const session = new GameSession(createNewGame({ seed: 's' }));
+    const start = session.getState().clock.tick;
     session.update(MS_PER_TICK_AT_X1 * 3);
-    expect(session.getState().clock.tick).toBe(3);
+    expect(session.getState().clock.tick - start).toBe(3);
     session.setSpeed(4);
     session.update(MS_PER_TICK_AT_X1);
-    expect(session.getState().clock.tick).toBe(7);
+    expect(session.getState().clock.tick - start).toBe(7);
   });
 
   it('does not advance while paused', () => {
     const session = new GameSession(createNewGame({ seed: 's' }));
+    const start = session.getState().clock.tick;
     session.setSpeed(0);
     session.update(10_000);
-    expect(session.getState().clock.tick).toBe(0);
+    expect(session.getState().clock.tick).toBe(start);
   });
 
   it('caps ticks per frame after a long stall', () => {
     const session = new GameSession(createNewGame({ seed: 's' }));
+    const start = session.getState().clock.tick;
     session.setSpeed(4);
     session.update(60_000);
-    expect(session.getState().clock.tick).toBeLessThanOrEqual(8);
+    expect(session.getState().clock.tick - start).toBeLessThanOrEqual(8);
   });
 
   it('notifies subscribers and bumps the snapshot version', () => {
