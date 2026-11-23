@@ -47,7 +47,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     clock: { tick: START_HOUR },
     phase: { kind: 'district' },
     away: { days: 0 },
-    competition: { lastSelectionYear: null },
+    competition: { lastSelectionYear: null, current: null, history: [] },
     district: generateDistrict(template, STRUCTURE_FOOTPRINTS, rng.world),
     economy: initialEconomy(),
     population: { citizens: {} },

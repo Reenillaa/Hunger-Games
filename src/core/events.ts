@@ -15,7 +15,8 @@ export type DomainEvent =
   | { type: 'economy/quota'; required: number; delivered: number }
   | { type: 'citizen/born'; id: string; name: string }
   | { type: 'citizen/died'; id: string; name: string; cause: string }
-  | { type: 'citizen/coupled'; a: string; b: string };
+  | { type: 'citizen/coupled'; a: string; b: string }
+  | { type: 'selection/drawn'; edition: number; participants: string[] };
 
 export type DomainEventType = DomainEvent['type'];
 

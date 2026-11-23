@@ -49,8 +49,9 @@ export function assignJobs(
   order: (s: PlacedStructure) => number,
 ): void {
   const day = Math.floor(state.clock.tick / 24);
+  const away = new Set(state.competition?.current?.participants ?? []);
   const pool = livingCitizens(state.population)
-    .filter((c) => canWork(c, day))
+    .filter((c) => canWork(c, day) && !away.has(c.id))
     .sort((a, b) => (a.id < b.id ? -1 : 1));
   const free = new Set(pool.map((c) => c.id));
   for (const c of livingCitizens(state.population)) {

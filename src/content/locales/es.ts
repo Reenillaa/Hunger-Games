@@ -209,6 +209,37 @@ export const es = {
   'notice.died': 'Ha muerto {name}',
   'notice.coupled': '{a} y {b} forman pareja',
 
+  'hist.selected': 'Su nombre sale en la Criba (edición {edition})',
+  'hist.laureate': 'Laureado/a de los Juegos (edición {edition})',
+
+  'cri.title': 'LA CRIBA',
+  'cri.subtitle': 'Año {year} de la Concordia · Los Juegos del Diezmo, edición {edition}',
+  'cri.gather':
+    'Todo el Distrito XII se reúne en la plaza. Los jóvenes de doce a dieciocho años, separados por edades, frente al estrado.',
+  'cri.herald': 'Heraldo de Áurea',
+  'cri.motto': 'La Concordia recuerda. El distrito entrega.',
+  'cri.girls': 'Primero, las muchachas.',
+  'cri.boys': 'Y ahora, los muchachos.',
+  'cri.urn': 'La mano enguantada se hunde en la urna de cristal. El papel cruje.',
+  'cri.slips': '{age} años · su nombre estaba {slips} veces entre {total} papeletas',
+  'cri.mother': '{name}, su madre, se lleva las manos a la boca.',
+  'cri.mother.strong': '{name}, su madre, no llora. Aprieta los puños y no aparta la vista.',
+  'cri.father': '{name}, su padre, baja la cabeza.',
+  'cri.father.angry':
+    '{name}, su padre, da un paso hacia el estrado. Dos custodios le cierran el paso.',
+  'cri.sibling': '{name} grita su nombre entre la multitud.',
+  'cri.sibling.small': 'La pequeña mano de {name} no suelta su chaqueta.',
+  'cri.partner': '{name} se abre paso entre la gente hasta la primera fila.',
+  'cri.friend': '{name}, su mejor amistad, no puede mirarle.',
+  'cri.friend.brave':
+    '{name} empuja a un custodio para llegar hasta ella o él. Lo derriban al suelo.',
+  'cri.alone': 'Nadie se mueve. Nadie dice su nombre en voz alta.',
+  'cri.silence': 'El distrito guarda silencio. Nadie aplaude.',
+  'cri.helmets': 'En las últimas filas, los mineros se quitan el casco. Uno a uno. En silencio.',
+  'cri.offerings': 'Las ofrendas del Distrito XII',
+  'cine.skip': 'Saltar',
+  'phase.selection.chosen': 'Ofrendas: {names}',
+
   'debug.title': 'Depuración',
   'debug.day': '+1 día',
   'debug.toSelection': 'Ir a la Criba',

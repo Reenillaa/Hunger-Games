@@ -224,6 +224,8 @@ const HANDLERS: HandlerMap = {
       enterPhase(state, { kind: 'district' }, 'returnedHome', ctx, { daysAway: days });
       runAutopilotDays(state, days, ctx.emit);
       state.away.days = 0;
+      state.competition.current = null;
+      allocateLabor(state);
     },
   },
 };

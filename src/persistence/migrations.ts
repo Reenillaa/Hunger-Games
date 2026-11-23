@@ -72,6 +72,18 @@ export const MIGRATIONS: readonly Migration[] = [
       return next as unknown as RawState;
     },
   },
+  {
+    from: 4,
+    to: 5,
+    description: 'Phase 5: the Criba records its delegation and history.',
+    migrate(state) {
+      const competition = (state.competition ?? {}) as Record<string, unknown>;
+      return {
+        ...state,
+        competition: { lastSelectionYear: null, ...competition, current: null, history: [] },
+      };
+    },
+  },
 ];
 
 /** Upgrades a raw state from `fromVersion` to `targetVersion` by chaining migrations. */

@@ -20,7 +20,7 @@ test('boots, starts a new game and renders the district', async ({ page }) => {
   await startNewGame(page);
   await expect(page.getByTestId('date')).toContainText('Año 1 · Primavera · Día 1');
   // The clock runs from the start: allow a few in-game hours to pass before this check.
-  await expect(page.getByTestId('countdown')).toContainText(/La Criba en 19 d 1[0-6] h/);
+  await expect(page.getByTestId('countdown')).toContainText(/La Criba en 20 d [0-4] h/);
   await expect(page.getByTestId('game-canvas').locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -59,10 +59,15 @@ test('walking skeleton: district → selection → capital → arena → return'
   await startNewGame(page, '?debug');
   await page.getByRole('button', { name: 'Pausa' }).click();
   await page.getByRole('button', { name: 'Ir a la Criba' }).click();
+  // The ceremony plays first (built from the real draw) and can be skipped.
+  await expect(page.getByTestId('cinematic')).toBeVisible();
+  await page.getByRole('button', { name: 'Saltar' }).click();
+  await expect(page.getByTestId('cinematic')).toHaveCount(0);
 
   const sheet = page.getByTestId('phase-sheet');
   await expect(sheet).toHaveAttribute('data-phase', 'selection');
   await expect(page.getByTestId('date')).toContainText('Otoño · Día 1');
+  await expect(sheet).toContainText('Ofrendas:');
   await sheet.getByRole('button', { name: 'Partir hacia Áurea' }).click();
 
   for (let day = 1; day <= 7; day++) {

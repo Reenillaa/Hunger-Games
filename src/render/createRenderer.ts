@@ -38,7 +38,8 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
     if (kind === current) return;
     current = kind;
     const scenes = game.scene;
-    if (kind === 'district') {
+    // The Criba happens in the district's own plaza.
+    if (kind === 'district' || kind === 'selection') {
       if (scenes.isActive(PHASE_SCENE)) scenes.stop(PHASE_SCENE);
       if (scenes.isSleeping(DISTRICT_SCENE)) scenes.wake(DISTRICT_SCENE);
       else if (!scenes.isActive(DISTRICT_SCENE)) scenes.start(DISTRICT_SCENE);

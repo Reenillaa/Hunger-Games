@@ -15,3 +15,4 @@ export * from './population/types.ts';
 export * from './population/generate.ts';
 export * from './population/simulate.ts';
 export { populate } from './state/newGame.ts';
+export * from './selection/selection.ts';

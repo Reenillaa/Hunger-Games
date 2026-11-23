@@ -209,6 +209,7 @@ export class Townsfolk {
   }
 
   update(deltaMs: number, hour: number, speed: number, tint: number): void {
+    if (this.hidden) return;
     const dt = (deltaMs / 1000) * speed;
     for (const a of this.agents) {
       a.sprite.setTint(tint);
@@ -282,6 +283,18 @@ export class Townsfolk {
       a.sprite.play(key, true);
     } else if (a.sprite.anims.isPaused) {
       a.sprite.anims.resume();
+    }
+  }
+
+  private hidden = false;
+
+  /** Everyone is at the plaza during the Criba. */
+  setHidden(hidden: boolean): void {
+    this.hidden = hidden;
+    for (const a of this.agents) {
+      const show = !hidden && !a.inside;
+      a.sprite.setVisible(show);
+      a.shadow.setVisible(show);
     }
   }
 

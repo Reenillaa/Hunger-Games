@@ -4,7 +4,7 @@ import type { PopulationState } from '../population/types.ts';
 import type { RngState, RngStreamId } from '../rng/rng.ts';
 
 /** Bumped whenever the shape of GameState changes; saves migrate across versions. */
-export const STATE_SCHEMA_VERSION = 4;
+export const STATE_SCHEMA_VERSION = 5;
 
 export const PHASE_KINDS = ['district', 'selection', 'capital', 'arena', 'aftermath'] as const;
 export type PhaseKind = (typeof PHASE_KINDS)[number];
@@ -46,7 +46,7 @@ export interface GameState {
   phase: PhaseState;
   /** Bookkeeping while the delegation is away; the district catches up on return (autopilot). */
   away: { days: number };
-  competition: { lastSelectionYear: number | null };
+  competition: CompetitionState;
   /** The player's home district: layout of structures and props (v2). */
   district: DistrictState;
   /** Resources, quota, abstract population, morale and regime attention (v3). */
@@ -56,6 +56,21 @@ export interface GameState {
   rng: Record<RngStreamId, RngState>;
   ids: { next: number };
   chronicle: ChronicleEntry[];
+}
+
+/** The yearly games as seen from the district (Phase 5 onwards). */
+export interface CompetitionState {
+  lastSelectionYear: number | null;
+  /** The delegation of the games in progress (from the Criba until the return). */
+  current: {
+    edition: number;
+    ruleId: string;
+    participants: string[];
+    /** Slips held by each eligible citizen at the draw (for odds in the ceremony). */
+    entries: Record<string, number>;
+  } | null;
+  /** Every past Criba: who was chosen, by edition. */
+  history: { edition: number; year: number; participants: string[] }[];
 }
 
 export function editionOfYear(state: GameState, year: number): number {

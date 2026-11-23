@@ -2,6 +2,9 @@ import type { Command, CommandResult, DomainEvent, GameState } from '../core/ind
 import { advanceTick, applyCommand, collectingContext } from '../core/index.ts';
 import { EventBus } from './eventBus.ts';
 import { UiStore } from './uiStore.ts';
+import { buildSelectionCeremony } from './ceremonies.ts';
+import type { CineStep } from './cinematic.ts';
+import { CinematicPlayer } from './cinematic.ts';
 
 export const GAME_SPEEDS = [0, 1, 2, 4] as const;
 export type GameSpeed = (typeof GAME_SPEEDS)[number];
@@ -32,9 +35,29 @@ export class GameSession {
   private snapshot: SessionSnapshot;
   private readonly listeners = new Set<() => void>();
 
+  /** Cinematic currently playing (the clock is stopped outside the district anyway). */
+  cinematic: CinematicPlayer | null = null;
+
   constructor(state: GameState) {
     this.state = state;
     this.snapshot = this.makeSnapshot();
+    this.events.on('phase/changed', (e) => {
+      if (e.to === 'selection') this.playSelectionCeremony();
+    });
+    if (state.phase.kind === 'selection') this.playSelectionCeremony();
+  }
+
+  playCinematic(id: string, steps: CineStep[]): void {
+    this.cinematic = new CinematicPlayer(id, steps, () => {
+      this.cinematic = null;
+      this.changed();
+    });
+    this.changed();
+  }
+
+  private playSelectionCeremony(): void {
+    const steps = buildSelectionCeremony(this.state);
+    if (steps.length > 0) this.playCinematic('selection', steps);
   }
 
   /** Mutable access is limited to the core; outer layers must treat it as read-only. */
@@ -76,6 +99,7 @@ export class GameSession {
 
   /** Called every frame with the elapsed real time. */
   update(deltaMs: number): void {
+    if (this.cinematic && deltaMs > 0) this.cinematic.advance(deltaMs);
     if (!this.isClockRunning() || !(deltaMs > 0)) return;
     const msPerTick = MS_PER_TICK_AT_X1 / this.speed;
     this.accumulatorMs = Math.min(this.accumulatorMs + deltaMs, msPerTick * MAX_TICKS_PER_UPDATE);

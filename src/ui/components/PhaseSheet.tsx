@@ -12,14 +12,20 @@ import styles from '../ui.module.css';
 export function PhaseSheet({ session }: { session: GameSession }) {
   const { state } = useSession(session);
   const phase = state.phase;
-  if (phase.kind === 'district') return null;
+  if (phase.kind === 'district' || session.cinematic) return null;
 
   let body = '';
   let action: LocaleKey;
   let onAction: () => void;
   switch (phase.kind) {
     case 'selection':
-      body = t('phase.selection.body');
+      body = t('phase.selection.chosen', {
+        names: (state.competition.current?.participants ?? [])
+          .map((id) => state.population.citizens[id])
+          .filter((c) => !!c)
+          .map((c) => `${c!.firstName} ${c!.lastNames[0]}`)
+          .join(' · '),
+      });
       action = 'phase.selection.action';
       onAction = () => session.dispatch({ type: 'capital/depart' });
       break;

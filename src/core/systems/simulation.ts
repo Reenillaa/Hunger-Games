@@ -3,7 +3,10 @@ import { collectingContext } from '../events.ts';
 import type { GameState } from '../state/gameState.ts';
 import { editionOfYear } from '../state/gameState.ts';
 import { enterPhase } from '../state/phases.ts';
-import { economyDay, economyHour } from '../economy/economy.ts';
+import { rulesForEdition } from '../../content/selectionRules.ts';
+import { allocateLabor, economyDay, economyHour } from '../economy/economy.ts';
+import { note } from '../population/simulate.ts';
+import { runSelection } from '../selection/selection.ts';
 import { populationDay, populationSeason, populationYear } from '../population/simulate.ts';
 import type { CalendarDate } from '../time/calendar.ts';
 import { TICKS_PER_DAY, dateFromTick, selectionTickOfYear } from '../time/calendar.ts';
@@ -18,6 +21,35 @@ export interface System {
   onDayStart?(state: GameState, ctx: SimContext, date: CalendarDate): void;
 }
 
+/** Draws the delegation and applies the immediate consequences on families and jobs. */
+function holdSelection(state: GameState, edition: number, year: number, ctx: SimContext): void {
+  const rules = rulesForEdition(edition);
+  const day = Math.floor(state.clock.tick / 24);
+  const result = runSelection(state.population, rules, day, state.rng.selection);
+  const entries: Record<string, number> = {};
+  for (const e of [...result.pool.F, ...result.pool.M]) entries[e.citizenId] = e.entries;
+  state.competition.current = { edition, ruleId: rules.id, participants: result.chosen, entries };
+  state.competition.history.push({ edition, year, participants: result.chosen });
+  for (const id of result.chosen) {
+    const c = state.population.citizens[id];
+    if (!c) continue;
+    note(c, day, 'hist.selected', { edition: String(edition) });
+    c.jobId = null;
+    // Fear at home; dread among friends.
+    for (const relId of [c.motherId, c.fatherId, c.partnerId, ...c.childrenIds]) {
+      const r = relId ? state.population.citizens[relId] : null;
+      if (r?.alive) r.moodModifiers.push({ key: 'dread', value: -20, untilDay: day + 30 });
+    }
+    for (const [fid, rel] of Object.entries(c.relations)) {
+      const f = state.population.citizens[fid];
+      if (f?.alive && rel.opinion > 30)
+        f.moodModifiers.push({ key: 'dread', value: -10, untilDay: day + 30 });
+    }
+  }
+  allocateLabor(state);
+  ctx.emit({ type: 'selection/drawn', edition, participants: result.chosen });
+}
+
 /** Triggers the yearly selection ceremony on autumn day 1 at 00:00. */
 const selectionTrigger: System = {
   id: 'selection-trigger',
@@ -26,6 +58,7 @@ const selectionTrigger: System = {
     if (state.clock.tick !== selectionTickOfYear(date.year)) return;
     if (state.competition.lastSelectionYear === date.year) return;
     state.competition.lastSelectionYear = date.year;
+    holdSelection(state, editionOfYear(state, date.year), date.year, ctx);
     enterPhase(
       state,
       { kind: 'selection', edition: editionOfYear(state, date.year) },

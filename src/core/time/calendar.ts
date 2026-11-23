@@ -10,9 +10,10 @@ export const DAYS_PER_YEAR = DAYS_PER_SEASON * SEASONS.length;
 export const TICKS_PER_DAY = HOURS_PER_DAY;
 export const TICKS_PER_YEAR = DAYS_PER_YEAR * TICKS_PER_DAY;
 
-/** The selection ceremony happens at 00:00 of the first day of autumn every year. */
+/** The selection ceremony happens at noon of the first day of autumn every year. */
 export const SELECTION_SEASON: Season = 'autumn';
 export const SELECTION_DAY_OF_SEASON = 1;
+export const SELECTION_HOUR = 12;
 /** Days spent in the capital before the arena. */
 export const CAPITAL_DAYS = 7;
 
@@ -52,7 +53,7 @@ export function dateFromTick(tick: number): CalendarDate {
 export function selectionTickOfYear(year: number): number {
   const seasonIndex = SEASONS.indexOf(SELECTION_SEASON);
   const dayIndex = seasonIndex * DAYS_PER_SEASON + (SELECTION_DAY_OF_SEASON - 1);
-  return (year - 1) * TICKS_PER_YEAR + dayIndex * TICKS_PER_DAY;
+  return (year - 1) * TICKS_PER_YEAR + dayIndex * TICKS_PER_DAY + SELECTION_HOUR;
 }
 
 /** Tick of the next selection at or after `tick`, skipping years whose selection already took place. */

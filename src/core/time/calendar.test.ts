@@ -27,10 +27,10 @@ describe('calendar', () => {
     expect(DAYS_PER_YEAR).toBe(40);
   });
 
-  it('places the selection on autumn day 1', () => {
+  it('places the selection at noon on autumn day 1', () => {
     const t = selectionTickOfYear(1);
-    expect(t).toBe(20 * TICKS_PER_DAY);
-    expect(dateFromTick(t)).toMatchObject({ season: 'autumn', dayOfSeason: 1, hour: 0 });
+    expect(t).toBe(20 * TICKS_PER_DAY + 12);
+    expect(dateFromTick(t)).toMatchObject({ season: 'autumn', dayOfSeason: 1, hour: 12 });
     expect(selectionTickOfYear(3) - selectionTickOfYear(2)).toBe(TICKS_PER_YEAR);
   });
 

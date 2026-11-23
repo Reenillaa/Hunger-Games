@@ -5,6 +5,7 @@ import { TEMPLATES } from '../../content/maps/index.ts';
 import { Ambience } from '../district/ambience.ts';
 import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts';
 import { Townsfolk } from '../district/townsfolk.ts';
+import { CeremonyStage } from '../district/ceremony.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { GameSession } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
@@ -58,6 +59,8 @@ export class DistrictScene extends Phaser.Scene {
   private readonly propViews = new Map<string, Phaser.GameObjects.GameObject[]>();
   private lastVersion = -1;
   private ghost?: Phaser.GameObjects.Image;
+  private ceremony?: CeremonyStage;
+  private characters: Record<string, CharacterSheet> = {};
   private marker?: Phaser.GameObjects.Graphics;
   private ambience?: Ambience;
   private built = false;
@@ -154,6 +157,7 @@ export class DistrictScene extends Phaser.Scene {
       const characters = (
         this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
       ).characters;
+      this.characters = characters;
       const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;
       this.townsfolk = new Townsfolk(
         this,
@@ -467,6 +471,7 @@ export class DistrictScene extends Phaser.Scene {
       this.syncWorld();
     }
     this.updatePlacement();
+    this.updateCeremony();
     const state = this.session.getState();
     const hour = (state.clock.tick % 24) + this.session.getTickProgress();
     const light = daylightAt(hour);
@@ -487,6 +492,35 @@ export class DistrictScene extends Phaser.Scene {
   private pointerCell(pointer: Phaser.Input.Pointer): { cx: number; cy: number } {
     const world = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
     return pickCell(world.x, world.y);
+  }
+
+  /** The Criba: crowd in the plaza while the phase lasts; the camera follows the cinematic. */
+  private updateCeremony(): void {
+    const state = this.session.getState();
+    const inCeremony = state.phase.kind === 'selection';
+    if (inCeremony && !this.ceremony && state.competition.current) {
+      this.ceremony = new CeremonyStage(this, state, this.characters);
+      this.townsfolk?.setHidden(true);
+    } else if (!inCeremony && this.ceremony) {
+      this.ceremony.destroy();
+      this.ceremony = undefined;
+      this.townsfolk?.setHidden(false);
+    }
+    const view = this.session.cinematic?.get();
+    if (!view || view.done) return;
+    this.ceremony?.setFocus(view.focus);
+    const cam = this.cameras.main;
+    const focus = this.ceremony?.focusPoint(view.focus);
+    const target =
+      focus ?? (view.camera ? cellToWorld(view.camera.cell.x, view.camera.cell.y) : null);
+    if (target) {
+      const k = 0.045;
+      cam.centerOn(
+        cam.midPoint.x + (target.x - cam.midPoint.x) * k,
+        cam.midPoint.y + (target.y - cam.midPoint.y) * k,
+      );
+      if (view.camera) cam.setZoom(cam.zoom + (view.camera.zoom - cam.zoom) * k);
+    }
   }
 
   /** Ghost of the building being placed, green when valid, red otherwise. */
