@@ -60,4 +60,5 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-23 | 2 | `npm test` | **59/59** (nuevos: distrito ×7, día/noche ×3, migración v1→v2) |
 | 2026-11-23 | 2 | `npm run e2e` | **10/10** con el distrito real cargando sus assets, sin errores de consola |
 | 2026-11-23 | 2 | FPS en Chromium + SwiftShader (sin GPU), 1280×720 | Luces por píxel: 4 FPS · tintado + halos: 13 FPS. No representa una GPU real |
+| 2026-11-23 | 2 | CI GitHub Actions (`1a28414`) | `verify` **correcto**. Antes fallaron dos ejecuciones por bugs reales encontrados por los E2E: el reloj del juego dependía del delta suavizado de Phaser (se paraba con pocos FPS; corregido) y dos tests dependían del reloj en marcha (corregidos). `deploy` falla: Pages sin activar (C-1) |
 | 2026-11-23 | 2 | Revisión visual: capturas de día, noche, valle completo e iPhone horizontal | Corregidos: tejado invertido, pivote de rotación, objetos bajo tierra visibles, ventanas encendidas de día, costuras entre trozos, esquinas negras visibles |
