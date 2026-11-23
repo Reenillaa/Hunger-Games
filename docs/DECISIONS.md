@@ -14,7 +14,7 @@ Estados posibles:
 
 ## Parte A — Decisiones que requieren aprobación del cliente
 
-### D-01 · Identidad original del universo (riesgo de propiedad intelectual) — PROPUESTA · CRÍTICA
+### D-01 · Identidad original del universo (riesgo de propiedad intelectual) — APROBADA (2026-11-23) · CRÍTICA
 
 **Contexto.** El prompt maestro pide un universo original "para evitar problemas de propiedad intelectual", pero varios elementos del encargo coinciden de forma literal con una franquicia existente y registrada: el título *The Hunger Games*, doce distritos numerados con esas mismas industrias, el distrito 12 minero como punto de partida, "la Cosecha", "el Vasallaje", la capital y el presidente. Cada uno por separado es genérico; **juntos** identifican la franquicia y la convierten en un derivado. Publicar eso en una URL pública es el mayor riesgo legal del proyecto.
 
@@ -41,11 +41,11 @@ Estados posibles:
 
 **Alternativas.** (a) Usar los nombres de la franquicia → riesgo de retirada (DMCA en GitHub Pages) y no apto para publicar. (b) Renombrar solo el título → insuficiente, el conjunto sigue siendo reconocible.
 
-**Requiere del cliente:** aprobar el enfoque y, si quiere, elegir otros nombres. Los nombres concretos se pueden cambiar en cualquier momento sin tocar código.
+**Aprobación (2026-11-23):** el cliente pide "mantener todo original". Se adoptan los nombres propuestos; siguen centralizados en `src/content/locales/es.ts`. La numeración de las ediciones de los juegos se genera por partida (101–160) para no reproducir números de la obra de referencia.
 
 ---
 
-### D-02 · Estrategia de assets: sprites pre-renderizados desde 3D — PROPUESTA · CRÍTICA
+### D-02 · Estrategia de assets: sprites pre-renderizados desde 3D — APROBADA (2026-11-23) · CRÍTICA
 
 **Contexto.** El punto más débil de cualquier proyecto así es el arte: mezclar packs, usar figuras de colores o imágenes generadas inconsistentes produce exactamente el "aspecto de proyecto de IA" que el cliente rechaza. No hay ilustrador en el equipo y en este entorno no hay herramienta de generación de imágenes.
 
@@ -65,11 +65,19 @@ Estados posibles:
 
 **Riesgo.** El pipeline necesita un *spike* (Fase 1/2) para confirmar tiempos de render CPU y calidad. Si fallara, el plan B es (a) recoloreado y retocado por shader. Se dejará placeholder neutro mientras tanto, nunca marcado como definitivo.
 
-**Requiere del cliente:** aprobar el pipeline (afecta al aspecto final de todo el juego).
+**Aprobación (2026-11-23).** **Spike ejecutado el mismo día (F1-11) — veredicto: VIABLE.**
+- `bpy 5.3.0` (Blender headless) en el contenedor, Cycles en CPU: casa 2×2 (color + normales, 640 px) ≈ 10 s; minero en 8 direcciones (192 px) ≈ 7 s en total.
+- El normal map en espacio de cámara (convención OpenGL, +Y arriba) funciona tal cual con `setLighting(true)` de Phaser 4. Valores medidos frente a los teóricos: error ≤ 0,003. Evidencia: `docs/images/spike-light-left.png` y `spike-light-right.png`.
+- Requisitos que el spike impone al pipeline definitivo (Fase 2):
+  1. **Albedo sin luz direccional** (solo ambiente + oclusión), para no iluminar dos veces: la luz la pone Phaser.
+  2. **Sombra en capa separada** (sprite de sombra), porque una sombra horneada no sigue a la luz dinámica.
+  3. **Capa de emisión aditiva** (ventanas, lámparas), que no debe oscurecerse con la iluminación.
+  4. **Margen en el lienzo** de personajes para que la sombra no se recorte.
+- Pendiente: conseguir modelos CC0 reales (personajes con rig y animaciones) y comprobar su descarga desde este entorno.
 
 ---
 
-### D-03 · Motor y stack — PROPUESTA
+### D-03 · Motor y stack — APROBADA (2026-11-23)
 
 **Propuesta:** **Phaser 4.2.1** (no Phaser 3) + **TypeScript 6.0.3** + **React 19** (solo para interfaz) + **Vite 8** + **Vitest 5** + **IndexedDB vía `idb` 8** + **vite-plugin-pwa 2** + **GitHub Actions + GitHub Pages**.
 
@@ -85,11 +93,30 @@ Hallazgos verificados en el registro npm el 2026-11-23:
 
 **Matiz importante:** `TilemapGPULayer` de Phaser 4 **no soporta isométrico** (lo dice su documentación). El terreno isométrico se hará con capas de suelo pre-horneadas por *chunks* (RenderTexture) y los objetos como sprites ordenados por profundidad. Ver `TECHNICAL_ARCHITECTURE.md §5`.
 
-**Requiere del cliente:** aprobación (cambia la hipótesis inicial de Phaser 3).
+**Aprobación (2026-11-23).** Versiones instaladas en la Fase 1, todas fijadas y con ≥ 2 semanas de antigüedad (I-10):
+
+| Paquete | Versión | Nota |
+|---|---|---|
+| phaser | 4.2.1 | |
+| react / react-dom | 19.3.1 | |
+| idb | 8.0.4 | |
+| typescript | 6.0.3 | TS 7 descartado por typescript-eslint |
+| vite | 8.3.6 | 8.3.8 tenía < 2 semanas |
+| @vitejs/plugin-react | 6.2.1 | |
+| vite-plugin-pwa | 2.0.0 | |
+| vitest | 5.1.0 | |
+| @playwright/test | 1.63.0 | igual que el Playwright preinstalado: usa su Chromium sin descargar otro |
+| eslint / typescript-eslint | 10.14.0 / 8.72.1 | |
+| eslint-plugin-react-hooks | 7.1.1 | |
+| prettier | 3.9.10 | |
+| fake-indexeddb | 6.2.8 | solo tests |
+
+- **npm 10.9 falla** al resolver el árbol con vitest 5 (`Cannot read properties of null (reading 'edgesOut')`, bug de npm). Se resolvió instalando con **npm 11**. `npm ci` con npm 10 funciona sobre el lockfile (verificado).
+- `npm audit`: 11 avisos *moderate* en `minimatch`/`glob` a través de eslint y typescript-eslint. **Solo afectan a herramientas de desarrollo** (no llegan al juego publicado). Riesgo aceptado; se revisa al actualizar eslint.
 
 ---
 
-### D-04 · Ritmo temporal del ciclo — PROPUESTA
+### D-04 · Ritmo temporal del ciclo — APROBADA (2026-11-23)
 
 - Distrito en **tiempo continuo con pausa** (1 tick = 1 hora de juego; velocidades ×1/×2/×4).
 - **Un año de juego = 4 estaciones × 10 días = 40 días ≈ 32 min reales a ×1** (8 min a ×4).
@@ -99,43 +126,43 @@ Hallazgos verificados en el registro npm el 2026-11-23:
 
 **Alternativas.** Criba cada estación (demasiado frecuente: la población juvenil se agota y pierde peso emocional); cada 2 años (demasiado gestión entre competiciones).
 
-**Requiere del cliente:** aprobar el ritmo (afecta a toda la experiencia).
+**Aprobación (2026-11-23).** Implementado en `src/core/time/calendar.ts` y `src/game/session.ts`.
 
 ---
 
-### D-05 · Control en la arena: turnos tácticos + órdenes de larga duración — PROPUESTA
+### D-05 · Control en la arena: turnos tácticos + órdenes de larga duración — APROBADA (2026-11-23)
 
 Turnos por ronda (1 ronda = 1 hora de arena) con **2 Puntos de Acción** estilo táctico, **pero** el jugador puede dar órdenes que abarcan muchas rondas ("ve al río y busca comida hasta que anochezca", "escóndete y descansa"). La simulación avanza sola hasta que ocurre una **interrupción** (enemigo a la vista, regalo, evento del director, necesidad crítica, alianza propuesta).
 
 **Motivo.** 24 participantes × varios días × 24 rondas = cientos de rondas; jugar todas a mano agota. Así la arena es táctica cuando importa y fluida cuando no.
 
-**Requiere del cliente:** aprobación (define cómo se juega la mitad del juego).
+**Aprobación (2026-11-23).**
 
 ---
 
-### D-06 · Alcance del MVP ("rebanada vertical") — PROPUESTA
+### D-06 · Alcance del MVP ("rebanada vertical") — APROBADA (2026-11-23)
 
 El MVP es **un ciclo completo jugable en el Distrito XII**: distrito vivo → Criba → 7 días en Áurea → arena forestal con 24 participantes → regreso con consecuencias → siguiente año. Detalle en `ROADMAP.md §MVP`. Fuera del MVP: otros distritos jugables, gestión multi-distrito, multijugador, arenas adicionales, Jubileos.
 
-**Requiere del cliente:** confirmar el alcance.
+**Aprobación (2026-11-23).**
 
 ---
 
-### D-07 · "Esqueleto andante" desde la Fase 1 — PROPUESTA
+### D-07 · "Esqueleto andante" desde la Fase 1 — APROBADA (2026-11-23)
 
 Ajuste a la metodología del prompt: en la Fase 1 se crea el flujo **completo** de pantallas del ciclo (Distrito → Criba → Capital → Arena → Regreso) con contenido mínimo, conectado al estado real. Cada fase posterior **rellena** una etapa en lugar de construir capas aisladas.
 
 **Motivo.** La arena (Fase 7) es el sistema de mayor riesgo y, con fases horizontales, no se integraría hasta muy tarde. El esqueleto garantiza que la integración existe desde el día uno. Además se adelanta un **prototipo headless de la IA de arena** en paralelo a la Fase 4 (sin gráficos, solo simulación y estadísticas).
 
-**Requiere del cliente:** aprobación (cambia ligeramente el orden de trabajo, no el alcance).
+**Aprobación (2026-11-23).** Esqueleto implementado en la Fase 1: el ciclo completo se recorre con transiciones reales; los paneles de Criba, Áurea, Arena y Regreso están marcados como PROVISIONAL.
 
 ---
 
-### D-08 · Orientación en móvil — PROPUESTA
+### D-08 · Orientación en móvil — APROBADA (2026-11-23)
 
 Horizontal como orientación principal en teléfono para distrito y arena (mapas anchos); vertical **soportado** con interfaz en *bottom sheets*. Fichas, menús y escenas de la capital funcionan bien en ambas.
 
-**Requiere del cliente:** confirmar (si prefiere vertical como principal, cambia el diseño de la HUD).
+**Aprobación (2026-11-23).** La HUD de la Fase 1 ya se adapta a horizontal (una fila) y vertical (dos filas).
 
 ---
 
@@ -162,4 +189,10 @@ Auditoría del 2026-11-23: la skill **no está instalada** en esta sesión (no a
 | I-09 | Simulación en el hilo principal en el MVP, pero con interfaz de mensajes lista para moverla a un **Web Worker**. | Evitar complejidad prematura sin cerrar la puerta. |
 | I-10 | Política de dependencias: versión exacta fijada, publicada hace ≥ 2 semanas, mantenida activamente y justificada en este documento. | Estabilidad y cadena de suministro. |
 | I-11 | Cuadrícula lógica **cuadrada** con representación isométrica 2:1 (distrito y arena). | Lógica simple (vecinos, A*, línea de visión) independiente del dibujo; el isométrico es solo proyección. |
-| I-12 | Identificadores de entidades: cadenas cortas generadas por el RNG con semilla (`c_8f3a…`). | Estables entre guardados y aptas para red. |
+| I-12 | Identificadores de entidades: prefijo + contador en base 36 guardado en el estado (`h_1a`). *(Sustituye a la idea inicial de generarlos con el RNG.)* | Deterministas, estables entre guardados, aptos para red y no consumen aleatoriedad. |
+| I-13 | Despliegue a GitHub Pages desde la **rama por defecto** del repositorio, no desde un nombre fijo. | Hoy la única rama (y la de por defecto) es la de desarrollo; cuando exista `main` y se marque por defecto, no hay que tocar el workflow. |
+| I-14 | Imports con extensión `.ts` + `erasableSyntaxOnly`. | Node 22 ejecuta las herramientas TS (`npm run sim`, iconos) de forma nativa, sin añadir `tsx` ni compilar. |
+| I-15 | Tipografías propias (OFL) aplazadas a la Fase 2; en la Fase 1 se usan las del sistema con tokens preparados. | Se eligen con maquetas reales (ART_BIBLE §7.1); evita añadir dependencias antes de tiempo. |
+| I-16 | Herramientas de depuración solo con `?debug` en la URL; aceleran la simulación real, nunca inventan estado. | Necesarias para probar ciclos completos en E2E sin esperar 16 minutos reales. |
+| I-17 | El motor (Phaser) se carga **bajo demanda** tras el menú. | Menú interactivo con 80 KB gzip; Phaser (359 KB gzip) llega después. |
+| I-18 | Extensión de las copias de seguridad: `.diezmo` (gzip interno). | Safari descomprime automáticamente los `.gz` al descargarlos. |
