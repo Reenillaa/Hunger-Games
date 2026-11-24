@@ -3,6 +3,8 @@ import { nextFloat, pick } from '../rng/rng.ts';
 import type { DistrictTemplate, PropKind, StructureKind, TerrainCode } from './template.ts';
 import { isBuildable, terrainAt } from './template.ts';
 import { buildWalkGrid, entranceOf } from './walkGrid.ts';
+import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
+import { HOME_DISTRICTS } from '../../content/homeDistricts.ts';
 
 export interface PlacedStructure {
   id: string;
@@ -39,20 +41,6 @@ export interface DistrictState {
 
 export type FootprintTable = Record<StructureKind, { w: number; d: number }>;
 
-/** Fixed landmarks of District XII (positions designed against the d12 template). */
-const LANDMARKS: { kind: StructureKind; x: number; y: number }[] = [
-  // The Criba is held on the stage built against the town hall's steps, facing the plaza.
-  { kind: 'town_hall', x: 25, y: 17 },
-  { kind: 'stage', x: 25, y: 20 },
-  { kind: 'mine_headframe', x: 15, y: 7 },
-  { kind: 'warehouse', x: 38, y: 20 },
-  { kind: 'economato', x: 31, y: 25 },
-  { kind: 'lumber_camp', x: 12, y: 31 },
-  { kind: 'quarry', x: 37, y: 9 },
-];
-
-const HOUSES = { house_terrace: 9, house_shack: 13 } as const;
-
 /** Two decimals; `+ 0` turns -0 into 0 so JSON round-trips are exact. */
 const round2 = (v: number) => Math.round(v * 100) / 100 + 0;
 
@@ -64,6 +52,7 @@ export function generateDistrict(
   template: DistrictTemplate,
   footprints: FootprintTable,
   rng: RngState,
+  profile: HomeDistrictProfile = HOME_DISTRICTS.d12,
 ): DistrictState {
   const occupied = new Set<string>();
   const key = (x: number, y: number) => `${x},${y}`;
@@ -91,7 +80,7 @@ export function generateDistrict(
     });
   };
 
-  for (const l of LANDMARKS) place(l.kind, l.x, l.y);
+  for (const l of profile.landmarks) place(l.kind, l.x, l.y);
 
   // Houses: as close to the plaza as possible, with a one-cell alley around each.
   const { plaza } = template;
@@ -162,7 +151,7 @@ export function generateDistrict(
       occupied.delete(key(cx, cy));
     return false;
   };
-  const remaining: Record<'house_terrace' | 'house_shack', number> = { ...HOUSES };
+  const remaining: Record<'house_terrace' | 'house_shack', number> = { ...profile.houses };
   for (const c of candidates) {
     if (remaining.house_terrace + remaining.house_shack === 0) break;
     const order: ('house_terrace' | 'house_shack')[] =
@@ -189,7 +178,7 @@ export function generateDistrict(
     occupied.add(key(x, y));
     props.push({ kind, x, y, ox: jitter ? offset() : 0, oy: jitter ? offset() : 0 });
   };
-  const pines: PropKind[] = ['pine_a', 'pine_b', 'pine_c'];
+  const pines: PropKind[] = profile.trees;
   const rocks: PropKind[] = ['rock_a', 'rock_b', 'rock_c'];
   for (let y = 0; y < template.height; y++) {
     for (let x = 0; x < template.width; x++) {
@@ -213,14 +202,8 @@ export function generateDistrict(
       if ((x * 7 + y * 13) % 5 === 0) addProp('lamp', x, y, false);
     }
   }
-  // Working clutter near the mine, warehouse, station and shop.
-  const clutter: [PropKind, number, number][] = [
-    ['coal_heap', 18, 10],
-    ['coal_heap', 42, 23],
-    ['coal_heap', 42, 27],
-    ['supplies', 37, 23],
-    ['supplies', 33, 27],
-  ];
+  // Working clutter of the district's trade (coal heaps, hay, boats in the harbour).
+  const clutter = profile.clutter;
   for (const [kind, x, y] of clutter) if (!occupied.has(key(x, y))) addProp(kind, x, y);
   // The Capitol's propaganda: posters along the roads into the plaza (original designs).
   let posters = 0;

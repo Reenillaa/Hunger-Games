@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { DISTRICTS, HOME_DISTRICT_NUMBER } from '../../content/districts.ts';
+import { PLAYABLE_DISTRICTS, profileByNumber } from '../../content/homeDistricts.ts';
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
 import world from '../../content/maps/world.json' with { type: 'json' };
@@ -15,7 +16,7 @@ import { useServices } from '../services.ts';
 import styles from '../ui.module.css';
 
 interface Props {
-  onNewGame(): void;
+  onNewGame(homeDistrict: 'd12' | 'd11' | 'd4'): void;
   onContinue(): void;
   onLoad(): void;
 }
@@ -82,6 +83,7 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
 
   const district = selected === 'aurea' ? null : DISTRICTS[Number(selected.slice(1)) - 1]!;
   const isHome = district?.id === HOME_DISTRICT_NUMBER;
+  const playable = district ? profileByNumber(district.id) : undefined;
   const small =
     typeof window !== 'undefined' && Math.max(window.innerWidth, window.innerHeight) < 900;
 
@@ -98,7 +100,7 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
           <div className={styles.candle} aria-hidden="true" />
           {Object.entries(MARKERS).map(([id, [x, y]]) => {
             const d = id === 'aurea' ? null : DISTRICTS[Number(id.slice(1)) - 1]!;
-            const home = d?.id === HOME_DISTRICT_NUMBER;
+            const home = !!d && PLAYABLE_DISTRICTS.includes(d.id);
             return (
               <button
                 key={id}
@@ -147,7 +149,9 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
       <aside className={styles.mapCard} aria-live="polite" data-testid="place-card">
         <p className={styles.mapCardKicker}>
           {district ? district.industry : t('map.capital')}
-          {isHome && <span className={styles.homeTag}>{t('map.home')}</span>}
+          {playable && (
+            <span className={styles.homeTag}>{t(isHome ? 'map.home' : 'map.playable')}</span>
+          )}
         </p>
         <h2 className={styles.mapCardTitle}>{district ? district.name : t('capital.name')}</h2>
         <p className={styles.mapCardText}>
@@ -159,11 +163,11 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
             <Bar label={t('map.academies')} value={district.training} />
           </div>
         )}
-        {isHome ? (
+        {playable ? (
           <button
             type="button"
             className={`${styles.button} ${latest ? '' : styles.primary} ${styles.mapPlay}`}
-            onClick={onNewGame}
+            onClick={() => onNewGame(playable.id)}
           >
             {t('map.play')}
           </button>

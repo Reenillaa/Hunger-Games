@@ -1,3 +1,5 @@
+import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
+import { homeProfile } from '../../content/homeDistricts.ts';
 import { createRegime } from '../regime/regime.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import { TEMPLATES } from '../../content/maps/index.ts';
@@ -12,6 +14,8 @@ import { STATE_SCHEMA_VERSION, nextId } from './gameState.ts';
 export interface NewGameOptions {
   /** Any string; the same seed always produces the same world. */
   seed: string;
+  /** Playable home district (d12 by default). */
+  homeDistrict?: HomeDistrictProfile['id'];
 }
 
 export const HOME_DISTRICT_ID = 'd12';
@@ -35,13 +39,14 @@ export function createNewGame(options: NewGameOptions): GameState {
   if (seed.length === 0) throw new RangeError('createNewGame: seed must not be empty');
   const rng = createStreams(seed);
   const firstEdition = nextInt(rng.world, 101, 160);
-  const template = TEMPLATES[HOME_DISTRICT_ID];
-  if (!template) throw new Error(`Missing district template ${HOME_DISTRICT_ID}`);
+  const profile = homeProfile(options.homeDistrict ?? HOME_DISTRICT_ID);
+  const template = TEMPLATES[profile.templateId];
+  if (!template) throw new Error(`Missing district template ${profile.templateId}`);
   const state: GameState = {
     schemaVersion: STATE_SCHEMA_VERSION,
     meta: {
       seed,
-      homeDistrictId: HOME_DISTRICT_ID,
+      homeDistrictId: profile.id,
       // Original numbering for the yearly games; varies per playthrough.
       firstEdition,
     },
@@ -49,8 +54,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     phase: { kind: 'district' },
     away: { days: 0 },
     competition: { lastSelectionYear: null, current: null, history: [] },
-    district: generateDistrict(template, STRUCTURE_FOOTPRINTS, rng.world),
-    economy: initialEconomy(),
+    district: generateDistrict(template, STRUCTURE_FOOTPRINTS, rng.world, profile),
+    economy: initialEconomy(profile),
     population: { citizens: {} },
     games: null,
     arena: null,

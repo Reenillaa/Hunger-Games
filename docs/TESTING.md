@@ -80,3 +80,5 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 10 | WebP | Sprites y personajes 18,3 MB → 3,0 MB; `public/assets` total ≈ 14 MB |
 | 2026-11-24 | 10 | HUD v3: `vitest` 106/106, `playwright` **16/16**; capturas escritorio/iPhone (`docs/images/hud-v3-*.jpg`) | Corregidos: banda superior detrás del lienzo (faltaba contexto de apilado) y quinta casilla de recursos cortada en iPhone vertical |
 | 2026-11-24 | 10 | Paneles con el lenguaje de la HUD v3 (esquinas doradas, títulos en oro, filete ornamental): `vitest` 106/106, `playwright` 16/16 | `docs/images/hud-v3-panels.jpg` |
+| 2026-11-24 | 10 | Distritos 4 y 11 + retratos v2: `vitest` **111/111** (nuevos: generación conectada de los 3 distritos, cuota de comida con reserva, lonja junto al agua), `playwright` **18/18** (nuevo: partida en el Distrito 4 desde el mapa) | Capturas `docs/images/district-d11.jpg`, `district-d4.jpg`, `citizen-dossier.jpg`; render de terreno d11 655 s, d4 ≈ 700 s |
+

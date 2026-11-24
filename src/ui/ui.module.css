@@ -2394,10 +2394,61 @@
         transparent
       )
       center / 100% 1px no-repeat,
-    linear-gradient(45deg, transparent 40%, #e3c06a 40%, #e3c06a 60%, transparent 60%) center / 7px
-      7px no-repeat;
+    radial-gradient(circle, #e3c06a 0 2.5px, transparent 3px) center / 8px 8px no-repeat;
 }
 
 .regimeLine {
   color: var(--c-gold);
+}
+
+.quotaLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.quotaLabel svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ---------- Citizen dossier ---------- */
+.dossierStamp {
+  margin: 0 0 var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c0392b;
+}
+
+.portraitFrame {
+  display: inline-block;
+  padding: 4px;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #f3d98f, #8c6b22);
+  box-shadow:
+    0 6px 16px rgb(0 0 0 / 0.55),
+    inset 0 0 0 1px rgb(255 255 255 / 0.35);
+  line-height: 0;
+  transform: rotate(-1.2deg);
+}
+
+.traitChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+}
+
+.traitChip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgb(201 164 76 / 0.14);
+  border: 1px solid rgb(201 164 76 / 0.35);
+  color: #f1dcae;
 }

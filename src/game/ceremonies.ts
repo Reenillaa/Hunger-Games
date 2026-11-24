@@ -1,6 +1,7 @@
 import type { Citizen, GameState } from '../core/index.ts';
 import { ageOf, fullName } from '../core/index.ts';
 import type { CineStep } from './cinematic.ts';
+import type { LocaleKey } from '../content/i18n.ts';
 import { t } from '../content/i18n.ts';
 
 const PLAZA = { x: 26, y: 24 };
@@ -137,7 +138,11 @@ export function buildReturnCeremony(state: Readonly<GameState>, edition: number)
     { kind: 'camera', cell: STATION, zoom: 0.85, ms: 0 },
     { kind: 'title', title: t('ret.title'), ms: 3200 },
     { kind: 'fade', to: 'clear', ms: 600 },
-    { kind: 'line', text: t('ret.train'), ms: 3800 },
+    {
+      kind: 'line',
+      text: t('ret.train', { n: String(homeProfile(state.meta.homeDistrictId).number) }),
+      ms: 3800,
+    },
   ];
   for (const r of [...result.home].sort((a, b) => Number(b.alive) - Number(a.alive))) {
     const c = state.population.citizens[r.citizenId];
@@ -164,19 +169,21 @@ export function buildReturnCeremony(state: Readonly<GameState>, edition: number)
   return steps;
 }
 
-const MINE = { x: 17, y: 10 };
+import { homeProfile } from '../content/homeDistricts.ts';
 
 /** The opening of a new game: the world in four lines, over the district itself. */
-export function buildPrologue(): CineStep[] {
+export function buildPrologue(state: Readonly<GameState>): CineStep[] {
+  const profile = homeProfile(state.meta.homeDistrictId);
+  const n = String(profile.number);
   return [
     { kind: 'camera', cell: { x: 30, y: 30 }, zoom: 0.55, ms: 0 },
-    { kind: 'title', title: t('pro.title'), subtitle: t('pro.subtitle'), ms: 3600 },
+    { kind: 'title', title: t('pro.title'), subtitle: t('pro.subtitle', { n }), ms: 3600 },
     { kind: 'fade', to: 'clear', ms: 800 },
     { kind: 'line', text: t('pro.1'), ms: 4600 },
     { kind: 'camera', cell: STAGE, zoom: 0.9, ms: 0 },
     { kind: 'line', text: t('pro.2'), ms: 4600 },
-    { kind: 'camera', cell: MINE, zoom: 0.75, ms: 0 },
-    { kind: 'line', text: t('pro.3'), ms: 4400 },
+    { kind: 'camera', cell: profile.showcase, zoom: 0.75, ms: 0 },
+    { kind: 'line', text: t(`pro.3.${profile.id}` as LocaleKey), ms: 4400 },
     { kind: 'camera', cell: PLAZA, zoom: 0.7, ms: 0 },
     { kind: 'line', text: t('pro.4'), ms: 5200 },
   ];

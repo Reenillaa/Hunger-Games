@@ -1,3 +1,4 @@
+import { homeProfile } from '../../content/homeDistricts.ts';
 import type { ResourceId } from '../../core/index.ts';
 import { dailyFoodNeed, storageCapacity } from '../../core/index.ts';
 import { t } from '../../content/i18n.ts';
@@ -53,7 +54,10 @@ export function ResourceBar({ session }: { session: GameSession }) {
   const e = state.economy;
   const cap = storageCapacity(state);
   const foodDays = e.resources.food / Math.max(1, dailyFoodNeed(state));
-  const quota = Math.min(1, e.resources.coal / Math.max(1, e.quota.required));
+  const profile = homeProfile(state.meta.homeDistrictId);
+  const quotaRes = profile.quotaResource;
+  const quota = Math.min(1, e.resources[quotaRes] / Math.max(1, e.quota.required));
+  const QuotaIcon = ICONS[quotaRes];
   const attention = e.attention;
   return (
     <div className={styles.resources} data-testid="resources">
@@ -62,7 +66,8 @@ export function ResourceBar({ session }: { session: GameSession }) {
           const Icon = ICONS[id];
           const value = Math.floor(e.resources[id]);
           const warn =
-            (id === 'food' && foodDays < 2) || (id === 'coal' && value < e.quota.required * 0.5);
+            (id === 'food' && foodDays < 2) ||
+            (id === quotaRes && id !== 'food' && value < e.quota.required * 0.5);
           return (
             <span
               key={id}
@@ -86,12 +91,14 @@ export function ResourceBar({ session }: { session: GameSession }) {
       </div>
       <div className={styles.gauges}>
         <span className={styles.quota} title={t('hud.quota', { required: e.quota.required })}>
-          <small>{t('hud.quotaShort')}</small>
+          <small className={styles.quotaLabel}>
+            <QuotaIcon /> {t('hud.quotaShort')}
+          </small>
           <span className={styles.quotaBar}>
             <i style={{ width: `${quota * 100}%` }} />
           </span>
           <b>
-            {Math.floor(e.resources.coal)}/{e.quota.required}
+            {Math.floor(e.resources[quotaRes])}/{e.quota.required}
           </b>
         </span>
         <Ring

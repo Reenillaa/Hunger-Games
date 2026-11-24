@@ -655,6 +655,85 @@ def poster_a(m): poster_board(m, "poster_a")
 def poster_b(m): poster_board(m, "poster_b")
 
 
+# ----------------------------------------------------------------------------- other districts
+
+def farm(m) -> None:
+    """District 11: a barn with a hayloft and rows of wheat inside a fence (3x3)."""
+    wheat = M.flat("Wheat", "#D8B04E", roughness=0.9)
+    soil = M.flat("Soil", "#4E3A28", roughness=1.0)
+    K.box((2.9, 2.9, 0.04), (0, 0, 0.02), soil, name="Field")
+    for r in range(9):
+        y = -1.2 + r * 0.3
+        if -0.35 < y < 1.0 and r > 4:
+            continue
+        for k in range(18):
+            x = -1.32 + k * 0.155
+            if x > 0.15 and y > -0.35:
+                continue
+            h = 0.16 + 0.05 * K.jitter(r * 31 + k, 4)
+            K.box((0.05, 0.05, h), (x, y, 0.04 + h / 2), wheat, rot=(0.12 * K.jitter(k, r), 0.1 * K.jitter(r, k), 0), name="Wheat")
+    red = M.flat("BarnRed", "#8E2E24", roughness=0.85)
+    K.box((1.0, 1.2, 0.75), (0.75, 0.55, 0.375), red, bevel=0.01, name="Barn")
+    for side in (-1, 1):
+        K.box((1.12, 0.72, 0.05), (0.75, 0.55 + side * 0.3, 0.92), m["roof_dark"], rot=(side * -0.62, 0, 0), name="BarnRoof")
+    K.box((0.4, 0.04, 0.5), (0.75, -0.06, 0.26), m["planks_pale"], name="BarnDoor")
+    K.box((0.04, 0.04, 0.5), (0.75, -0.08, 0.26), m["beam"], name="DoorX")
+    for k in range(4):
+        K.box((0.04, 0.04, 0.45), (-1.42 + k * 0.95, -1.42, 0.22), m["beam"], name="FencePost")
+    K.box((2.9, 0.03, 0.03), (0, -1.42, 0.36), m["beam"], name="FenceRail")
+    K.cylinder(0.02, 0.8, (-0.6, -0.6, 0.4), m["beam"], verts=6, name="Scarecrow")
+    K.box((0.5, 0.03, 0.03), (-0.6, -0.6, 0.62), m["beam"], name="ScarecrowArms")
+    K.cylinder(0.08, 0.1, (-0.6, -0.6, 0.85), wheat, verts=10, name="ScarecrowHead")
+    for i in range(3):
+        K.cylinder(0.16, 0.22, (1.25, -0.4 + i * 0.36, 0.11), wheat, rot=(0, 1.5708, 0), verts=14, name="HayBale")
+
+
+def fishery(m) -> None:
+    """District 4: a fishing shed by the water with drying nets, barrels and a boat on trestles (3x2)."""
+    blue = M.flat("ShedBlue", "#3E5A6E", roughness=0.85)
+    K.box((1.3, 1.0, 0.7), (-0.55, 0.25, 0.35), blue, bevel=0.01, name="Shed")
+    K.box((1.45, 1.15, 0.06), (-0.55, 0.25, 0.75), m["roof_rust"], rot=(0.18, 0, 0), name="Roof")
+    K.box((0.35, 0.04, 0.5), (-0.55, -0.27, 0.25), m["planks_pale"], name="ShedDoor")
+    net = M.flat("Net", "#6E7A6A", roughness=1.0)
+    for k in range(3):
+        x = 0.45 + k * 0.32
+        K.cylinder(0.02, 0.7, (x, -0.35, 0.35), m["beam"], verts=6, name="NetPole")
+    K.box((0.7, 0.01, 0.45), (0.77, -0.35, 0.42), net, name="Net")
+    for i, (x, y) in enumerate(((0.3, 0.45), (0.5, 0.6), (0.2, 0.7))):
+        K.barrel((x, y, 0), m, radius=0.1, height=0.24)
+    hull = M.flat("Hull", "#C8B48A", roughness=0.7)
+    stripe = M.flat("HullStripe", "#9C1C2B", roughness=0.6)
+    for x in (0.7, 1.2):
+        K.box((0.05, 0.4, 0.22), (x, 0.55, 0.11), m["beam"], name="Trestle")
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=0.5, location=(0.95, 0.55, 0.36))
+    boat = bpy.context.active_object
+    boat.scale = (1.0, 0.32, 0.22)
+    boat.data.materials.append(hull)
+    K.box((0.95, 0.33, 0.03), (0.95, 0.55, 0.38), stripe, name="Stripe")
+
+
+def fruit_tree(m) -> None:
+    """District 11 orchards: a pruned, round fruit tree."""
+    K.cylinder(0.05, 0.6, (0, 0, 0.3), m["bark"], verts=8, name="Trunk")
+    leaves = M.flat("OrchardLeaf", "#4E7A2E", roughness=0.85)
+    _foliage((0, 0, 0.85), 0.42, leaves, 81, squash=0.85)
+    fruit = M.flat("Fruit", "#C8382A", roughness=0.4)
+    for k in range(10):
+        a = k * 2.4
+        K.cylinder(0.04, 0.05, (0.36 * math.cos(a), 0.36 * math.sin(a), 0.72 + 0.1 * K.jitter(k, 3)), fruit, verts=8, name="Fruit")
+
+
+def boat(m) -> None:
+    """District 4: a small fishing boat afloat (placed on water cells)."""
+    hull = M.flat("Hull", "#C8B48A", roughness=0.7)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=0.45, location=(0, 0, -0.02))
+    b = bpy.context.active_object
+    b.scale = (1.0, 0.36, 0.25)
+    b.data.materials.append(hull)
+    K.box((0.85, 0.3, 0.03), (0, 0, 0.06), M.flat("HullStripe", "#3E5A6E", 0.6), name="Deck")
+    K.cylinder(0.015, 0.7, (0.05, 0, 0.4), m["beam"], verts=6, name="Mast")
+
+
 CATALOGUE = {
     # name: (builder, footprint (w, d), canvas (w, h) px at 2x, kind)
     "house_shack": (house_shack, (2, 2), "building"),
@@ -696,6 +775,10 @@ CATALOGUE = {
     "pedestal": (pedestal, (1, 1), "prop"),
     "relicario": (relicario, (4, 4), "building"),
     "poster_a": (poster_a, (1, 1), "prop"),
+    "farm": (farm, (3, 3), "building"),
+    "fishery": (fishery, (3, 2), "building"),
+    "fruit_tree": (fruit_tree, (1, 1), "tree"),
+    "boat": (boat, (1, 1), "prop"),
     "poster_b": (poster_b, (1, 1), "prop"),
 }
 

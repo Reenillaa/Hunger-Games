@@ -56,6 +56,34 @@ MAPS = {
         },
     },
 }
+MAPS["d11"] = {
+    "out": "public/assets/districts/d11/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#151a12",
+    "dirt_tint": "#6E5A42",
+    "layers": {
+        "dry": {"g": 0.55, "f": 0.1, "s": 0.4},
+        "forest": {},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "f": 0.35},
+        "coal": {},
+        "gravel": {"t": 1.0},
+        "cobble": {"p": 1.0},
+        "rock": {"R": 1.0, "s": 0.45},
+    },
+}
+MAPS["d4"] = {
+    "out": "public/assets/districts/d4/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": False, "background": "#101a20",
+    "dirt_tint": "#D8C08E",
+    "layers": {
+        "dry": {"g": 0.3, "s": 0.4},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 1.0, "w": 0.7, "b": 0.9, "p": 0.6},
+        "coal": {},
+        "gravel": {"t": 1.0},
+        "cobble": {"p": 1.0},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
 CFG = MAPS[MAP]
 TEMPLATE = json.loads((ROOT / f"src/content/maps/{MAP}.json").read_text(encoding="utf8"))
 W, H = TEMPLATE["width"], TEMPLATE["height"]
@@ -103,7 +131,7 @@ def _raw_elev(x: int, y: int) -> float:
     xc, yc = min(max(x, 0), W - 1), min(max(y, 0), H - 1)
     e = max(ELEV[yc][xc], 0.0)
     # Beyond the back edges the mountains keep rising gently; beyond the front they stay flat.
-    if CFG["rise_back"] and (y < 0 or (x < 0 and y < 26)):
+    if CFG["rise_back"] and (y < 0 or (CFG.get("rise_left", True) and x < 0 and y < 26)):
         e += 0.35 * max(-x, -y, 0)
     return e
 
@@ -253,7 +281,7 @@ def terrain_material() -> bpy.types.Material:
 
     state = tex("grass_patchy", scale=0.7, normal_strength=1.6, saturation=0.85, value=0.72, tint="#5E7F38", tint_amount=0.3)
     state = blend(state, tex("grass_dry", scale=0.6, normal_strength=1.6, saturation=0.7, value=0.7, tint="#8C8044", tint_amount=0.3), breakup("dry", 0.3, 1.3))
-    state = blend(state, tex("dirt_light", scale=0.55, normal_strength=1.8, saturation=0.55, value=0.58, tint="#6E5A42", tint_amount=0.25), breakup("dirt", 0.28, 1.1))
+    state = blend(state, tex("dirt_light", scale=0.55, normal_strength=1.8, saturation=0.55, value=0.58 if MAP != "d4" else 0.95, tint=CFG.get("dirt_tint", "#6E5A42"), tint_amount=0.25 if MAP != "d4" else 0.55), breakup("dirt", 0.28, 1.1))
     state = blend(state, tex("dirt_coal", scale=0.6, normal_strength=1.8, saturation=0.3, value=0.33, tint="#3B3A2E", tint_amount=0.3), breakup("forest", 0.3, 1.5))
     state = blend(state, tex("dirt_coal", scale=0.7, normal_strength=2.0, saturation=0.2, value=0.4), breakup("coal", 0.18, 1.0))
     state = blend(state, tex("gravel", scale=1.0, normal_strength=2.0, saturation=0.2, value=0.5), breakup("gravel", 0.12, 2.0))

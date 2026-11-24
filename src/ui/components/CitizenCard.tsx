@@ -6,7 +6,9 @@ import type { GameSession } from '../../game/session.ts';
 import { useSession } from '../useSession.ts';
 import { useUi } from '../useUi.ts';
 import { Dialog } from './Dialog.tsx';
+import type { Outfit } from './Portrait.tsx';
 import { Portrait } from './Portrait.tsx';
+import { homeProfile } from '../../content/homeDistricts.ts';
 import styles from '../ui.module.css';
 
 export function jobLabel(state: Readonly<GameState>, c: Citizen): string {
@@ -98,20 +100,36 @@ export function CitizenCard({ session }: { session: GameSession }) {
     .slice(0, 6);
   const home = c.homeId ? state.district.structures.find((s) => s.id === c.homeId) : null;
   const topSkills = [...SKILL_IDS].sort((a, b) => c.skills[b] - c.skills[a]).slice(0, 5);
-  const miner =
-    !!c.jobId && state.district.structures.find((s) => s.id === c.jobId)?.kind === 'mine_headframe';
+  const jobKind = c.jobId
+    ? state.district.structures.find((s) => s.id === c.jobId)?.kind
+    : undefined;
+  const outfit: Outfit =
+    jobKind === 'mine_headframe'
+      ? 'miner'
+      : jobKind === 'farm' || jobKind === 'garden'
+        ? 'farmer'
+        : jobKind === 'fishery'
+          ? 'fisher'
+          : 'plain';
+  const number = homeProfile(state.meta.homeDistrictId).number;
   return (
     <Dialog title={fullName(c)} onClose={() => session.ui.openCitizen(null)}>
+      <p className={styles.dossierStamp}>
+        {t('card.dossier', { n: number })} · {c.id.toUpperCase()}
+        {c.laureate !== undefined && <span className={styles.homeTag}>{t('card.laureate')}</span>}
+      </p>
       <div className={styles.cardHead} data-testid="citizen-card">
-        <Portrait
-          genes={c.genes}
-          sex={c.sex}
-          age={age}
-          mood={c.mood}
-          miner={miner}
-          dead={!c.alive}
-          size={104}
-        />
+        <span className={styles.portraitFrame}>
+          <Portrait
+            genes={c.genes}
+            sex={c.sex}
+            age={age}
+            mood={c.mood}
+            outfit={outfit}
+            dead={!c.alive}
+            size={112}
+          />
+        </span>
         <div className={styles.cardFacts}>
           <p className={styles.slotName}>
             {t('pop.age', { n: age })} · {jobLabel(state, c)}
@@ -121,8 +139,12 @@ export function CitizenCard({ session }: { session: GameSession }) {
               {t('card.home', { home: t(`b.${home.kind}` as LocaleKey) })}
             </p>
           )}
-          <p className={styles.traits}>
-            {c.traits.map((tr) => t(`trait.${tr}` as LocaleKey)).join(' · ')}
+          <p className={styles.traitChips}>
+            {c.traits.map((tr) => (
+              <span key={tr} className={styles.traitChip}>
+                {t(`trait.${tr}` as LocaleKey)}
+              </span>
+            ))}
           </p>
           {c.alive && (
             <>

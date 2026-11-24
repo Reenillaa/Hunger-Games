@@ -28,9 +28,10 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F10-04 | Equilibrado de la arena | ✅ | Jugando bien el Distrito 12 gana ≈ 19 % (150 partidas headless); sin órdenes ≈ 1–5 % |
 | F10-05 | Arena: árboles y ruinas en el terreno de la arena con oclusión transparente verificada en iPhone | P2 | Captura en iPhone real |
 | F10-06 | Crónica de ediciones | ✅ | `ChroniclePanel` desde la barra superior; E2E nuevo |
-| F10-08 | Hacer jugables otros distritos (plantilla, economía y perfil propios) desde el mapa de inicio | P2 | Seleccionar otro distrito en el mapa inicia una partida en él |
+| F10-08 | Distritos jugables desde el mapa | ✅ | 4 (costa, lonjas), 11 (campos, granjas) y 12 (minas); tests por distrito + E2E |
 | F10-09 | Sonido procedural (viento, mina, pájaros, grillos, multitud, campana de la Cosecha, cañonazo por cada caído) | ✅ | `src/platform/audio.ts` + `AudioDirector` |
 | F10-10 | Prólogo cinemático de nueva partida | ✅ | `buildPrologue`; el reloj espera a que termine |
+| F10-11 | Retratos v2 y expediente del ciudadano | ✅ | `Portrait.tsx`, `CitizenCard.tsx` |
 | F10-07 | Prueba en iPhone real + PWA instalada (C-3) | P0 | Checklist de `TESTING.md` §3 |
 
 ## Investigación (cuando exista la Reverse Engineering Skill)

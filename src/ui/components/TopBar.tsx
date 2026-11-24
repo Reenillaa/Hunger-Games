@@ -1,3 +1,4 @@
+import { homeProfile } from '../../content/homeDistricts.ts';
 import { t } from '../../content/i18n.ts';
 import type { GameSession, GameSpeed } from '../../game/session.ts';
 import {
@@ -47,7 +48,9 @@ export function TopBar({ session, onSave, onMenu }: Props) {
         <span className={styles.crestMedal}>
           <EmblemIcon />
         </span>
-        <span className={styles.crestRibbon}>{t('district.d12.name')}</span>
+        <span className={styles.crestRibbon}>
+          {t('map.district', { n: homeProfile(state.meta.homeDistrictId).number })}
+        </span>
       </div>
 
       <div className={styles.datePlaque}>

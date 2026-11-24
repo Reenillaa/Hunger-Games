@@ -113,6 +113,7 @@ export function ArenaPanel({ session }: { session: GameSession }) {
         >
           <Portrait
             genes={c.genes}
+            outfit="tribute"
             sex={c.sex}
             age={c.age}
             mood={100 - a.stress}

@@ -68,7 +68,7 @@ export class GameSession {
 
   /** Played once when a new game starts (skippable; the clock waits for it). */
   playPrologue(): void {
-    this.playCinematic('prologue', buildPrologue());
+    this.playCinematic('prologue', buildPrologue(this.state));
   }
 
   private playSelectionCeremony(): void {

@@ -1,3 +1,5 @@
+import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
+import { HOME_DISTRICTS, homeProfile } from '../../content/homeDistricts.ts';
 import { decreeFactor } from '../regime/regime.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { BuildingDef } from '../../content/buildings.ts';
@@ -42,10 +44,10 @@ export interface EconomyState {
 
 export const MAX_BUILDERS_PER_SITE = 4;
 
-export function initialEconomy(): EconomyState {
+export function initialEconomy(profile: HomeDistrictProfile = HOME_DISTRICTS.d12): EconomyState {
   return {
-    resources: { ...START_RESOURCES },
-    quota: { required: BASE_QUOTA, delivered: 0, history: [] },
+    resources: { ...(profile.startResources ?? START_RESOURCES) },
+    quota: { required: profile.baseQuota ?? BASE_QUOTA, delivered: 0, history: [] },
     population: { adults: 72, children: 48 },
     morale: 60,
     attention: 10,
@@ -167,13 +169,16 @@ export function economyDay(state: GameState, date: CalendarDate, ctx: SimContext
     e.morale = Math.max(0, e.morale - 1 - 6 * e.shortage);
     ctx.emit({ type: 'economy/hunger', days: e.hungerDays });
   }
-  // Winter: homes burn a little coal for heat.
-  if (date.season === 'winter')
-    e.resources.coal = Math.max(
+  // Winter: homes burn a little coal (or wood, where there is no mine) for heat.
+  const profile = homeProfile(state.meta.homeDistrictId);
+  if (date.season === 'winter') {
+    const fuel = profile.heating;
+    e.resources[fuel] = Math.max(
       0,
-      e.resources.coal -
+      e.resources[fuel] -
         state.district.structures.filter((s) => s.built && def(s.kind).housing).length * 0.5,
     );
+  }
   if (date.dayOfSeason === 1 && date.absoluteDay > 0) settleQuota(state, date, ctx);
   allocateLabor(state);
 }
@@ -181,8 +186,12 @@ export function economyDay(state: GameState, date: CalendarDate, ctx: SimContext
 /** At the start of each season the previous season's quota is delivered (or not). */
 function settleQuota(state: GameState, date: CalendarDate, ctx: SimContext): void {
   const e = state.economy;
-  const delivered = Math.min(e.resources.coal, e.quota.required);
-  e.resources.coal -= delivered;
+  const profile = homeProfile(state.meta.homeDistrictId);
+  const res = profile.quotaResource;
+  // Food quotas leave the district a week of food: nobody is ordered to starve outright.
+  const reserve = res === 'food' ? dailyFoodNeed(state) * 7 : 0;
+  const delivered = Math.max(0, Math.min(e.resources[res] - reserve, e.quota.required));
+  e.resources[res] -= delivered;
   const shortfall = e.quota.required - delivered;
   const prevSeason = ['winter', 'spring', 'summer', 'autumn'][date.seasonIndex] ?? 'winter';
   e.quota.history.push({
@@ -198,12 +207,12 @@ function settleQuota(state: GameState, date: CalendarDate, ctx: SimContext): voi
     e.attention = Math.max(0, e.attention - 3);
   }
   ctx.emit({ type: 'economy/quota', required: e.quota.required, delivered });
-  // Prosperity attracts demands: the quota grows with the number of mines and the district size.
-  const mines = state.district.structures.filter(
-    (s) => s.kind === 'mine_headframe' && s.built,
+  // Prosperity attracts demands: the quota grows with the district's trade and its size.
+  const trade = state.district.structures.filter(
+    (s) => s.kind === profile.signature && s.built,
   ).length;
   e.quota.required = Math.round(
-    BASE_QUOTA * (0.8 + 0.35 * mines) + state.district.structures.length * 0.8,
+    profile.baseQuota * (0.8 + 0.35 * trade) + state.district.structures.length * 0.8,
   );
   e.quota.delivered = 0;
 }
@@ -268,6 +277,7 @@ export function checkPlacement(
     return 'requirement';
   if (d.requires === 'nearForest' && !near(t, cells, 'f', 2)) return 'requirement';
   if (d.requires === 'nearRock' && !near(t, cells, 'Rs', 2)) return 'requirement';
+  if (d.requires === 'nearWater' && !near(t, cells, 'w', 1)) return 'requirement';
   if (!canAfford(state, kind)) return 'cost';
   return null;
 }

@@ -48,9 +48,9 @@ export function App() {
     [repository, notify],
   );
 
-  const newGame = () => {
+  const newGame = (homeDistrict: 'd12' | 'd11' | 'd4' = 'd12') => {
     void requestPersistentStorage();
-    start(createNewGame({ seed: randomSeed() }), true);
+    start(createNewGame({ seed: randomSeed(), homeDistrict }), true);
   };
 
   const continueLatest = async () => {

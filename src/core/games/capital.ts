@@ -1,4 +1,5 @@
-import { DISTRICTS, HOME_DISTRICT_NUMBER } from '../../content/districts.ts';
+import { DISTRICTS } from '../../content/districts.ts';
+import { homeProfile } from '../../content/homeDistricts.ts';
 import { FIRST_NAMES_F, FIRST_NAMES_M, LAST_NAMES } from '../../content/names.ts';
 import { rulesForEdition } from '../../content/selectionRules.ts';
 import { randomGenes, randomTraits } from '../population/generate.ts';
@@ -71,6 +72,7 @@ export function createGames(state: GameState): GamesState {
   const rng = state.rng.capital;
   const edition = current?.edition ?? 0;
   const day = Math.floor(state.clock.tick / 24);
+  const home = homeProfile(state.meta.homeDistrictId).number;
   const contestants: Record<string, Contestant> = {};
   const order: string[] = [];
   for (const citizenId of current?.participants ?? []) {
@@ -79,7 +81,7 @@ export function createGames(state: GameState): GamesState {
     const t: Contestant = {
       id: `p_${c.id}`,
       citizenId: c.id,
-      district: HOME_DISTRICT_NUMBER,
+      district: home,
       name: fullName(c),
       sex: c.sex,
       age: ageOf(c, day),
@@ -101,7 +103,7 @@ export function createGames(state: GameState): GamesState {
   }
   const slots = rulesForEdition(edition).slots;
   for (const d of DISTRICTS) {
-    if (d.id === HOME_DISTRICT_NUMBER) continue;
+    if (d.id === home) continue;
     let idx = 0;
     for (const slot of slots) {
       for (let k = 0; k < slot.count; k++) {

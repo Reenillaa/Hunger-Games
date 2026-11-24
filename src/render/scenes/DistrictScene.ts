@@ -1,3 +1,4 @@
+import { homeProfile } from '../../content/homeDistricts.ts';
 import * as Phaser from 'phaser';
 import type { DistrictState, PlacedProp, PlacedStructure } from '../../core/index.ts';
 import { buildWalkGrid } from '../../core/index.ts';
@@ -72,9 +73,10 @@ export class DistrictScene extends Phaser.Scene {
 
   preload(): void {
     this.terrainScale = pickTerrainScale();
-    this.load.json('terrainManifest', `${ART_BASE}/terrain/${this.terrainScale}/manifest.json`);
+    const terrainBase = homeProfile(this.session.getState().meta.homeDistrictId).terrainBase;
+    this.load.json('terrainManifest', `${terrainBase}/${this.terrainScale}/manifest.json`);
     this.load.json('spriteManifest', `${ART_BASE}/sprites/manifest.json`);
-    this.load.json('heights', `${ART_BASE}/terrain/heights.json`);
+    this.load.json('heights', `${terrainBase}/heights.json`);
     this.load.json('characterManifest', `${ART_BASE}/characters/manifest.json`);
   }
 
@@ -86,7 +88,7 @@ export class DistrictScene extends Phaser.Scene {
     const district = this.session.getState().district;
 
     // Second loading pass: only the art this district actually uses.
-    const base = `${ART_BASE}/terrain/${this.terrainScale}`;
+    const base = `${homeProfile(this.session.getState().meta.homeDistrictId).terrainBase}/${this.terrainScale}`;
     for (let r = 0; r < terrain.rows; r++) {
       for (let c = 0; c < terrain.cols; c++)
         this.load.image(`terrain_${r}_${c}`, `${base}/t_${r}_${c}.jpg`);

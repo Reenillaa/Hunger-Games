@@ -25,3 +25,4 @@
 | font (map) | Cinzel (variable) | Natanael Gama · `@fontsource-variable/cinzel@5.3.0` | https://github.com/NDISCOVER/Cinzel | SIL OFL 1.1 | None |
 | world map `public/assets/ui/worldmap*.jpg` | Mapa de La Concordia | Propio (`tools/art/render_world_map.py`, pintado procedural + Blender) | — | Propio | — |
 | prop `poster_a`, `poster_b` | Carteles de propaganda | Propio (`tools/art/paint_posters.py`, tipografía Inter Display OFL) | — | Propio | — |
+| sprites `farm`, `fishery`, `fruit_tree`, `boat`; terrenos `d11`, `d4` | Distritos 11 y 4 | Propio (`tools/art/render_district_assets.py`, `generate_district_templates.py`, `render_terrain.py --map`) | — | Propio (texturas CC0 ya registradas) | — |

@@ -188,9 +188,9 @@ test('settings, chronicle and the world map', async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto('./');
   // Every district and the Capitol can be inspected on the map.
-  await page.getByRole('button', { name: 'Distrito 4' }).click();
-  await expect(page.getByTestId('place-card')).toContainText('Distrito 4');
-  await expect(page.getByTestId('place-card')).toContainText('solo puedes gobernar el Distrito 12');
+  await page.getByRole('button', { name: 'Distrito 5' }).click();
+  await expect(page.getByTestId('place-card')).toContainText('Distrito 5');
+  await expect(page.getByTestId('place-card')).toContainText('todavía no se puede gobernar');
   await page.getByRole('button', { name: 'El Capitolio' }).click();
   await expect(page.getByTestId('place-card')).toContainText('Capital');
   await page.getByRole('button', { name: 'Distrito 12' }).click();
@@ -203,5 +203,22 @@ test('settings, chronicle and the world map', async ({ page }) => {
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Crónica' }).click();
   await expect(page.getByTestId('chronicle')).toContainText('Todavía no ha habido ninguna Cosecha');
+  expect(errors).toEqual([]);
+});
+
+test('a new game in the coastal district from the map', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Distrito 4' }).click();
+  await expect(page.getByTestId('place-card')).toContainText('Jugable');
+  await page.getByRole('button', { name: 'Nueva partida' }).click();
+  await expect(page.getByTestId('cinematic')).toBeVisible();
+  await expect(page.getByTestId('cinematic')).toContainText('Distrito 4');
+  await page.getByRole('button', { name: 'Saltar' }).click();
+  await expect(page.getByTestId('top-bar')).toContainText('Distrito 4');
+  await expect(page.getByTestId('game-canvas').locator('canvas')).toBeVisible();
+  await page.getByRole('button', { name: 'Pausa' }).click();
+  await page.getByRole('button', { name: 'Construir' }).click();
+  await expect(page.getByRole('menuitem', { name: /Lonja/ })).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -20,7 +20,7 @@ export interface BuildingDef {
   /** People housed per level. */
   housing?: [number, number, number];
   /** Placement rule beyond buildable land. */
-  requires?: 'coalSeam' | 'nearForest' | 'nearRock';
+  requires?: 'coalSeam' | 'nearForest' | 'nearRock' | 'nearWater';
   /** Production stops in winter (gardens). */
   seasonal?: boolean;
 }
@@ -118,6 +118,26 @@ export const BUILDINGS: Record<StructureKind, BuildingDef> = {
     cost: { wood: 50, stone: 30 },
     buildWork: 110,
     workers: [2, 3, 5],
+  },
+  farm: {
+    kind: 'farm',
+    category: 'production',
+    buildable: true,
+    cost: { wood: 35, stone: 10 },
+    buildWork: 90,
+    workers: [5, 8, 12],
+    produces: { food: 0.32 },
+    seasonal: true,
+  },
+  fishery: {
+    kind: 'fishery',
+    category: 'production',
+    buildable: true,
+    cost: { wood: 40 },
+    buildWork: 80,
+    workers: [4, 7, 10],
+    produces: { food: 0.3 },
+    requires: 'nearWater',
   },
   town_hall: {
     kind: 'town_hall',

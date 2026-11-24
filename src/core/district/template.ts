@@ -24,7 +24,9 @@ export type StructureKind =
   | 'quarry'
   | 'garden'
   | 'infirmary'
-  | 'school';
+  | 'school'
+  | 'farm'
+  | 'fishery';
 
 export type ResourceId = 'food' | 'wood' | 'stone' | 'coal' | 'credits';
 
@@ -40,7 +42,9 @@ export type PropKind =
   | 'coal_heap'
   | 'supplies'
   | 'poster_a'
-  | 'poster_b';
+  | 'poster_b'
+  | 'fruit_tree'
+  | 'boat';
 
 /** Cells where the player may build (Phase 3 rules start from this). */
 export const BUILDABLE: ReadonlySet<TerrainCode> = new Set(['g', 'd']);

@@ -892,6 +892,94 @@
         "shadow",
         "normal"
       ]
+    },
+    "farm": {
+      "name": "farm",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        772,
+        415
+      ],
+      "anchor": [
+        386.0,
+        216.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "fishery": {
+      "name": "fishery",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        621,
+        390
+      ],
+      "anchor": [
+        310.5,
+        283.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "fruit_tree": {
+      "name": "fruit_tree",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        306,
+        236
+      ],
+      "anchor": [
+        153.0,
+        219.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "boat": {
+      "name": "boat",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        181,
+        178
+      ],
+      "anchor": [
+        90.5,
+        127.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
     }
   }
 }
