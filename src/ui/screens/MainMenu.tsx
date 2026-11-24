@@ -62,22 +62,23 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
             {t('menu.load')}
           </button>
         </div>
-        <div className={styles.choiceButtons} role="group" aria-label={t('menu.quality')}>
+        <div className={styles.setting}>
           <span className={styles.note}>{t('menu.quality')}</span>
-          {(['auto', 'low', 'high'] as const).map((q) => (
-            <button
-              key={q}
-              type="button"
-              className={styles.button}
-              aria-pressed={quality === q}
-              onClick={() => {
-                setQuality(q);
-                setQ(q);
-              }}
-            >
-              {t(`menu.quality.${q}`)}
-            </button>
-          ))}
+          <div className={styles.segmented} role="group" aria-label={t('menu.quality')}>
+            {(['auto', 'low', 'high'] as const).map((q) => (
+              <button
+                key={q}
+                type="button"
+                aria-pressed={quality === q}
+                onClick={() => {
+                  setQuality(q);
+                  setQ(q);
+                }}
+              >
+                {t(`menu.quality.${q}`)}
+              </button>
+            ))}
+          </div>
         </div>
         {!repository && <p className={styles.warning}>{t('menu.storageWarning')}</p>}
         {repository && !persistent && latest && (

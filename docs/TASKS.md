@@ -9,7 +9,7 @@
 
 | ID | Tarea | Estado |
 |---|---|---|
-| C-1 | Activar GitHub Pages: *Settings → Pages → Build and deployment → Source: GitHub Actions*; después relanzar el workflow | Pendiente |
+| C-1 | Activar GitHub Pages | ✅ Hecho (2026-11-24) |
 | C-2 | Comprobar que Actions está activado | ✅ Funciona (ejecución nº 1, 2026-11-23) |
 | C-3 | Probar en un iPhone real: abrir la URL, jugar, "Añadir a pantalla de inicio", cerrar y volver | Pendiente (tras C-1) |
 | C-4 | Reverse Engineering Skill: instalarla o descartarla (D-09) | Pendiente |

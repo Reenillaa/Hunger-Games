@@ -44,10 +44,9 @@ export const es = {
   'phase.arena': 'Arena',
   'phase.aftermath': 'Regreso',
 
-  'phase.selection.body':
-    'Hoy es el día de la Criba. La ceremonia con tus habitantes reales llegará en la Fase 5.',
+  'phase.selection.body': 'Hoy es el día de la Criba.',
   'phase.selection.action': 'Partir hacia Áurea',
-  'phase.capital.body': 'Día {day} de {total} en Áurea. La preparación llegará en la Fase 6.',
+  'phase.capital.body': 'Día {day} de {total} en Áurea.',
   'phase.capital.action': 'Siguiente día',
   'phase.capital.launch': 'Ceremonia de lanzamiento',
   'phase.arena.body': 'El bosque de la arena. Dirige a tu delegación o deja que decidan.',
@@ -105,8 +104,8 @@ export const es = {
   'bd.lumber_camp': 'Madera del bosque. Debe estar junto al bosque.',
   'bd.quarry': 'Piedra de las laderas. Debe estar junto a la roca.',
   'bd.garden': 'Comida local. No produce en invierno.',
-  'bd.infirmary': 'Cura heridos y enfermos (efecto completo en la Fase 4).',
-  'bd.school': 'Forma a los jóvenes (efecto completo en la Fase 4).',
+  'bd.infirmary': 'Cura heridos y enfermos: la salud del distrito mejora.',
+  'bd.school': 'Forma a los jóvenes: aprenden más rápido sus oficios.',
   'place.hint': 'Toca una zona válida para construir · Esc o clic derecho para cancelar',
   'place.out-of-map': 'Fuera del distrito',
   'place.blocked': 'Terreno no edificable',
@@ -499,6 +498,9 @@ export const es = {
   'menu.quality.low': 'Ligera (móvil)',
   'menu.quality.high': 'Alta',
   'arena.lastPact': 'Solo quedan aliados en pie. El pacto se rompe: solo puede haber un Laureado.',
+  'arena.tab.team': 'Equipo',
+  'arena.expand': 'Mostrar panel',
+  'arena.collapse': 'Ocultar panel',
 } as const;
 
 export type LocaleKey = keyof typeof es;

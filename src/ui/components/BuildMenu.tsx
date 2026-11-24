@@ -5,7 +5,37 @@ import { BUILDINGS } from '../../content/buildings.ts';
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
 import type { GameSession } from '../../game/session.ts';
-import { HammerIcon } from '../icons/Icons.tsx';
+import {
+  CoalIcon,
+  CreditsIcon,
+  FoodIcon,
+  HammerIcon,
+  StoneIcon,
+  WoodIcon,
+} from '../icons/Icons.tsx';
+
+const COST_ICONS: Record<ResourceId, () => React.JSX.Element> = {
+  food: FoodIcon,
+  wood: WoodIcon,
+  stone: StoneIcon,
+  coal: CoalIcon,
+  credits: CreditsIcon,
+};
+
+function CostChips({ cost }: { cost: Partial<Record<ResourceId, number>> }) {
+  return (
+    <span className={styles.costChips}>
+      {Object.entries(cost).map(([r, n]) => {
+        const Icon = COST_ICONS[r as ResourceId];
+        return (
+          <span key={r} className={styles.costChip} title={t(`res.${r}` as LocaleKey)}>
+            <Icon /> {n}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 import { useSession } from '../useSession.ts';
 import { useUi } from '../useUi.ts';
 import styles from '../ui.module.css';
@@ -55,9 +85,17 @@ export function BuildMenu({ session }: { session: GameSession }) {
                   session.ui.startPlacing(kind);
                 }}
               >
-                <span className={styles.slotName}>{t(`b.${kind}` as LocaleKey)}</span>
-                <span className={styles.slotMeta}>{costText(def.cost)}</span>
-                <span className={styles.buildDesc}>{t(`bd.${kind}` as LocaleKey)}</span>
+                <img
+                  className={styles.buildThumb}
+                  src={`assets/ui/thumbs/${kind}.webp`}
+                  alt=""
+                  loading="lazy"
+                />
+                <span className={styles.buildText}>
+                  <span className={styles.slotName}>{t(`b.${kind}` as LocaleKey)}</span>
+                  <CostChips cost={def.cost} />
+                  <span className={styles.buildDesc}>{t(`bd.${kind}` as LocaleKey)}</span>
+                </span>
               </button>
             );
           })}

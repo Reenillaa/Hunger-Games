@@ -84,6 +84,9 @@ test('walking skeleton: district → selection → capital → arena → return'
   const arena = page.getByTestId('arena');
   await expect(arena).toBeVisible();
   await expect(page.getByTestId('arena-clock')).toContainText('Día 1');
+  // On small screens the panel starts folded so the map stays visible.
+  const expand = arena.getByRole('button', { name: 'Mostrar panel' });
+  if (await expand.isVisible()) await expand.click();
   await expect(arena.getByTestId('arena-member').first()).toBeVisible();
   await arena.getByRole('button', { name: 'Prudente' }).click();
   await expect(arena.getByRole('button', { name: 'Prudente' })).toHaveAttribute(

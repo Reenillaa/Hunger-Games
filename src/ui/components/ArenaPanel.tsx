@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ArenaActor, ArenaLog, Order, Stance } from '../../core/index.ts';
 import { arenaDay, arenaHour, capsuleCost } from '../../core/index.ts';
 import { ITEMS } from '../../content/arenaItems.ts';
@@ -56,6 +57,10 @@ function orderText(o: Order | null, names: Record<string, string>): string {
 export function ArenaPanel({ session }: { session: GameSession }) {
   const { state } = useSession(session);
   const ui = useUi(session);
+  const [collapsed, setCollapsed] = useState(
+    () => window.matchMedia?.('(max-width: 700px), (max-height: 500px)').matches ?? false,
+  );
+  const [tab, setTab] = useState<'team' | 'log'>('team');
   const arena = state.arena;
   const games = state.games;
   if (state.phase.kind !== 'arena' || !arena || !games) return null;
@@ -74,33 +79,163 @@ export function ArenaPanel({ session }: { session: GameSession }) {
         (e.actorId && teamIds.has(e.actorId)) ||
         e.key === 'arena.capsule',
     )
-    .slice(-7)
+    .slice(-30)
     .reverse();
   const order = (a: ArenaActor, o: Order | null) =>
     session.dispatch({ type: 'arena/order', actorId: a.id, order: o });
   const hour = `${String(arenaHour(arena.round)).padStart(2, '0')}:00`;
 
-  return (
-    <div className={styles.arena} data-testid="arena">
-      <header className={`${styles.panel} ${styles.arenaHead}`}>
-        <div>
-          <p className={styles.regimeLine}>
-            {t('calendar.edition', { games: t('games.name'), edition: games.edition })}
-          </p>
-          <h2 className={styles.sheetTitle} data-testid="arena-clock">
-            {t('arena.title', { day: arenaDay(arena.round), hour })}
-          </h2>
-          <p className={styles.arenaMeta}>
-            <span>{t('arena.alive', { n: alive })}</span>
-            <span>{t('arena.patronage', { n: arena.patronage })}</span>
-            <span className={styles.spectacle} title={t('arena.spectacle')}>
-              {t('arena.spectacle')}
-              <span className={styles.statBar}>
-                <span style={{ width: `${arena.spectacle}%` }} />
+  const memberCard = (a: ArenaActor) => {
+    const c = games.contestants[a.id]!;
+    const isSel = selected?.id === a.id;
+    const status = a.alive
+      ? [
+          a.hidden && t('arena.status.hidden'),
+          a.bleeding > 0 && t('arena.status.bleeding'),
+          a.fracture && t('arena.status.fracture'),
+        ]
+          .filter(Boolean)
+          .join(' · ') || orderText(a.order, names)
+      : t('arena.status.dead');
+    return (
+      <section
+        key={a.id}
+        className={`${styles.member} ${isSel ? styles.selectedCard : ''} ${a.alive ? '' : styles.memberDead}`}
+        data-testid="arena-member"
+      >
+        <button
+          type="button"
+          className={styles.memberHead}
+          onClick={() => session.ui.selectArenaActor(isSel ? null : a.id)}
+          aria-pressed={isSel}
+          aria-expanded={isSel}
+        >
+          <Portrait
+            genes={c.genes}
+            sex={c.sex}
+            age={c.age}
+            mood={100 - a.stress}
+            dead={!a.alive}
+            size={48}
+          />
+          <span className={styles.memberInfo}>
+            <strong>{c.name}</strong>
+            <small>{status}</small>
+            {a.alive && (
+              <span className={styles.miniBars} aria-hidden="true">
+                {[a.hp, a.hunger, a.thirst, a.energy].map((v, i) => (
+                  <span key={i} className={`${styles.statBar} ${v < 30 ? styles.statLow : ''}`}>
+                    <span style={{ width: `${Math.max(0, v)}%` }} />
+                  </span>
+                ))}
               </span>
-            </span>
-          </p>
+            )}
+          </span>
+        </button>
+        {a.alive && isSel && (
+          <div className={styles.memberBody}>
+            <Need label={t('arena.need.hp')} value={a.hp} />
+            <Need label={t('arena.need.hunger')} value={a.hunger} />
+            <Need label={t('arena.need.thirst')} value={a.thirst} />
+            <Need label={t('arena.need.energy')} value={a.energy} />
+            <p className={styles.arenaMeta}>
+              <span>
+                {t('arena.weapon', { w: a.weapon ? itemName(a.weapon) : t('arena.fists') })}
+              </span>
+              <span>
+                {t('arena.items', {
+                  items: a.items.length ? a.items.map(itemName).join(', ') : t('arena.nothing'),
+                })}
+              </span>
+            </p>
+            <p className={styles.arenaMeta}>
+              <strong>{t('arena.order')}:</strong> {orderText(a.order, names)}
+            </p>
+            <div className={styles.choiceButtons}>
+              {(['hide', 'rest', 'forage'] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={styles.button}
+                  aria-pressed={a.order?.kind === k}
+                  onClick={() => order(a, { kind: k })}
+                >
+                  {t(`arena.order.${k}` as LocaleKey)}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={styles.button}
+                aria-pressed={!a.order}
+                onClick={() => order(a, null)}
+              >
+                {t('arena.order.clear')}
+              </button>
+            </div>
+            <p className={styles.arenaHint}>{t('arena.order.hint')}</p>
+            <div className={styles.choiceGroup}>
+              <strong className={styles.regimeLine}>{t('arena.gift')}</strong>
+              <div className={styles.giftGrid}>
+                {Object.keys(ITEMS).map((item) => {
+                  const cost = capsuleCost(item, arena.round);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      className={styles.giftItem}
+                      disabled={cost > arena.patronage}
+                      onClick={() => session.dispatch({ type: 'arena/gift', actorId: a.id, item })}
+                    >
+                      <span>{itemName(item)}</span>
+                      <small>{cost}</small>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  return (
+    <div
+      className={`${styles.arena} ${collapsed ? styles.arenaCollapsed : ''}`}
+      data-testid="arena"
+    >
+      <header className={`${styles.panel} ${styles.arenaHead}`}>
+        <div className={styles.arenaTitleRow}>
+          <div>
+            <p className={styles.regimeLine}>
+              {t('calendar.edition', { games: t('games.name'), edition: games.edition })}
+            </p>
+            <h2 className={styles.arenaClock} data-testid="arena-clock">
+              {t('arena.title', { day: arenaDay(arena.round), hour })}
+            </h2>
+          </div>
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? t('arena.expand') : t('arena.collapse')}
+            onClick={() => setCollapsed((v) => !v)}
+          >
+            {collapsed ? '▾' : '▴'}
+          </button>
         </div>
+        <p className={styles.arenaMeta}>
+          <span className={styles.resourceMeta}>{t('arena.alive', { n: alive })}</span>
+          <span className={styles.resourceMeta}>
+            {t('arena.patronage', { n: arena.patronage })}
+          </span>
+          <span className={styles.spectacle} title={t('arena.spectacle')}>
+            {t('arena.spectacle')}
+            <span className={styles.statBar}>
+              <span style={{ width: `${arena.spectacle}%` }} />
+            </span>
+          </span>
+        </p>
         <div className={styles.arenaControls}>
           {arena.finished ? (
             <button
@@ -118,7 +253,7 @@ export function ArenaPanel({ session }: { session: GameSession }) {
                 onClick={() => session.setArenaPlaying(!playing)}
                 data-testid="arena-play"
               >
-                {playing ? t('arena.pause') : t('arena.play')}
+                {playing ? `❚❚ ${t('arena.pause')}` : `▶ ${t('arena.play')}`}
               </button>
               <button
                 type="button"
@@ -130,160 +265,64 @@ export function ArenaPanel({ session }: { session: GameSession }) {
             </>
           )}
         </div>
+        {(arena.interrupt || arena.finished) && (
+          <p className={styles.arenaAlert} role="status" data-testid="arena-alert">
+            {arena.finished
+              ? `${t('arena.over')}. ${logLine(arena.log.at(-1)!)}`
+              : logLine(arena.interrupt!)}
+          </p>
+        )}
       </header>
 
-      {(arena.interrupt || arena.finished) && (
-        <p
-          className={`${styles.panel} ${styles.arenaAlert}`}
-          role="status"
-          data-testid="arena-alert"
-        >
-          {arena.finished
-            ? `${t('arena.over')}. ${logLine(arena.log.at(-1)!)}`
-            : logLine(arena.interrupt!)}
-        </p>
-      )}
-
-      <div className={styles.arenaBody}>
-        <section className={`${styles.panel} ${styles.journal}`}>
-          <h3 className={styles.sheetTitle}>{t('arena.stance')}</h3>
-          <div className={styles.choiceButtons}>
-            {STANCES.map((st) => (
+      {!collapsed && (
+        <div className={`${styles.panel} ${styles.arenaBody}`}>
+          <div className={styles.segmented} role="tablist">
+            {(['team', 'log'] as const).map((k) => (
               <button
-                key={st}
+                key={k}
                 type="button"
-                className={styles.button}
-                aria-pressed={arena.stance === st}
-                onClick={() => session.dispatch({ type: 'arena/stance', stance: st })}
+                role="tab"
+                aria-selected={tab === k}
+                aria-pressed={tab === k}
+                onClick={() => setTab(k)}
               >
-                {t(`arena.stance.${st}` as LocaleKey)}
+                {t(k === 'team' ? 'arena.tab.team' : 'arena.log')}
               </button>
             ))}
           </div>
-          <h3 className={styles.sheetTitle}>{t('arena.log')}</h3>
-          <ol className={styles.arenaLog} data-testid="arena-log">
-            {journal.map((e, i) => (
-              <li key={`${e.round}-${i}`}>
-                <span className={styles.logHour}>
-                  D{arenaDay(e.round)} {String(arenaHour(e.round)).padStart(2, '0')}h
-                </span>{' '}
-                {logLine(e)}
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {team.map((a) => {
-          const c = games.contestants[a.id]!;
-          const isSel = selected?.id === a.id;
-          return (
-            <section
-              key={a.id}
-              className={`${styles.panel} ${styles.contestant} ${isSel ? styles.selectedCard : ''}`}
-              data-testid="arena-member"
-            >
-              <button
-                type="button"
-                className={styles.memberHead}
-                onClick={() => session.ui.selectArenaActor(isSel ? null : a.id)}
-                aria-pressed={isSel}
-              >
-                <Portrait
-                  genes={c.genes}
-                  sex={c.sex}
-                  age={c.age}
-                  mood={100 - a.stress}
-                  dead={!a.alive}
-                  size={56}
-                />
-                <span>
-                  <strong>{c.name}</strong>
-                  <small>
-                    {a.alive
-                      ? [
-                          a.hidden && t('arena.status.hidden'),
-                          a.bleeding > 0 && t('arena.status.bleeding'),
-                          a.fracture && t('arena.status.fracture'),
-                          a.allianceId && t('arena.status.ally'),
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')
-                      : t('arena.status.dead')}
-                  </small>
-                </span>
-              </button>
-              {a.alive && (
-                <>
-                  <Need label={t('arena.need.hp')} value={a.hp} />
-                  <Need label={t('arena.need.hunger')} value={a.hunger} />
-                  <Need label={t('arena.need.thirst')} value={a.thirst} />
-                  <Need label={t('arena.need.energy')} value={a.energy} />
-                  <p className={styles.arenaMeta}>
-                    <span>
-                      {t('arena.weapon', { w: a.weapon ? itemName(a.weapon) : t('arena.fists') })}
-                    </span>
-                    <span>
-                      {t('arena.items', {
-                        items: a.items.length
-                          ? a.items.map(itemName).join(', ')
-                          : t('arena.nothing'),
-                      })}
-                    </span>
-                  </p>
-                  <p className={styles.arenaMeta}>
-                    <strong>{t('arena.order')}:</strong> {orderText(a.order, names)}
-                  </p>
-                  <div className={styles.choiceButtons}>
-                    {(['hide', 'rest', 'forage'] as const).map((k) => (
-                      <button
-                        key={k}
-                        type="button"
-                        className={styles.button}
-                        aria-pressed={a.order?.kind === k}
-                        onClick={() => order(a, { kind: k })}
-                      >
-                        {t(`arena.order.${k}` as LocaleKey)}
-                      </button>
-                    ))}
+          {tab === 'team' ? (
+            <>
+              <div className={styles.setting}>
+                <span className={styles.regimeLine}>{t('arena.stance')}</span>
+                <div className={styles.segmented}>
+                  {STANCES.map((st) => (
                     <button
+                      key={st}
                       type="button"
-                      className={styles.button}
-                      aria-pressed={!a.order}
-                      onClick={() => order(a, null)}
+                      aria-pressed={arena.stance === st}
+                      onClick={() => session.dispatch({ type: 'arena/stance', stance: st })}
                     >
-                      {t('arena.order.clear')}
+                      {t(`arena.stance.${st}` as LocaleKey)}
                     </button>
-                  </div>
-                  {isSel && <p className={styles.arenaHint}>{t('arena.order.hint')}</p>}
-                  {isSel && (
-                    <div className={styles.choiceGroup}>
-                      <strong>{t('arena.gift')}</strong>
-                      <div className={styles.choiceButtons}>
-                        {Object.keys(ITEMS).map((item) => {
-                          const cost = capsuleCost(item, arena.round);
-                          return (
-                            <button
-                              key={item}
-                              type="button"
-                              className={styles.button}
-                              disabled={cost > arena.patronage}
-                              onClick={() =>
-                                session.dispatch({ type: 'arena/gift', actorId: a.id, item })
-                              }
-                            >
-                              {t('arena.gift.cost', { item: itemName(item), cost })}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </section>
-          );
-        })}
-      </div>
+                  ))}
+                </div>
+              </div>
+              {team.map(memberCard)}
+            </>
+          ) : (
+            <ol className={styles.arenaLog} data-testid="arena-log">
+              {journal.map((e, i) => (
+                <li key={`${e.round}-${i}`}>
+                  <span className={styles.logHour}>
+                    D{arenaDay(e.round)} {String(arenaHour(e.round)).padStart(2, '0')}h
+                  </span>{' '}
+                  {logLine(e)}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
     </div>
   );
 }

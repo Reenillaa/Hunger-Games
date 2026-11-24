@@ -1,4 +1,4 @@
-/* Design tokens (ART_BIBLE.md §4 and §7). Fonts arrive in Phase 2; system stacks for now. */
+/* Design tokens (ART_BIBLE.md §4 and §7). Fonts: Inter (UI) and Oswald (display), both OFL. */
 :root {
   --c-coal: #16161a;
   --c-soot: #2b2a2e;
@@ -18,8 +18,8 @@
   --c-power: #1f2a44;
   --c-danger: #b0413e;
 
-  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Arial Narrow', 'Helvetica Neue', system-ui, sans-serif;
+  --font-ui: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Oswald Variable', 'Arial Narrow', 'Helvetica Neue', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --space-1: 4px;
@@ -29,9 +29,11 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --radius: 3px;
-  --border: 1px solid rgb(154 160 166 / 0.22);
-  --shadow: 0 8px 28px rgb(0 0 0 / 0.45);
+  --radius: 6px;
+  --border: 1px solid rgb(201 164 76 / 0.18);
+  --shadow: 0 10px 32px rgb(0 0 0 / 0.5), 0 1px 0 rgb(255 255 255 / 0.04) inset;
+  --panel-bg: linear-gradient(180deg, rgb(34 33 38 / 0.9), rgb(20 20 24 / 0.92));
+  --gold-line: linear-gradient(90deg, transparent, rgb(201 164 76 / 0.7), transparent);
   --touch: 44px;
 
   --safe-top: env(safe-area-inset-top, 0px);
