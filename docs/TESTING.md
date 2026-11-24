@@ -67,4 +67,6 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 7 | Captura manual de la arena (Chromium + SwiftShader) | Encontrados y corregidos: miembros del equipo propio atacándose entre sí (ahora son una alianza que solo se rompe al quedar solos) y rejilla visible en la niebla de guerra |
 | 2026-11-24 | 9 | `npm run sim -- --years 10 --seed 123 --policy basic` | 10 años sin hambruna; población 111→105 (caídos de los juegos), moral 40–45, atención < 10 |
 | 2026-11-24 | 7–9 | `npm run lint`, `typecheck`, `format:check`, `build` | Sin errores |
+| 2026-11-24 | 7–9 | `npx playwright test --trace off` | **14/14** (escritorio + iPhone 13 emulado): incluye el ciclo completo con arena real, resultados y ceremonia de regreso, sin errores de consola |
+| 2026-11-24 | 7 | Capturas de la Criba frente al ayuntamiento nuevo y de la arena | `docs/images/phase7-criba-townhall.jpg`, `phase7-arena.jpg`: niebla sin rejilla tras la corrección |
 
