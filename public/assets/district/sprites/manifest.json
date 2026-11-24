@@ -848,6 +848,50 @@
         "shadow",
         "normal"
       ]
+    },
+    "poster_a": {
+      "name": "poster_a",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        317,
+        289
+      ],
+      "anchor": [
+        158.5,
+        252.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "poster_b": {
+      "name": "poster_b",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        317,
+        289
+      ],
+      "anchor": [
+        158.5,
+        252.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
     }
   }
 }

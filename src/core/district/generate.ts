@@ -222,6 +222,18 @@ export function generateDistrict(
     ['supplies', 33, 27],
   ];
   for (const [kind, x, y] of clutter) if (!occupied.has(key(x, y))) addProp(kind, x, y);
+  // The Capitol's propaganda: posters along the roads into the plaza (original designs).
+  let posters = 0;
+  for (let y = 0; y < template.height && posters < 7; y++) {
+    for (let x = 0; x < template.width && posters < 7; x++) {
+      if (occupied.has(key(x, y)) || !isBuildable(template, x, y)) continue;
+      const d = Math.hypot(x - px, y - py);
+      if (d < 4 || d > 12 || !hasNeighbour(template, x, y, 1, 'r') || (x * 5 + y * 3) % 7 !== 0)
+        continue;
+      addProp(posters % 2 === 0 ? 'poster_a' : 'poster_b', x, y, false);
+      posters += 1;
+    }
+  }
 
   props.sort((a, b) => a.y - b.y || a.x - b.x);
   return { templateId: template.id, structures, props };

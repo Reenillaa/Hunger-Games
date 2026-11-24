@@ -38,7 +38,9 @@ export type PropKind =
   | 'rock_c'
   | 'lamp'
   | 'coal_heap'
-  | 'supplies';
+  | 'supplies'
+  | 'poster_a'
+  | 'poster_b';
 
 /** Cells where the player may build (Phase 3 rules start from this). */
 export const BUILDABLE: ReadonlySet<TerrainCode> = new Set(['g', 'd']);

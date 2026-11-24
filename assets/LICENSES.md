@@ -24,3 +24,4 @@
 | font (display) | Oswald (variable) | Vernon Adams et al. · `@fontsource-variable/oswald@5.3.0` | https://github.com/googlefonts/OswaldFont | SIL OFL 1.1 | None |
 | font (map) | Cinzel (variable) | Natanael Gama · `@fontsource-variable/cinzel@5.3.0` | https://github.com/NDISCOVER/Cinzel | SIL OFL 1.1 | None |
 | world map `public/assets/ui/worldmap*.jpg` | Mapa de La Concordia | Propio (`tools/art/render_world_map.py`, pintado procedural + Blender) | — | Propio | — |
+| prop `poster_a`, `poster_b` | Carteles de propaganda | Propio (`tools/art/paint_posters.py`, tipografía Inter Display OFL) | — | Propio | — |

@@ -624,6 +624,37 @@ def relicario(m) -> None:
     K.box((0.5, 0.06, 0.25), (-0.3, -0.36, 0.95), M.flat("Crest", "#9C1C2B", 0.6))
 
 
+def _poster_material(name: str) -> bpy.types.Material:
+    mat = bpy.data.materials.new(f"Poster_{name}")
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    bsdf = nodes["Principled BSDF"]
+    img = nodes.new("ShaderNodeTexImage")
+    img.image = bpy.data.images.load(str(ROOT / f"assets/build/{name}.png"))
+    links.new(img.outputs["Color"], bsdf.inputs["Base Color"])
+    links.new(img.outputs["Alpha"], bsdf.inputs["Alpha"])
+    bsdf.inputs["Roughness"].default_value = 0.85
+    return mat
+
+
+def poster_board(m, name: str) -> None:
+    """A propaganda poster of the Capitol pasted on a rough wooden board (facing the street, -Y)."""
+    for x in (-0.32, 0.32):
+        K.box((0.07, 0.07, 1.25), (x, 0.03, 0.62), m["beam"], name="Post")
+    K.box((0.78, 0.05, 0.98), (0, 0.02, 0.78), m["planks"], name="Board")
+    K.box((0.86, 0.12, 0.05), (0, 0.02, 1.3), m["beam"], name="Cap")
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, -0.012, 0.78))
+    plane = bpy.context.active_object
+    plane.scale = (0.62, 0.87, 1)
+    plane.rotation_euler = (math.radians(90), 0, 0)
+    bpy.ops.object.transform_apply(rotation=True, scale=True)
+    plane.data.materials.append(_poster_material(name))
+
+
+def poster_a(m): poster_board(m, "poster_a")
+def poster_b(m): poster_board(m, "poster_b")
+
+
 CATALOGUE = {
     # name: (builder, footprint (w, d), canvas (w, h) px at 2x, kind)
     "house_shack": (house_shack, (2, 2), "building"),
@@ -664,6 +695,8 @@ CATALOGUE = {
     "cave_mouth": (cave_mouth, (1, 1), "rock"),
     "pedestal": (pedestal, (1, 1), "prop"),
     "relicario": (relicario, (4, 4), "building"),
+    "poster_a": (poster_a, (1, 1), "prop"),
+    "poster_b": (poster_b, (1, 1), "prop"),
 }
 
 
