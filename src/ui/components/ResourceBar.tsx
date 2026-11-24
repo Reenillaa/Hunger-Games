@@ -49,6 +49,17 @@ export function ResourceBar({ session }: { session: GameSession }) {
       >
         {t('hud.morale', { value: Math.round(e.morale) })}
       </span>
+      <span
+        className={`${styles.resourceMeta} ${e.attention >= 50 ? styles.resourceWarn : ''}`}
+        data-testid="attention"
+      >
+        {t('reg.attention', { n: Math.round(e.attention) })}
+      </span>
+      {state.regime.decrees.map((d) => (
+        <span key={d.id} className={`${styles.resourceMeta} ${styles.resourceWarn}`}>
+          {t(`reg.decree.${d.id}`)}
+        </span>
+      ))}
       {e.hungerDays > 0 && (
         <span className={`${styles.resourceMeta} ${styles.resourceWarn}`}>
           {t('hud.hunger', { days: e.hungerDays })}

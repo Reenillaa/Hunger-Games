@@ -44,7 +44,7 @@ def fbm(x: float, y: float, seed: int) -> float:
     return 0.55 * hash_noise(x / 6, y / 6, seed) + 0.3 * hash_noise(x / 3, y / 3, seed + 7) + 0.15 * hash_noise(x, y, seed + 13)
 
 
-PLAZA = (24, 21, 29, 26)  # x0, y0, x1, y1 (inclusive)
+PLAZA = (24, 20, 29, 26)  # x0, y0, x1, y1 (inclusive): the square in front of the town hall
 RAIL_X = (44, 45)
 
 
@@ -125,8 +125,9 @@ def build() -> dict:
                     terrain[y][x] = "r"
                     elevation[y][x] = min(elevation[y][x], 0.2)
 
-    road([(26, 21), (26, 14), (16, 8)])        # north-west mine
-    road([(27, 21), (31, 9)])                  # north mine
+    # The town hall presides over the plaza (x 25-27, y 17-19): the north roads flank it.
+    road([(24, 20), (23, 14), (16, 8)])        # north-west mine
+    road([(29, 20), (31, 9)])                  # north mine
     road([(29, 24), (36, 24), (43, 24)])       # station
     road([(24, 24), (14, 26), (9, 30), (6, 36)])  # bridge and forest gate
     road([(26, 26), (26, 40), (30, 46)])       # south lane

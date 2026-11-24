@@ -2,7 +2,7 @@ import type { Command, CommandResult, DomainEvent, GameState } from '../core/ind
 import { advanceTick, applyCommand, collectingContext } from '../core/index.ts';
 import { EventBus } from './eventBus.ts';
 import { UiStore } from './uiStore.ts';
-import { buildSelectionCeremony } from './ceremonies.ts';
+import { buildReturnCeremony, buildSelectionCeremony } from './ceremonies.ts';
 import type { CineStep } from './cinematic.ts';
 import { CinematicPlayer } from './cinematic.ts';
 
@@ -11,6 +11,8 @@ export type GameSpeed = (typeof GAME_SPEEDS)[number];
 
 /** Real milliseconds per in-game hour at ×1 (D-04: 1 hour = 2 s → 1 day ≈ 48 s). */
 export const MS_PER_TICK_AT_X1 = 2000;
+/** Real milliseconds per arena round (one arena hour) at ×1. */
+export const MS_PER_ROUND_AT_X1 = 1400;
 /** Upper bound of ticks simulated per frame, to avoid a death spiral after a stall. */
 const MAX_TICKS_PER_UPDATE = 8;
 
@@ -35,6 +37,10 @@ export class GameSession {
   private snapshot: SessionSnapshot;
   private readonly listeners = new Set<() => void>();
 
+  /** The arena plays round by round while true; it stops on every interrupt. */
+  private arenaPlaying = false;
+  private arenaMs = 0;
+
   /** Cinematic currently playing (the clock is stopped outside the district anyway). */
   cinematic: CinematicPlayer | null = null;
 
@@ -43,6 +49,11 @@ export class GameSession {
     this.snapshot = this.makeSnapshot();
     this.events.on('phase/changed', (e) => {
       if (e.to === 'selection') this.playSelectionCeremony();
+      const last = this.state.competition.history.at(-1);
+      if (e.from === 'aftermath' && e.to === 'district' && last) {
+        const steps = buildReturnCeremony(this.state, last.edition);
+        if (steps.length > 0) this.playCinematic('return', steps);
+      }
     });
     if (state.phase.kind === 'selection') this.playSelectionCeremony();
   }
@@ -83,6 +94,18 @@ export class GameSession {
     this.changed();
   }
 
+  isArenaPlaying(): boolean {
+    return this.arenaPlaying && this.state.phase.kind === 'arena' && !this.state.arena?.finished;
+  }
+
+  setArenaPlaying(playing: boolean): void {
+    if (playing === this.arenaPlaying) return;
+    this.arenaPlaying = playing;
+    this.arenaMs = 0;
+    if (playing && this.speed === 0) this.speed = 1;
+    this.changed();
+  }
+
   /** True when district time is allowed to flow. */
   isClockRunning(): boolean {
     return this.state.phase.kind === 'district' && this.speed > 0;
@@ -100,6 +123,15 @@ export class GameSession {
   /** Called every frame with the elapsed real time. */
   update(deltaMs: number): void {
     if (this.cinematic && deltaMs > 0) this.cinematic.advance(deltaMs);
+    if (this.isArenaPlaying() && this.speed > 0 && deltaMs > 0 && !this.cinematic) {
+      this.arenaMs += deltaMs;
+      if (this.arenaMs >= MS_PER_ROUND_AT_X1 / this.speed) {
+        this.arenaMs = 0;
+        this.dispatch({ type: 'arena/advance', maxRounds: 1 });
+        const arena = this.state.arena;
+        if (!arena || arena.interrupt || arena.finished) this.setArenaPlaying(false);
+      }
+    }
     if (!this.isClockRunning() || !(deltaMs > 0)) return;
     const msPerTick = MS_PER_TICK_AT_X1 / this.speed;
     this.accumulatorMs = Math.min(this.accumulatorMs + deltaMs, msPerTick * MAX_TICKS_PER_UPDATE);

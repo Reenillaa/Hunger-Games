@@ -4,7 +4,7 @@ import type { CineStep } from './cinematic.ts';
 import { t } from '../content/i18n.ts';
 
 const PLAZA = { x: 26, y: 24 };
-const STAGE = { x: 26, y: 22 };
+const STAGE = { x: 26, y: 20 };
 
 function relative(state: Readonly<GameState>, id: string | null): Citizen | null {
   const c = id ? state.population.citizens[id] : null;
@@ -123,6 +123,43 @@ export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
         .join(' · '),
       ms: 4200,
     },
+  );
+  return steps;
+}
+
+const STATION = { x: 42, y: 24 };
+
+/** The return of the delegation: built from the recorded results of the edition. */
+export function buildReturnCeremony(state: Readonly<GameState>, edition: number): CineStep[] {
+  const result = state.competition.history.find((h) => h.edition === edition)?.result;
+  if (!result || result.home.length === 0) return [];
+  const steps: CineStep[] = [
+    { kind: 'camera', cell: STATION, zoom: 0.85, ms: 0 },
+    { kind: 'title', title: t('ret.title'), ms: 3200 },
+    { kind: 'fade', to: 'clear', ms: 600 },
+    { kind: 'line', text: t('ret.train'), ms: 3800 },
+  ];
+  for (const r of [...result.home].sort((a, b) => Number(b.alive) - Number(a.alive))) {
+    const c = state.population.citizens[r.citizenId];
+    if (!c) continue;
+    steps.push(
+      { kind: 'camera', cell: STATION, zoom: 1.2, ms: 0 },
+      {
+        kind: 'reveal',
+        citizenId: c.id,
+        caption: t(r.alive ? 'ret.hero' : 'ret.coffin', { name: c.firstName }),
+        ms: 4400,
+      },
+    );
+    const mother = c.motherId ? state.population.citizens[c.motherId] : null;
+    if (!r.alive && mother?.alive)
+      steps.push({ kind: 'line', text: t('ret.mother', { mother: mother.firstName }), ms: 3400 });
+  }
+  if (!result.home.some((r) => r.alive))
+    steps.push({ kind: 'line', text: t('ret.silence'), ms: 3600 });
+  steps.push(
+    { kind: 'camera', cell: PLAZA, zoom: 0.8, ms: 0 },
+    { kind: 'line', text: t('ret.life'), ms: 3200 },
   );
   return steps;
 }

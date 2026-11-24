@@ -155,15 +155,20 @@ def mine_headframe(m) -> None:
 
 
 def town_hall(m) -> None:
-    W, D, H = 2.3, 1.9, 1.35
-    K.box((W + 0.2, D + 0.2, 0.14), (0, 0, 0.07), m["stone"], bevel=0.02, name="Plinth")
-    K.box((W, D, H), (0, 0, 0.14 + H / 2), m["stone"], bevel=0.015, name="Walls")
-    K.box((W + 0.06, D + 0.06, 0.08), (0, 0, 0.14 + H), m["soot"], name="Cornice")
-    # Hipped tar roof.
+    """The town hall presides over the plaza: the Criba is held on the stage at its steps (-Y)."""
+    W, D, H = 2.6, 2.1, 1.75
+    stone = m["stone"]
+    pale = M.flat("HallStone", "#9A958C", roughness=0.8)
+    gold = M.flat("Gold", "#C9A44C", roughness=0.35, metallic=0.9)
+    K.box((W + 0.24, D + 0.24, 0.16), (0, 0, 0.08), stone, bevel=0.02, name="Plinth")
+    K.box((W, D, H), (0, 0, 0.16 + H / 2), pale, bevel=0.015, name="Walls")
+    for z in (0.16 + H * 0.5, 0.16 + H):
+        K.box((W + 0.06, D + 0.06, 0.07), (0, 0, z), m["soot"], name="Cornice")
+    # Hipped tar roof with a clock tower.
     r = 0.12
-    z0 = 0.18 + H
+    z0 = 0.2 + H
     verts = [(-W / 2 - r, -D / 2 - r, z0), (W / 2 + r, -D / 2 - r, z0), (W / 2 + r, D / 2 + r, z0), (-W / 2 - r, D / 2 + r, z0),
-             (-W / 4, 0, z0 + 0.75), (W / 4, 0, z0 + 0.75)]
+             (-W / 4, 0, z0 + 0.7), (W / 4, 0, z0 + 0.7)]
     faces = [(0, 1, 5, 4), (1, 2, 5), (2, 3, 4, 5), (3, 0, 4)]
     mesh = bpy.data.meshes.new("HipRoof")
     mesh.from_pydata(verts, [], faces)
@@ -172,26 +177,47 @@ def town_hall(m) -> None:
     sol = roof.modifiers.new("Solid", "SOLIDIFY")
     sol.thickness = 0.05
     roof.data.materials.append(m["roof_tar"])
-    # Front facade (-Y): steps, double door, windows, regime banner.
-    for i in range(3):
-        K.box((0.9 - i * 0.12, 0.18, 0.05), (0, -D / 2 - 0.25 + i * 0.07, 0.025 + i * 0.05), m["stone"], name="Step")
-    K.door(Vector((-0.12, -D / 2 - 0.03, 0.55)), "-y", m, w=0.26, h=0.78)
-    K.door(Vector((0.14, -D / 2 - 0.03, 0.55)), "-y", m, w=0.26, h=0.78)
-    K.box((0.7, 0.06, 0.08), (0, -D / 2 - 0.04, 0.98), m["beam"], name="Lintel")
-    for x in (-0.8, 0.8):
-        K.window(Vector((x, -D / 2 - 0.03, 0.75)), "-y", m, w=0.32, h=0.5, lit=x < 0)
-        K.window(Vector((x, -D / 2 - 0.03, 1.2)), "-y", m, w=0.32, h=0.3, lit=False)
-    for y in (-0.5, 0.4):
-        K.window(Vector((W / 2 + 0.03, y, 0.75)), "+x", m, w=0.32, h=0.5, lit=y > 0)
-    K.box((0.5, 0.02, 0.62), (0, -D / 2 - 0.035, 1.25), m["cloth_red"], name="Banner")
-    K.cylinder(0.13, 0.02, (0, -D / 2 - 0.05, 1.33), m["lamp"] if False else M.flat("Gold", "#C9A44C", roughness=0.35, metallic=0.9),
-               rot=(math.radians(90), 0, 0), verts=24, name="Emblem")
-    K.box((0.03, 0.03, 0.3), (0, -D / 2 - 0.06, 1.33), m["soot"], name="EmblemBar")
-    # Flag pole on the roof.
-    K.cylinder(0.02, 1.0, (W / 2 - 0.3, 0.3, z0 + 0.4), m["iron"], verts=8, name="FlagPole")
-    K.box((0.02, 0.45, 0.28), (W / 2 - 0.3, 0.07, z0 + 0.75), m["cloth_red"], name="Flag")
-    K.lamppost((-W / 2 - 0.25, -D / 2 - 0.35, 0), m)
-    K.lamppost((W / 2 + 0.35, -D / 2 - 0.35, 0), m)
+    K.box((0.55, 0.55, 0.9), (0, -0.1, z0 + 0.45), pale, bevel=0.01, name="Tower")
+    K.box((0.62, 0.62, 0.06), (0, -0.1, z0 + 0.92), m["soot"], name="TowerCornice")
+    bpy.ops.mesh.primitive_cone_add(vertices=4, radius1=0.45, radius2=0, depth=0.45, location=(0, -0.1, z0 + 1.17))
+    spire = bpy.context.active_object
+    spire.rotation_euler = (0, 0, math.radians(45))
+    spire.data.materials.append(m["roof_tar"])
+    K.cylinder(0.17, 0.03, (0, -0.39, z0 + 0.55), M.flat("ClockFace", "#E9E4D8", 0.5), rot=(math.radians(90), 0, 0), verts=32, name="Clock")
+    K.cylinder(0.19, 0.02, (0, -0.38, z0 + 0.55), gold, rot=(math.radians(90), 0, 0), verts=32, name="ClockRim")
+    K.box((0.015, 0.01, 0.12), (0, -0.41, z0 + 0.59), m["soot"], name="Hand")
+    # Portico: wide steps down to the plaza, four columns and a pediment.
+    for i in range(4):
+        K.box((1.9 - i * 0.12, 0.2, 0.05), (0, -D / 2 - 0.42 + i * 0.09, 0.025 + i * 0.05), stone, name="Step")
+    for x in (-0.75, -0.25, 0.25, 0.75):
+        K.cylinder(0.08, 1.15, (x, -D / 2 - 0.22, 0.2 + 0.575), pale, verts=16, name="Column")
+        K.box((0.2, 0.2, 0.06), (x, -D / 2 - 0.22, 0.23), stone, name="Base")
+        K.box((0.2, 0.2, 0.06), (x, -D / 2 - 0.22, 1.36), stone, name="Capital")
+    K.box((1.85, 0.42, 0.1), (0, -D / 2 - 0.16, 1.44), m["soot"], name="Entablature")
+    ped = bpy.data.meshes.new("Pediment")
+    y = -D / 2 - 0.37
+    ped.from_pydata([(-0.95, y, 1.49), (0.95, y, 1.49), (0, y, 1.85)], [], [(0, 1, 2)])
+    pobj = bpy.data.objects.new("Pediment", ped)
+    K.link(pobj)
+    pobj.modifiers.new("Solid", "SOLIDIFY").thickness = 0.3
+    pobj.data.materials.append(pale)
+    K.cylinder(0.12, 0.02, (0, y - 0.02, 1.62), gold, rot=(math.radians(90), 0, 0), verts=24, name="Emblem")
+    # Tall doors and windows behind the columns; long regime banners on either side.
+    K.door(Vector((-0.12, -D / 2 - 0.03, 0.62)), "-y", m, w=0.26, h=0.9)
+    K.door(Vector((0.14, -D / 2 - 0.03, 0.62)), "-y", m, w=0.26, h=0.9)
+    for x in (-1.05, 1.05):
+        K.window(Vector((x, -D / 2 - 0.03, 0.62)), "-y", m, w=0.3, h=0.5, lit=x < 0)
+        K.box((0.34, 0.02, 0.9), (x, -D / 2 - 0.04, 1.35), m["cloth_red"], name="Banner")
+        K.cylinder(0.09, 0.02, (x, -D / 2 - 0.06, 1.5), gold, rot=(math.radians(90), 0, 0), verts=20, name="BannerEmblem")
+    for yy in (-0.6, 0.0, 0.6):
+        K.window(Vector((W / 2 + 0.03, yy, 0.62)), "+x", m, w=0.3, h=0.5, lit=yy > 0)
+        K.window(Vector((W / 2 + 0.03, yy, 1.4)), "+x", m, w=0.3, h=0.4, lit=False)
+    # Flags of the regime on the roof corners.
+    for x in (-W / 2 + 0.2, W / 2 - 0.2):
+        K.cylinder(0.02, 0.9, (x, -D / 2 + 0.2, z0 + 0.35), m["iron"], verts=8, name="FlagPole")
+        K.box((0.02, 0.4, 0.25), (x, -D / 2 + 0.4, z0 + 0.66), m["cloth_red"], name="Flag")
+    K.lamppost((-W / 2 - 0.3, -D / 2 - 0.45, 0), m)
+    K.lamppost((W / 2 + 0.3, -D / 2 - 0.45, 0), m)
 
 
 def warehouse(m) -> None:
@@ -256,24 +282,27 @@ def economato(m) -> None:
 
 
 def stage(m) -> None:
-    W, D, Hd = 2.6, 1.5, 0.45
+    """The Criba stage, built against the town hall steps: the hall itself is the backdrop."""
+    W, D, Hd = 2.7, 1.3, 0.4
     for x in (-W / 2 + 0.1, 0, W / 2 - 0.1):
         for y in (-D / 2 + 0.1, D / 2 - 0.1):
             K.box((0.1, 0.1, Hd), (x, y, Hd / 2), m["beam"], name="StagePost")
     for k in range(int(W / 0.16)):
         x = -W / 2 + 0.08 + k * 0.16
         K.box((0.15, D, 0.05), (x, 0, Hd + 0.025), m["planks_pale"], name="Deck")
-    K.box((W, 0.05, Hd), (0, -D / 2, Hd / 2), m["planks"], name="Skirt")
-    for i in range(4):
-        K.box((0.6, 0.15, 0.05), (W / 2 - 0.45, -D / 2 - 0.12 - i * 0.12, Hd - 0.11 * (i + 1) + 0.03), m["planks"], name="Stair")
-    # Backdrop with three regime banners and emblem.
-    K.box((W, 0.08, 1.1), (0, D / 2 - 0.05, Hd + 0.55), m["planks"], name="Backdrop")
+    K.box((W, 0.05, Hd), (0, -D / 2, Hd / 2), m["cloth_red"], name="Skirt")
+    for i in range(3):
+        K.box((0.6, 0.15, 0.05), (0, -D / 2 - 0.12 - i * 0.12, Hd - 0.12 * (i + 1) + 0.03), m["planks"], name="Stair")
     gold = M.flat("Gold", "#C9A44C", roughness=0.35, metallic=0.9)
-    for x in (-0.85, 0, 0.85):
-        K.box((0.42, 0.02, 0.95), (x, D / 2 - 0.1, Hd + 0.58), m["cloth_red"], name="Banner")
-        K.cylinder(0.1, 0.02, (x, D / 2 - 0.12, Hd + 0.75), gold, rot=(math.radians(90), 0, 0), verts=20, name="Emblem")
-    K.box((0.5, 0.35, 0.55), (-0.5, 0.1, Hd + 0.3), m["planks"], name="Lectern")
-    K.box((0.5, 0.35, 0.4), (0.5, 0.15, Hd + 0.2), m["soot"], name="Urn")
+    glass = M.flat("UrnGlass", "#CFE2EA", roughness=0.05)
+    # Two glass urns full of folded slips (girls left, boys right) and the herald's lectern.
+    for x in (-0.85, 0.85):
+        K.cylinder(0.2, 0.45, (x, 0.15, Hd + 0.27), glass, verts=24, name="Urn")
+        K.cylinder(0.17, 0.28, (x, 0.15, Hd + 0.17), M.flat("Slips", "#EDE6D2", 0.9), verts=24, name="Slips")
+        K.cylinder(0.22, 0.04, (x, 0.15, Hd + 0.5), gold, verts=24, name="UrnRim")
+    K.box((0.4, 0.3, 0.6), (0, 0.1, Hd + 0.3), m["planks"], name="Lectern")
+    K.cylinder(0.12, 0.02, (0, -0.06, Hd + 0.48), gold, rot=(math.radians(90), 0, 0), verts=20, name="Emblem")
+    K.cylinder(0.01, 0.5, (0.12, -0.1, Hd + 0.65), m["iron"], verts=6, name="Mic")
     K.lamppost((-W / 2 - 0.2, -D / 2 - 0.2, 0), m, height=1.3)
     K.lamppost((W / 2 + 0.2, -D / 2 - 0.2, 0), m, height=1.3)
 
@@ -480,6 +509,121 @@ def fence(m) -> None:
         K.box((1.0, 0.004, 0.004), (0, 0, z), m["iron"], name="Wire")
 
 
+# ----------------------------------------------------------------------------- arena (forest)
+
+def _foliage(centre, radius: float, mat, salt: int, squash: float = 0.85) -> None:
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=radius, location=centre)
+    blob = bpy.context.active_object
+    blob.scale = (1.0, 1.0, squash)
+    tex = bpy.data.textures.new(f"Leafy{salt}", type="VORONOI")
+    tex.noise_scale = radius * 0.35
+    disp = blob.modifiers.new("Disp", "DISPLACE")
+    disp.texture, disp.strength = tex, radius * 0.55
+    blob.data.materials.append(mat)
+    bpy.ops.object.shade_smooth()
+
+
+def broadleaf(m, height: float, spread: float, salt: int, greens: tuple[str, ...], bark: str = "bark") -> None:
+    """A deciduous tree: forked trunk and clustered leafy crowns in several greens."""
+    trunk = K.cylinder(0.08 + height * 0.012, height * 0.55, (0, 0, height * 0.27), m[bark] if bark in m else M.flat(bark, "#E6E2D6", 0.7), verts=10, name="Trunk")
+    trunk.scale = (1.0, 1.0, 1.0)
+    mats = [M.flat(f"Leaf{salt}{i}", c, roughness=0.85) for i, c in enumerate(greens)]
+    for k in range(3):
+        a = k * 2.1 + salt
+        vec = Vector((math.cos(a) * spread * 0.45, math.sin(a) * spread * 0.45, height * 0.25))
+        b = K.cylinder(0.035, vec.length, Vector((0, 0, height * 0.45)) + vec / 2, m["bark"] if bark == "bark" else M.flat(bark, "#E6E2D6", 0.7), verts=6, name="Branch")
+        b.rotation_mode = "QUATERNION"
+        b.rotation_quaternion = vec.to_track_quat("Z", "Y")
+    clusters = 7
+    for k in range(clusters):
+        a = k / clusters * math.tau + 0.4 * K.jitter(k, salt)
+        r = spread * (0.35 + 0.25 * abs(K.jitter(k, salt + 3)))
+        z = height * (0.68 + 0.18 * K.jitter(k, salt + 5))
+        _foliage((math.cos(a) * r, math.sin(a) * r, z), spread * (0.42 + 0.1 * K.jitter(k, salt + 7)), mats[k % len(mats)], salt * 10 + k)
+    _foliage((0, 0, height * 0.9), spread * 0.55, mats[0], salt * 10 + 9)
+
+
+def oak_a(m): broadleaf(m, 1.9, 0.85, 51, ("#3E6A2A", "#4C7A30", "#5A8A36"))
+def oak_b(m): broadleaf(m, 1.6, 0.75, 52, ("#4A6E26", "#5E7E2C", "#6F8E34"))
+def birch(m): broadleaf(m, 2.1, 0.55, 53, ("#7A9A3A", "#8AAA44", "#A0B04A"), bark="BirchBark")
+
+
+def bush_big(m) -> None:
+    greens = [M.flat(f"Shrub{i}", c, roughness=0.9) for i, c in enumerate(("#365A26", "#44682C", "#527634"))]
+    for k in range(5):
+        a = k * 1.25
+        _foliage((math.cos(a) * 0.22, math.sin(a) * 0.18, 0.18), 0.24, greens[k % 3], 70 + k, squash=0.7)
+    berries = M.flat("Berries", "#B0283A", roughness=0.4)
+    for k in range(9):
+        a = k * 0.7
+        K.cylinder(0.025, 0.03, (math.cos(a) * 0.36, math.sin(a) * 0.3, 0.22 + 0.06 * K.jitter(k, 9)), berries, verts=6)
+
+
+def ruin_wall(m) -> None:
+    stone = m["stone"]
+    for row in range(4):
+        n = 5 - (row if row > 1 else 0)
+        for k in range(n):
+            if row == 3 and k in (1, 3):
+                continue
+            K.box((0.2, 0.18, 0.15), (-0.42 + k * 0.21 + (row % 2) * 0.1, 0, 0.08 + row * 0.16), stone, rot=(0, 0, 0.04 * K.jitter(k + row * 5, 3)), bevel=0.02)
+    moss = M.flat("Moss", "#4E6A2C", roughness=1.0)
+    K.box((0.5, 0.2, 0.04), (-0.15, 0.0, 0.66), moss)
+    K.box((0.22, 0.18, 0.15), (0.45, 0.25, 0.08), stone, rot=(0.3, 0.2, 0.5), bevel=0.02)
+
+
+def ruin_pillar(m) -> None:
+    stone = M.flat("PaleStone", "#B9B2A2", roughness=0.8)
+    K.cylinder(0.16, 0.9, (0, 0, 0.45), stone, verts=12)
+    K.box((0.42, 0.42, 0.1), (0, 0, 0.05), stone, bevel=0.02)
+    drum = K.cylinder(0.16, 0.3, (0.38, 0.12, 0.14), stone, rot=(math.radians(90), 0, 0.6), verts=12)
+    drum.name = "Fallen"
+    K.box((0.3, 0.3, 0.06), (0, 0, 0.93), M.flat("Moss", "#4E6A2C", roughness=1.0))
+
+
+def cave_mouth(m) -> None:
+    rock(m, 61, 0.55)
+    dark = M.flat("CaveDark", "#09090B", roughness=1.0)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=0.3, location=(0.05, -0.38, 0.12))
+    hole = bpy.context.active_object
+    hole.scale = (1.0, 0.35, 0.75)
+    hole.data.materials.append(dark)
+
+
+def pedestal(m) -> None:
+    metal = M.flat("PlateMetal", "#8A8F96", roughness=0.35, metallic=1.0)
+    K.cylinder(0.32, 0.08, (0, 0, 0.04), metal, verts=32)
+    K.cylinder(0.26, 0.02, (0, 0, 0.09), M.flat("PlateGlow", "#C9A44C", 0.3, metallic=1.0), verts=32)
+
+
+def relicario(m) -> None:
+    """The Relicario: a gilded reliquary on a stepped dais, spilling the supplies of the games."""
+    gold = M.flat("Gold", "#C9A44C", roughness=0.25, metallic=1.0)
+    ivory = M.flat("Ivory", "#E6DFCF", roughness=0.4)
+    for i, r in enumerate((1.9, 1.55, 1.2)):
+        K.cylinder(r, 0.12, (0, 0, 0.06 + i * 0.12), ivory if i != 1 else M.flat("Marble", "#D8D0BE", 0.3), verts=8)
+    # The casket: a long golden shell with an arched open lid.
+    K.box((1.2, 0.7, 0.45), (0, 0, 0.58), gold, bevel=0.05)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.36, depth=1.2, location=(0, 0.42, 1.08))
+    lid = bpy.context.active_object
+    lid.rotation_euler = (math.radians(70), math.radians(90), 0)
+    lid.scale = (1.0, 1.0, 1.0)
+    lid.data.materials.append(gold)
+    for x in (-0.62, 0.62):
+        K.cylinder(0.07, 0.9, (x, -0.38, 0.8), gold, verts=12)
+        K.cylinder(0.12, 0.12, (x, -0.38, 1.3), gold, verts=12)
+    # Supplies spilling down the steps.
+    for i, (x, y) in enumerate(((-0.9, -0.7), (0.8, -0.8), (-1.1, 0.4), (1.0, 0.5), (0.2, -1.2))):
+        K.crate((x, y, 0.24 if abs(x) < 1 else 0.12), m, s=0.24, rot=0.4 * i)
+    for i, (x, y) in enumerate(((-0.4, -1.3), (0.6, -1.25), (-1.35, -0.3))):
+        K.barrel((x, y, 0.12), m, radius=0.1, height=0.26)
+    rack = m["beam"]
+    for k in range(3):
+        spear = K.cylinder(0.015, 0.9, (1.3 + 0.08 * k, -0.2 + 0.1 * k, 0.55), rack, rot=(0.25, 0.2, 0), verts=6)
+        spear.name = "Spear"
+    K.box((0.5, 0.06, 0.25), (-0.3, -0.36, 0.95), M.flat("Crest", "#9C1C2B", 0.6))
+
+
 CATALOGUE = {
     # name: (builder, footprint (w, d), canvas (w, h) px at 2x, kind)
     "house_shack": (house_shack, (2, 2), "building"),
@@ -511,6 +655,15 @@ CATALOGUE = {
     "coal_heap": (coal_heap, (1, 1), "prop"),
     "supplies": (supplies, (1, 1), "prop"),
     "fence": (fence, (1, 1), "prop"),
+    "oak_a": (oak_a, (1, 1), "tree"),
+    "oak_b": (oak_b, (1, 1), "tree"),
+    "birch": (birch, (1, 1), "tree"),
+    "bush_big": (bush_big, (1, 1), "tree"),
+    "ruin_wall": (ruin_wall, (1, 1), "rock"),
+    "ruin_pillar": (ruin_pillar, (1, 1), "rock"),
+    "cave_mouth": (cave_mouth, (1, 1), "rock"),
+    "pedestal": (pedestal, (1, 1), "prop"),
+    "relicario": (relicario, (4, 4), "building"),
 }
 
 

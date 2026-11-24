@@ -16,7 +16,11 @@ export type DomainEvent =
   | { type: 'citizen/born'; id: string; name: string }
   | { type: 'citizen/died'; id: string; name: string; cause: string }
   | { type: 'citizen/coupled'; a: string; b: string }
-  | { type: 'selection/drawn'; edition: number; participants: string[] };
+  | { type: 'selection/drawn'; edition: number; participants: string[] }
+  | { type: 'regime/event'; eventId: string }
+  | { type: 'regime/event-resolved'; eventId: string; option: string }
+  | { type: 'regime/decree'; id: string }
+  | { type: 'games/homecoming'; edition: number; laureate: string | null; fallen: string[] };
 
 export type DomainEventType = DomainEvent['type'];
 

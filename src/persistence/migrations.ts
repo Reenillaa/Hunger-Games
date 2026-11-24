@@ -92,6 +92,25 @@ export const MIGRATIONS: readonly Migration[] = [
       return { ...state, games: null };
     },
   },
+  {
+    from: 6,
+    to: 7,
+    description: 'Phase 7: the arena state (tactical simulation of the games).',
+    migrate(state) {
+      return { ...state, arena: null };
+    },
+  },
+  {
+    from: 7,
+    to: 8,
+    description: 'Phase 9: the regime (district events, decrees, reprisals, unrest).',
+    migrate(state) {
+      return {
+        ...state,
+        regime: { pending: null, decrees: [], unrest: 0, lastEventDay: 0, log: [] },
+      };
+    },
+  },
 ];
 
 /** Upgrades a raw state from `fromVersion` to `targetVersion` by chaining migrations. */

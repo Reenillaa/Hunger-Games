@@ -80,15 +80,30 @@ test('walking skeleton: district → selection → capital → arena → return'
     }
     await capital.getByRole('button', { name: day < 7 ? 'Terminar el día' : 'A la arena' }).click();
   }
-  await expect(sheet).toHaveAttribute('data-phase', 'arena');
-  await sheet.getByRole('button', { name: /Cerrar los juegos/ }).click();
+  // The arena: play a few rounds, then let the games resolve without the player.
+  const arena = page.getByTestId('arena');
+  await expect(arena).toBeVisible();
+  await expect(page.getByTestId('arena-clock')).toContainText('Día 1');
+  await expect(arena.getByTestId('arena-member').first()).toBeVisible();
+  await arena.getByRole('button', { name: 'Prudente' }).click();
+  await expect(arena.getByRole('button', { name: 'Prudente' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await arena.getByRole('button', { name: /Cerrar los juegos/ }).click();
   await expect(sheet).toHaveAttribute('data-phase', 'aftermath');
-  await expect(sheet).toContainText('7 días fuera');
+  const body = (await sheet.textContent()) ?? '';
+  const away = Number(/tras (\d+) días fuera/.exec(body)?.[1]);
+  expect(away).toBeGreaterThan(7);
   await sheet.getByRole('button', { name: 'Volver al distrito' }).click();
+  // The return ceremony (built from the results) plays and can be skipped.
+  await expect(page.getByTestId('cinematic')).toBeVisible();
+  await page.getByRole('button', { name: 'Saltar' }).click();
 
   await expect(page.getByTestId('phase-sheet')).toHaveCount(0);
-  await expect(page.getByTestId('date')).toContainText('Otoño · Día 8');
-  await expect(page.getByTestId('countdown')).toContainText('La Criba en 33 d');
+  const seasons = ['Primavera', 'Verano', 'Otoño', 'Invierno'];
+  const season = seasons[(2 + Math.floor(away / 10)) % 4]!;
+  await expect(page.getByTestId('date')).toContainText(`${season} · Día ${(away % 10) + 1}`);
   expect(errors).toEqual([]);
 });
 

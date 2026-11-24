@@ -27,15 +27,15 @@ Una partida en la que se puede, desde el navegador del ordenador o del iPhone:
 |---|---|---|---|
 | 0 | Auditoría y diseño | ✅ Aprobada el 2026-11-23 | — |
 | 1 | Fundación técnica + esqueleto andante | 🟡 Terminada y verificada en CI; falta activar GitHub Pages (acción del cliente) | 0 aprobada |
-| 2 | Prototipo visual del distrito | ⬜ | 1 |
-| 3 | Construcción y economía | ⬜ | 2 |
-| 4 | Población (+ prototipo headless de IA de arena) | ⬜ | 3 |
-| 5 | Criba | ⬜ | 4 |
-| 6 | Preparación en Áurea | ⬜ | 5 |
-| 7 | Arena | ⬜ | 4 (IA headless), 6 |
-| 8 | Continuidad (regreso y nuevo ciclo) → **MVP completo** | ⬜ | 7 |
-| 9 | Política y eventos (profundización) | ⬜ | 8 |
-| 10 | Pulido y publicación | ⬜ | 9 |
+| 2 | Prototipo visual del distrito | ✅ 2026-11-24 | 1 |
+| 3 | Construcción y economía | ✅ 2026-11-24 | 2 |
+| 4 | Población (+ prototipo headless de IA de arena) | ✅ 2026-11-24 | 3 |
+| 5 | Criba | ✅ 2026-11-24 | 4 |
+| 6 | Preparación en Áurea | ✅ 2026-11-24 | 5 |
+| 7 | Arena | ✅ 2026-11-24 | 4 (IA headless), 6 |
+| 8 | Continuidad (regreso y nuevo ciclo) → **MVP completo** | ✅ 2026-11-24 | 7 |
+| 9 | Política y eventos (profundización) | ✅ 2026-11-24 | 8 |
+| 10 | Pulido y publicación | 🟡 Siguiente | 9 |
 | 11+ | Post-MVP: multi-distrito, nuevas arenas, Jubileos, inglés… | ⬜ | 10 |
 
 > El régimen y los eventos aparecen **de forma básica desde la Fase 3** (cuota, atención, unos pocos eventos) porque el MVP los necesita; la Fase 9 los profundiza.

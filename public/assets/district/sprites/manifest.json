@@ -78,12 +78,12 @@
         3
       ],
       "size": [
-        810,
-        601
+        926,
+        744
       ],
       "anchor": [
-        405.0,
-        406.7
+        463.0,
+        530.5
       ],
       "scale": 2.0,
       "layers": [
@@ -146,12 +146,12 @@
         2
       ],
       "size": [
-        736,
-        558
+        706,
+        442
       ],
       "anchor": [
-        368.0,
-        386.0
+        353.0,
+        273.6
       ],
       "scale": 2.0,
       "layers": [
@@ -643,6 +643,204 @@
       "anchor": [
         413.5,
         351.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "oak_a": {
+      "name": "oak_a",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        495,
+        388
+      ],
+      "anchor": [
+        247.5,
+        363.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "oak_b": {
+      "name": "oak_b",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        418,
+        333
+      ],
+      "anchor": [
+        209.0,
+        310.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "birch": {
+      "name": "birch",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        388,
+        385
+      ],
+      "anchor": [
+        194.0,
+        361.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "bush_big": {
+      "name": "bush_big",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        209,
+        139
+      ],
+      "anchor": [
+        104.5,
+        94.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "ruin_wall": {
+      "name": "ruin_wall",
+      "kind": "rock",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        268,
+        200
+      ],
+      "anchor": [
+        134.0,
+        150.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "ruin_pillar": {
+      "name": "ruin_pillar",
+      "kind": "rock",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        239,
+        227
+      ],
+      "anchor": [
+        119.5,
+        181.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "cave_mouth": {
+      "name": "cave_mouth",
+      "kind": "rock",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        262,
+        184
+      ],
+      "anchor": [
+        131.0,
+        119.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "pedestal": {
+      "name": "pedestal",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        150,
+        95
+      ],
+      "anchor": [
+        75.0,
+        53.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "relicario": {
+      "name": "relicario",
+      "kind": "building",
+      "footprint": [
+        4,
+        4
+      ],
+      "size": [
+        727,
+        500
+      ],
+      "anchor": [
+        363.5,
+        315.8
       ],
       "scale": 2.0,
       "layers": [

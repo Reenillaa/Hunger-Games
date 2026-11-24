@@ -66,11 +66,14 @@ export class CeremonyStage {
         y + oy * 0.6,
       );
     });
-    // Stage: the herald from the capital (gold) and two wardens.
-    const herald = this.person(sheets, 'woman_b', 26, 21.6, 1, 0.3);
+    // Stage against the town hall: the herald from the capital (gold) and the wardens.
+    const herald = this.person(sheets, 'woman_b', 26.5, 20.7, 1, 0.3);
     herald.setTint(0xf2d48a);
-    this.person(sheets, 'warden', 25.2, 21.4, 1, 0.3);
-    this.person(sheets, 'warden', 27, 21.3, 1, 0.3);
+    this.person(sheets, 'warden', 25.4, 20.5, 1, 0.3);
+    this.person(sheets, 'warden', 27.4, 20.4, 1, 0.3);
+    // Wardens guarding the town hall's doors behind the stage.
+    this.person(sheets, 'warden', 24.3, 20.2, 1);
+    this.person(sheets, 'warden', 28.6, 20.2, 1);
     this.spotlight = scene.add
       .image(0, 0, 'glow')
       .setBlendMode(Phaser.BlendModes.ADD)

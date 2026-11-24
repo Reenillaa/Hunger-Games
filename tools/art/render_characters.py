@@ -173,6 +173,9 @@ SPECS = {
     "child": {"skin": "#C9A285", "top": "#6E6650", "bottom": "#3A3632", "hair": "#5A3E2A", "hat": "cap", "scale": 0.72},
     "elder": {"skin": "#C49A7A", "top": "#4A4540", "bottom": "#35322F", "hair": "#B8B2A8", "coat": True},
     "warden": {"skin": "#C9A285", "top": "#C8C4B8", "bottom": "#9A968C", "hair": "#2A221C", "hat": "warden", "rifle": True},
+    # Arena jumpsuits (identical for every contestant: the regime erases the districts).
+    "contestant": {"skin": "#C49A7A", "top": "#4E5A3C", "bottom": "#3C4630", "hair": "#2A221C"},
+    "contestant_f": {"skin": "#C9A285", "top": "#4E5A3C", "bottom": "#3C4630", "hair": "#5A3A24", "bun": True},
 }
 
 

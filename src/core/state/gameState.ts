@@ -1,11 +1,14 @@
 import type { DistrictState } from '../district/generate.ts';
 import type { EconomyState } from '../economy/economy.ts';
 import type { PopulationState } from '../population/types.ts';
+import type { ArenaState } from '../arena/arena.ts';
+import type { GamesResult } from '../games/aftermath.ts';
 import type { GamesState } from '../games/types.ts';
+import type { RegimeState } from '../regime/regime.ts';
 import type { RngState, RngStreamId } from '../rng/rng.ts';
 
 /** Bumped whenever the shape of GameState changes; saves migrate across versions. */
-export const STATE_SCHEMA_VERSION = 6;
+export const STATE_SCHEMA_VERSION = 8;
 
 export const PHASE_KINDS = ['district', 'selection', 'capital', 'arena', 'aftermath'] as const;
 export type PhaseKind = (typeof PHASE_KINDS)[number];
@@ -56,6 +59,10 @@ export interface GameState {
   population: PopulationState;
   /** The games in progress: the 24 contestants, from the capital to the arena (v6). */
   games: GamesState | null;
+  /** The arena of the games in progress (v7). */
+  arena: ArenaState | null;
+  /** The regime's grip: dilemmas, decrees, reprisals and unrest (v8). */
+  regime: RegimeState;
   rng: Record<RngStreamId, RngState>;
   ids: { next: number };
   chronicle: ChronicleEntry[];
@@ -73,7 +80,7 @@ export interface CompetitionState {
     entries: Record<string, number>;
   } | null;
   /** Every past Criba: who was chosen, by edition. */
-  history: { edition: number; year: number; participants: string[] }[];
+  history: { edition: number; year: number; participants: string[]; result?: GamesResult }[];
 }
 
 export function editionOfYear(state: GameState, year: number): number {

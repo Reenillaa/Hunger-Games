@@ -1,3 +1,4 @@
+import { getQuality } from '../../platform/settings.ts';
 /** Shapes of the art manifests written by tools/art (render_terrain.py, render_district_assets.py). */
 export interface TerrainManifest {
   scale: number;
@@ -36,7 +37,7 @@ export const ART_BASE = 'assets/district';
 
 /** Terrain resolution: half-size chunks on small touch devices (memory), full otherwise. */
 export function pickTerrainScale(): '1x' | '0.5x' {
-  const q = new URLSearchParams(window.location.search).get('quality');
+  const q = new URLSearchParams(window.location.search).get('quality') ?? getQuality();
   if (q === 'low') return '0.5x';
   if (q === 'high') return '1x';
   const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;

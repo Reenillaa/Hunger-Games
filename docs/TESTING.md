@@ -62,3 +62,9 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-23 | 2 | FPS en Chromium + SwiftShader (sin GPU), 1280×720 | Luces por píxel: 4 FPS · tintado + halos: 13 FPS. No representa una GPU real |
 | 2026-11-23 | 2 | CI GitHub Actions (`1a28414`) | `verify` **correcto**. Antes fallaron dos ejecuciones por bugs reales encontrados por los E2E: el reloj del juego dependía del delta suavizado de Phaser (se paraba con pocos FPS; corregido) y dos tests dependían del reloj en marcha (corregidos). `deploy` falla: Pages sin activar (C-1) |
 | 2026-11-23 | 2 | Revisión visual: capturas de día, noche, valle completo e iPhone horizontal | Corregidos: tejado invertido, pivote de rotación, objetos bajo tierra visibles, ventanas encendidas de día, costuras entre trozos, esquinas negras visibles |
+| 2026-11-24 | 7–9 | `npx vitest run` | **106/106** en 17 ficheros (nuevos: arena ×6 incl. 100 arenas headless, regreso ×2, régimen ×3) |
+| 2026-11-24 | 7 | 100 arenas sin jugador (test estadístico) | Mediana ≈ 133 rondas; 12 distritos ganadores distintos, ninguno > 15 %; muertes: combate 1695, desangrado 523, perímetro 105, sed 18, fuego 5, hambre 2 |
+| 2026-11-24 | 7 | Captura manual de la arena (Chromium + SwiftShader) | Encontrados y corregidos: miembros del equipo propio atacándose entre sí (ahora son una alianza que solo se rompe al quedar solos) y rejilla visible en la niebla de guerra |
+| 2026-11-24 | 9 | `npm run sim -- --years 10 --seed 123 --policy basic` | 10 años sin hambruna; población 111→105 (caídos de los juegos), moral 40–45, atención < 10 |
+| 2026-11-24 | 7–9 | `npm run lint`, `typecheck`, `format:check`, `build` | Sin errores |
+

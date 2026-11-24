@@ -18,3 +18,14 @@ export { populate } from './state/newGame.ts';
 export * from './selection/selection.ts';
 export * from './games/types.ts';
 export * from './games/capital.ts';
+export * from './games/aftermath.ts';
+export * from './regime/regime.ts';
+export * from './arena/arena.ts';
+export {
+  ARENA,
+  ARENA_SIZE,
+  codeAt as arenaCodeAt,
+  lineOfSight,
+  distance as arenaDistance,
+} from './arena/map.ts';
+export type { ArenaCode } from './arena/map.ts';

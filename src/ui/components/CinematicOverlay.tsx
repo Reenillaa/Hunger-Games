@@ -55,6 +55,7 @@ export function CinematicOverlay({ session }: { session: GameSession }) {
             sex={revealed.sex}
             age={ageOf(revealed, day)}
             mood={20}
+            dead={!revealed.alive}
             size={120}
           />
           <div>

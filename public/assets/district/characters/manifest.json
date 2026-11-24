@@ -146,6 +146,48 @@
         "se"
       ],
       "walkFrames": 8
+    },
+    "contestant": {
+      "name": "contestant",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
+    },
+    "contestant_f": {
+      "name": "contestant_f",
+      "frameWidth": 104,
+      "frameHeight": 208,
+      "anchor": [
+        52.0,
+        187.2
+      ],
+      "scale": 2.0,
+      "directions": [
+        "s",
+        "sw",
+        "w",
+        "nw",
+        "n",
+        "ne",
+        "e",
+        "se"
+      ],
+      "walkFrames": 8
     }
   }
 }

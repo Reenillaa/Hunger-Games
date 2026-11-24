@@ -25,7 +25,39 @@ from lib import materials as M  # noqa: E402
 from lib import scene as S  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-TEMPLATE = json.loads((ROOT / "src/content/maps/d12.json").read_text(encoding="utf8"))
+_ARGV = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
+MAP = _ARGV[_ARGV.index("--map") + 1] if "--map" in _ARGV else "d12"
+# Per-map setup: layer membership per terrain code (blurred later into smooth vertex weights).
+MAPS = {
+    "d12": {
+        "out": "public/assets/district/terrain",
+        "water": "w", "wet": "w", "soot": "rvt", "rise_back": True, "background": "#121216",
+        "layers": {
+            "dry": {"f": 0.45, "s": 0.4, "g": 0.2},
+            "forest": {"f": 1.0},
+            "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "v": 0.4, "p": 0.6},
+            "coal": {"v": 1.0, "r": 0.9},
+            "gravel": {"t": 1.0},
+            "cobble": {"p": 1.0},
+            "rock": {"R": 1.0, "s": 0.55},
+        },
+    },
+    "arena_forest": {
+        "out": "public/assets/arena/terrain",
+        "water": "wW", "wet": "wW", "soot": "", "rise_back": False, "background": "#0E130E",
+        "layers": {
+            "dry": {"b": 0.9, "c": 0.25},
+            "forest": {"F": 0.75, "D": 1.0, "v": 0.5},
+            "dirt": {"u": 0.5, "v": 0.6, "w": 0.7, "X": 0.3},
+            "coal": {},
+            "gravel": {"X": 0.4, "r": 0.3},
+            "cobble": {"u": 0.7, "X": 0.8},
+            "rock": {"R": 1.0, "r": 0.75},
+        },
+    },
+}
+CFG = MAPS[MAP]
+TEMPLATE = json.loads((ROOT / f"src/content/maps/{MAP}.json").read_text(encoding="utf8"))
 W, H = TEMPLATE["width"], TEMPLATE["height"]
 CODES = TEMPLATE["terrain"]
 ELEV = TEMPLATE["elevation"]
@@ -33,16 +65,7 @@ EXT = 2  # cells rendered beyond the playable map so edges fade instead of endin
 SUB = 4  # mesh subdivisions per cell
 BG = (22, 22, 26)
 
-# Layer membership per terrain code (blurred later into smooth vertex weights).
-LAYERS = {
-    "dry": {"f": 0.45, "s": 0.4, "g": 0.2},
-    "forest": {"f": 1.0},
-    "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "v": 0.4, "p": 0.6},
-    "coal": {"v": 1.0, "r": 0.9},
-    "gravel": {"t": 1.0},
-    "cobble": {"p": 1.0},
-    "rock": {"R": 1.0, "s": 0.55},
-}
+LAYERS = CFG["layers"]
 
 
 def _proximity(codes: str, radius: float) -> dict[tuple[int, int], float]:
@@ -65,8 +88,8 @@ _FIELDS: dict[str, dict[tuple[int, int], float]] = {}
 
 def field_value(name: str, x: int, y: int) -> float:
     if not _FIELDS:
-        _FIELDS["wet"] = _proximity("w", 2.6)
-        _FIELDS["soot"] = _proximity("rvt", 2.2)
+        _FIELDS["wet"] = _proximity(CFG["wet"], 2.6)
+        _FIELDS["soot"] = _proximity(CFG["soot"], 2.2)
     return _FIELDS[name].get((x, y), 0.0)
 
 
@@ -80,7 +103,7 @@ def _raw_elev(x: int, y: int) -> float:
     xc, yc = min(max(x, 0), W - 1), min(max(y, 0), H - 1)
     e = max(ELEV[yc][xc], 0.0)
     # Beyond the back edges the mountains keep rising gently; beyond the front they stay flat.
-    if y < 0 or (x < 0 and y < 26):
+    if CFG["rise_back"] and (y < 0 or (x < 0 and y < 26)):
         e += 0.35 * max(-x, -y, 0)
     return e
 
@@ -126,7 +149,7 @@ def height_at(fx: float, fy: float) -> float:
     """Terrain height (world Z) at a point in cell coordinates. Used by the mesh and the props."""
     e = bilinear(elev_at, fx, fy)
     rockness = bilinear(lambda x, y: LAYERS["rock"].get(code_at(x, y), 0.0), fx, fy)
-    water = bilinear(lambda x, y: 1.0 if code_at(x, y) == "w" else 0.0, fx, fy)
+    water = bilinear(lambda x, y: 1.0 if code_at(x, y) in CFG["water"] else 0.0, fx, fy)
     p = Vector((fx * 0.19, fy * 0.19, 0.0))
     ridge = noise.ridged_multi_fractal(p, 1.0, 2.0, 4, 1.0, 2.0)
     detail = noise.fractal(Vector((fx * 1.7, fy * 1.7, 3.1)), 0.8, 2.0, 3)
@@ -137,7 +160,7 @@ def height_at(fx: float, fy: float) -> float:
 def export_heights() -> None:
     """Per-cell ground height for placing sprites on slopes (public/assets/district/terrain/heights.json)."""
     rows = [[round(height_at(x, y), 3) for x in range(W)] for y in range(H)]
-    out = ROOT / "public/assets/district/terrain/heights.json"
+    out = ROOT / CFG["out"] / "heights.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"width": W, "height": H, "heights": rows}, separators=(",", ":")) + "\n", encoding="utf8")
     print(f"wrote {out}")
@@ -228,9 +251,9 @@ def terrain_material() -> bpy.types.Material:
     def tex(key, **kwargs):
         return M.pbr_sockets(nodes, links, key, **{**common, **kwargs})
 
-    state = tex("grass_patchy", scale=0.7, normal_strength=1.6, saturation=0.5, value=0.6, tint="#55613F", tint_amount=0.3)
-    state = blend(state, tex("grass_dry", scale=0.6, normal_strength=1.6, saturation=0.45, value=0.6, tint="#6A6440", tint_amount=0.3), breakup("dry", 0.3, 1.3))
-    state = blend(state, tex("dirt_light", scale=0.55, normal_strength=1.8, saturation=0.35, value=0.5, tint="#5E5040", tint_amount=0.25), breakup("dirt", 0.28, 1.1))
+    state = tex("grass_patchy", scale=0.7, normal_strength=1.6, saturation=0.85, value=0.72, tint="#5E7F38", tint_amount=0.3)
+    state = blend(state, tex("grass_dry", scale=0.6, normal_strength=1.6, saturation=0.7, value=0.7, tint="#8C8044", tint_amount=0.3), breakup("dry", 0.3, 1.3))
+    state = blend(state, tex("dirt_light", scale=0.55, normal_strength=1.8, saturation=0.55, value=0.58, tint="#6E5A42", tint_amount=0.25), breakup("dirt", 0.28, 1.1))
     state = blend(state, tex("dirt_coal", scale=0.6, normal_strength=1.8, saturation=0.3, value=0.33, tint="#3B3A2E", tint_amount=0.3), breakup("forest", 0.3, 1.5))
     state = blend(state, tex("dirt_coal", scale=0.7, normal_strength=2.0, saturation=0.2, value=0.4), breakup("coal", 0.18, 1.0))
     state = blend(state, tex("gravel", scale=1.0, normal_strength=2.0, saturation=0.2, value=0.5), breakup("gravel", 0.12, 2.0))
@@ -280,8 +303,9 @@ def terrain_material() -> bpy.types.Material:
         return mix.outputs["Result"]
 
     color = state["color"]
-    color = tint(color, noise_fac(0.06, 0.45, 0.75, 1.0), "#B9D08A", amount=0.55)  # lush patches
-    color = tint(color, noise_fac(0.08, 0.5, 0.8, 7.0), "#C9A97A", amount=0.5)  # parched patches
+    color = tint(color, noise_fac(0.06, 0.45, 0.75, 1.0), "#A9D46E", amount=0.6)  # lush patches
+    color = tint(color, noise_fac(0.08, 0.5, 0.8, 7.0), "#D8B878", amount=0.45)  # parched patches
+    color = tint(color, noise_fac(0.25, 0.55, 0.8, 5.0), "#C8E08A", amount=0.3)  # clover glades
     color = tint(color, noise_fac(0.9, 0.4, 0.7, 3.0), "#8C8C80", amount=0.25)  # fine mottling
     wet_attr = nodes.new("ShaderNodeAttribute")
     wet_attr.attribute_type, wet_attr.attribute_name = "GEOMETRY", "wet"
@@ -307,7 +331,7 @@ def terrain_material() -> bpy.types.Material:
     fade.data_type = "RGBA"
     links.new(out_attr.outputs["Fac"], fade.inputs["Factor"])
     links.new(state["color"], fade.inputs["A"])
-    fade.inputs["B"].default_value = S.hex_rgba("#121216")
+    fade.inputs["B"].default_value = S.hex_rgba(CFG["background"])
     links.new(fade.outputs["Result"], bsdf.inputs["Base Color"])
     links.new(state["roughness"], bsdf.inputs["Roughness"])
     links.new(state["normal"], bsdf.inputs["Normal"])
@@ -397,6 +421,40 @@ def _blob(name: str, radius: float, squash: float, mat: bpy.types.Material, lump
     return obj
 
 
+def _flower(mat) -> bpy.types.Object:
+    """A small bloom on a stem, so meadows read as flowers instead of dots on the ground."""
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=0.04, location=(0, 0, 0))
+    head = bpy.context.active_object
+    for v in head.data.vertices:
+        v.co.z = v.co.z * 0.45 + 0.09
+    bpy.ops.mesh.primitive_cylinder_add(vertices=4, radius=0.005, depth=0.09, location=(0, 0, 0.045))
+    stem = bpy.context.active_object
+    stem.data.materials.append(_random_colour_material("Stem", ["#4A6A2A"]))
+    head.data.materials.append(mat)
+    bpy.ops.object.select_all(action="DESELECT")
+    stem.select_set(True)
+    head.select_set(True)
+    bpy.context.view_layer.objects.active = head
+    bpy.ops.object.join()
+    head.name = "Flower"
+    head.location = (0, 0, -50)
+    head.hide_render = True
+    return head
+
+
+def _leaf(mat) -> bpy.types.Object:
+    """A fallen leaf: a flat curled disc lying on the ground."""
+    bpy.ops.mesh.primitive_circle_add(vertices=8, radius=0.028, fill_type="NGON", location=(0, 0, -50))
+    obj = bpy.context.active_object
+    obj.name = "Leaf"
+    obj.scale = (1.0, 0.5, 1.0)
+    for i, v in enumerate(obj.data.vertices):
+        v.co.z = 0.004 + 0.006 * abs(v.co.x) / 0.028
+    obj.data.materials.append(mat)
+    obj.hide_render = True
+    return obj
+
+
 def _puddle(mat) -> bpy.types.Object:
     bpy.ops.mesh.primitive_circle_add(vertices=24, radius=0.14, fill_type="NGON", location=(0, 0, -50))
     obj = bpy.context.active_object
@@ -417,7 +475,7 @@ def scatter(terrain: bpy.types.Object) -> None:
     n = len(mesh.vertices)
     names = ("dry", "dirt", "coal", "gravel", "cobble", "rock", "forest", "outside", "wet", "soot")
     L = {k: [v.value for v in mesh.attributes[k].data] for k in names}
-    dens = {k: [0.0] * n for k in ("grass", "tall", "bush", "flower", "reed", "puddle", "pebble")}
+    dens = {k: [0.0] * n for k in ("grass", "lush", "tall", "bush", "fern", "flower", "leaf", "reed", "puddle", "pebble")}
     for i, v in enumerate(mesh.vertices):
         bare = max(L["dirt"][i], L["coal"][i], L["gravel"][i], L["cobble"][i], L["rock"][i])
         water = 1.0 if v.co.z < -0.05 else 0.0
@@ -426,7 +484,13 @@ def scatter(terrain: bpy.types.Object) -> None:
         dens["grass"][i] = alive * (0.6 + 0.4 * L["dry"][i])
         dens["tall"][i] = alive * (0.1 + 0.9 * L["dry"][i]) * wild ** 2
         dens["bush"][i] = alive * (0.2 + 0.8 * L["forest"][i]) * wild ** 2
-        dens["flower"][i] = alive * (1 - L["forest"][i]) * (1 - wild) ** 1.5
+        # Flowers grow in clusters (meadow patches), not as uniform noise.
+        bloom = max(0.0, noise.noise(Vector((v.co.x * 0.7, v.co.y * 0.7, 13.0))) * 2.4 - 0.35)
+        dens["flower"][i] = alive * (1 - L["forest"][i]) * (1 - L["dry"][i] * 0.5) * min(1.0, bloom)
+        glade = max(0.0, noise.noise(Vector((v.co.x * 0.4, v.co.y * 0.4, 21.0))) * 1.5)
+        dens["lush"][i] = alive * (1 - L["dry"][i]) * min(1.0, glade + 0.6 * L["wet"][i])
+        dens["fern"][i] = alive * L["forest"][i] * (0.4 + 0.6 * wild)
+        dens["leaf"][i] = (1 - water) * (1 - L["outside"][i]) * (1 - L["cobble"][i]) * (0.15 + 0.85 * L["forest"][i]) * (1 - L["rock"][i])
         dens["reed"][i] = L["wet"][i] ** 1.5 * (1 - water) * (1 - L["cobble"][i]) * (1 - L["rock"][i])
         dens["puddle"][i] = L["coal"][i] * (1 - water) * (1 - L["outside"][i])
         dens["pebble"][i] = min(1.0, 0.5 * L["dirt"][i] + 0.4 * L["forest"][i] + 0.4 * L["rock"][i] + 0.3 * L["soot"][i]) * (1 - water) * (1 - L["cobble"][i])
@@ -436,20 +500,27 @@ def scatter(terrain: bpy.types.Object) -> None:
             if w > 0.02:
                 group.add([i], min(1.0, w), "REPLACE")
 
-    blade_mat = _random_colour_material("GrassBlades", ["#344526", "#3F5230", "#4E5E34", "#5E6A3C", "#77764A"])
-    dry_mat = _random_colour_material("DryBlades", ["#7A7048", "#9A8C5C", "#6A6440"])
-    reed_mat = _random_colour_material("Reeds", ["#4E5A36", "#6A6A3E", "#5A4E34"])
-    bush_mat = _random_colour_material("Bush", ["#28361F", "#334227", "#3F4A2A", "#2E3324"], roughness=0.9)
-    flower_mat = _random_colour_material("Flowers", ["#D8D2C0", "#C9B458", "#8E7AA0", "#D8D2C0", "#B86A4A"], 0.7, constant=True)
+    blade_mat = _random_colour_material("GrassBlades", ["#3B5A24", "#4A6B2A", "#5B7D31", "#6E8C38", "#86964A", "#55722D"])
+    lush_mat = _random_colour_material("LushBlades", ["#3F6A26", "#4F7E2E", "#64923A", "#7AA444"])
+    dry_mat = _random_colour_material("DryBlades", ["#8E8048", "#AE9A5C", "#7C7444", "#C2A866"])
+    reed_mat = _random_colour_material("Reeds", ["#4E6A36", "#6A7A3E", "#7A6A40"])
+    bush_mat = _random_colour_material("Bush", ["#2C4A22", "#3A5A2A", "#4A6630", "#34502A", "#5A6E34"], roughness=0.9)
+    fern_mat = _random_colour_material("Fern", ["#4E7A2E", "#5E8A36", "#6E9A3E"], roughness=0.8)
+    flower_mat = _random_colour_material(
+        "Flowers", ["#F4F1E6", "#F0CC3E", "#B27CD0", "#E0503A", "#F4F1E6", "#F2A4C2", "#7EA2E8"], 0.6, constant=True)
+    leaf_mat = _random_colour_material("Leaves", ["#A0642A", "#C48A3A", "#7A4A22", "#B8A040"], 0.9)
     puddle_mat = _random_colour_material("PuddleWater", ["#1E2427", "#262C2E"], roughness=0.05, glossy=True)
     sources = [
-        ("grass", _blades("Clump", 10, 0.05, 0.05, 0.11, 0.012, blade_mat), 260000, 1.0, 1),
-        ("tall", _blades("TallClump", 12, 0.06, 0.14, 0.24, 0.01, dry_mat, 3), 18000, 1.0, 2),
-        ("reed", _blades("ReedClump", 14, 0.06, 0.28, 0.45, 0.009, reed_mat, 5), 9000, 1.0, 3),
-        ("bush", _blob("Bush", 0.13, 0.75, bush_mat, 0.7), 2600, 1.0, 4),
-        ("flower", _blob("Flower", 0.022, 1.0, flower_mat, 0.0, 1), 40000, 1.0, 5),
+        ("grass", _blades("Clump", 12, 0.07, 0.07, 0.15, 0.016, blade_mat), 300000, 1.0, 1),
+        ("lush", _blades("LushClump", 16, 0.09, 0.12, 0.22, 0.014, lush_mat, 7), 60000, 1.0, 8),
+        ("tall", _blades("TallClump", 12, 0.07, 0.16, 0.28, 0.012, dry_mat, 3), 36000, 1.0, 2),
+        ("reed", _blades("ReedClump", 14, 0.06, 0.3, 0.48, 0.01, reed_mat, 5), 10000, 1.0, 3),
+        ("bush", _blob("Bush", 0.15, 0.8, bush_mat, 0.7), 4200, 1.0, 4),
+        ("fern", _blades("Fern", 7, 0.02, 0.08, 0.12, 0.03, fern_mat, 9), 22000, 1.0, 9),
+        ("flower", _flower(flower_mat), 55000, 1.0, 5),
+        ("leaf", _leaf(leaf_mat), 26000, 1.0, 10),
         ("puddle", _puddle(puddle_mat), 260, 1.0, 6),
-        ("pebble", _blob("Pebble", 0.05, 0.45, M.district_materials()["stone"], 0.2, 1), 14000, 1.0, 7),
+        ("pebble", _blob("Pebble", 0.05, 0.45, M.district_materials()["stone"], 0.2, 1), 16000, 1.0, 7),
     ]
     for name, obj, count, size, seed in sources:
         mod = terrain.modifiers.new(name, "PARTICLE_SYSTEM")
@@ -516,6 +587,24 @@ def build_railway(mats) -> None:
         box("Rail", (0.06, (y1 - y0) + 1.6, 0.07), (cx + side, -((y0 + y1) / 2 + 0.3), 0.13), mats["iron"])
 
 
+def build_fords(mats) -> None:
+    """Stepping stones across the river fords of the arena (shallow cells in the river bed)."""
+    k = 0
+    for y in range(H):
+        rx = 6 + y * 0.55 + 2.0 * math.sin(y / 4.5)
+        for x in range(W):
+            if code_at(x, y) == "w" and abs(x - rx) < 0.7:
+                for j in range(3):
+                    ox = 0.3 * noise.noise(Vector((x + j, y, 1.0)))
+                    oy = -0.33 + j * 0.33
+                    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.16, location=(x + ox, -(y + oy), -0.1))
+                    st = bpy.context.active_object
+                    st.name = f"Stone{k}"
+                    st.scale = (1.2, 1.0, 0.45)
+                    st.data.materials.append(mats["stone"])
+                    k += 1
+
+
 def build_bridges(mats) -> None:
     cells = [(x, y) for y in range(H) for x in range(W) if code_at(x, y) == "b"]
     if not cells:
@@ -537,6 +626,7 @@ def build_bridges(mats) -> None:
 def main() -> None:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     parser = argparse.ArgumentParser()
+    parser.add_argument("--map", default="d12", choices=list(MAPS))
     parser.add_argument("--scale", type=float, default=1.0)
     parser.add_argument("--samples", type=int, default=24)
     parser.add_argument("--preview", action="store_true", help="render a single image only, no chunks")
@@ -548,8 +638,8 @@ def main() -> None:
 
     t0 = time.time()
     if args.reslice:
-        full = ROOT / f"assets/build/terrain_d12_{args.scale:g}x.png"
-        old = json.loads((ROOT / f"public/assets/district/terrain/{args.scale:g}x/manifest.json").read_text())
+        full = ROOT / f"assets/build/terrain_{MAP}_{args.scale:g}x.png"
+        old = json.loads((ROOT / CFG["out"] / f"{args.scale:g}x/manifest.json").read_text())
         slice_chunks(full, args.scale, old["originAnchor"], old["width"], old["height"])
         return
     export_heights()
@@ -562,8 +652,11 @@ def main() -> None:
     terrain = build_terrain()
     scatter(terrain)
     build_water()
-    build_railway(mats)
-    build_bridges(mats)
+    if MAP == "d12":
+        build_railway(mats)
+        build_bridges(mats)
+    else:
+        build_fords(mats)
 
     # Frame: screen x = (X+Y)*64*s, screen y = (X-Y)*32*s - Z*78.38*s for the extended map.
     s = args.scale
@@ -586,7 +679,7 @@ def main() -> None:
 
     build_dir = ROOT / "assets/build"
     build_dir.mkdir(parents=True, exist_ok=True)
-    full = build_dir / f"terrain_d12_{s:g}x.png"
+    full = build_dir / f"terrain_{MAP}_{s:g}x.png"
     scene.render.filepath = str(full)
     bpy.ops.render.render(write_still=True)
     ax, ay = S.anchor_px(scene, cam, Vector((0, 0, 0)))
@@ -608,7 +701,7 @@ def slice_chunks(full: pathlib.Path, scale: float, anchor, res_x: int, res_y: in
 
 def write_chunks(img, scale: float, anchor, res_x: int, res_y: int) -> None:
     tile = 1024
-    folder = ROOT / f"public/assets/district/terrain/{scale:g}x"
+    folder = ROOT / CFG["out"] / f"{scale:g}x"
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob("*.jpg"):
         old.unlink()
@@ -627,7 +720,7 @@ def write_chunks(img, scale: float, anchor, res_x: int, res_y: int) -> None:
         "width": res_x,
         "height": res_y,
         "originAnchor": [round(anchor[0], 2), round(anchor[1], 2)],
-        "background": "#16161a",
+        "background": CFG["background"],
     }
     (folder / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf8")
     print(f"wrote {cols}x{rows} chunks to {folder}")

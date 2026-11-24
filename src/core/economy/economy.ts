@@ -1,3 +1,4 @@
+import { decreeFactor } from '../regime/regime.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { BuildingDef } from '../../content/buildings.ts';
 import {
@@ -123,7 +124,7 @@ export function economyHour(state: GameState, date: CalendarDate, ctx: SimContex
   const working = date.hour >= WORK_HOURS[0] && date.hour < WORK_HOURS[1];
   if (!working) return;
   const cap = storageCapacity(state);
-  const moraleFactor = 0.7 + 0.5 * (state.economy.morale / 100);
+  const moraleFactor = (0.7 + 0.5 * (state.economy.morale / 100)) * decreeFactor(state);
   for (const s of state.district.structures) {
     if (s.workers === 0) continue;
     if (!s.built) {

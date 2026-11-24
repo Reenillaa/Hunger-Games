@@ -1,3 +1,4 @@
+import { regimeDay } from '../regime/regime.ts';
 import type { SimContext } from '../events.ts';
 import { collectingContext } from '../events.ts';
 import type { GameState } from '../state/gameState.ts';
@@ -85,7 +86,13 @@ const population: System = {
   },
 };
 
-export const SYSTEMS: readonly System[] = [economy, population, selectionTrigger];
+/** The regime: dilemmas, decrees, reprisals and unrest (Phase 9). */
+const regime: System = {
+  id: 'regime',
+  onDayStart: (state, ctx, date) => regimeDay(state, date, ctx),
+};
+
+export const SYSTEMS: readonly System[] = [economy, population, regime, selectionTrigger];
 
 export class SimulationError extends Error {}
 

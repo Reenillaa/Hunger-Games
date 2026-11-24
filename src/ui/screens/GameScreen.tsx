@@ -9,6 +9,8 @@ import { DebugPanel } from '../components/DebugPanel.tsx';
 import { ResourceBar } from '../components/ResourceBar.tsx';
 import { SelectionPanel } from '../components/SelectionPanel.tsx';
 import { PhaseSheet } from '../components/PhaseSheet.tsx';
+import { ArenaPanel } from '../components/ArenaPanel.tsx';
+import { EventDialog } from '../components/EventDialog.tsx';
 import { SaveDialog } from '../components/SaveDialog.tsx';
 import { TopBar } from '../components/TopBar.tsx';
 import { useServices } from '../services.ts';
@@ -71,6 +73,8 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
         <SelectionPanel session={session} />
         <PhaseSheet session={session} />
         <CapitalPanel session={session} />
+        <ArenaPanel session={session} />
+        <EventDialog session={session} />
         {debug && <DebugPanel session={session} />}
       </div>
       <CinematicOverlay session={session} />

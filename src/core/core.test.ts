@@ -106,7 +106,10 @@ describe('yearly cycle (walking skeleton)', () => {
     const selectionTick = s.clock.tick;
     playCompetition(s);
     expect(s.phase.kind).toBe('district');
-    expect(s.clock.tick).toBe(selectionTick + CAPITAL_DAYS * TICKS_PER_DAY);
+    const away = s.chronicle.at(-1)!.daysAway!;
+    // The week in Áurea plus the days the games lasted.
+    expect(away).toBeGreaterThan(CAPITAL_DAYS);
+    expect(s.clock.tick).toBe(selectionTick + away * TICKS_PER_DAY);
     expect(s.away.days).toBe(0);
     expect(s.chronicle.map((c) => c.kind)).toEqual([
       'gameStarted',
@@ -116,7 +119,6 @@ describe('yearly cycle (walking skeleton)', () => {
       'arenaConcluded',
       'returnedHome',
     ]);
-    expect(s.chronicle.at(-1)?.daysAway).toBe(CAPITAL_DAYS);
   });
 
   it('holds exactly one selection per year over several years', () => {

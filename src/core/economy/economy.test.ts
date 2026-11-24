@@ -91,8 +91,8 @@ describe('construction', () => {
     expect(checkPlacement(s, 'house_shack', hall.x, hall.y)).toBe('occupied');
     expect(checkPlacement(s, 'mine_headframe', 33, 33)).toBe('requirement');
     expect(checkPlacement(s, 'lumber_camp', 40, 30)).toBe('requirement');
+    const spot = findSpot(s, 'house_shack');
     s.economy.resources.wood = 0;
-    const spot = { x: 34, y: 30 };
     expect(checkPlacement(s, 'house_shack', spot.x, spot.y)).toBe('cost');
     expect(applyCommand(s, { type: 'build/place', kind: 'house_shack', ...spot }).ok).toBe(false);
   });

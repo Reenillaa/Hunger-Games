@@ -1,3 +1,4 @@
+import { createRegime } from '../regime/regime.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import { TEMPLATES } from '../../content/maps/index.ts';
 import { generateDistrict } from '../district/generate.ts';
@@ -52,6 +53,8 @@ export function createNewGame(options: NewGameOptions): GameState {
     economy: initialEconomy(),
     population: { citizens: {} },
     games: null,
+    arena: null,
+    regime: createRegime(),
     rng,
     ids: { next: 1 },
     chronicle: [],

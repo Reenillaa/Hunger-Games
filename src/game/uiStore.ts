@@ -11,6 +11,8 @@ export interface UiState {
   citizenId: string | null;
   /** Side panel open from the HUD. */
   panel: 'population' | null;
+  /** Arena: the contestant of the home team the player is directing. */
+  arenaActorId: string | null;
 }
 
 export class UiStore {
@@ -21,6 +23,7 @@ export class UiStore {
     placementHint: null,
     citizenId: null,
     panel: null,
+    arenaActorId: null,
   };
   private readonly listeners = new Set<() => void>();
 
@@ -54,6 +57,10 @@ export class UiStore {
 
   togglePanel(panel: UiState['panel']): void {
     this.set({ panel: this.state.panel === panel ? null : panel });
+  }
+
+  selectArenaActor(id: string | null): void {
+    this.set({ arenaActorId: id });
   }
 
   hint(text: string | null): void {

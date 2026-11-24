@@ -18,6 +18,15 @@ export class Ambience {
   private readonly glints: Phaser.GameObjects.Image[] = [];
   private readonly dust: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
   private crowTimer = 4;
+  private readonly clouds: Phaser.GameObjects.Image[] = [];
+  private readonly flutter: {
+    img: Phaser.GameObjects.Image;
+    hx: number;
+    hy: number;
+    phase: number;
+    night: boolean;
+  }[] = [];
+  private readonly meadows: { x: number; y: number }[] = [];
 
   constructor(
     scene: Phaser.Scene,
@@ -39,6 +48,36 @@ export class Ambience {
         glint.setData('phase', (x * 0.7 + y * 1.3) % (Math.PI * 2));
         this.glints.push(glint);
       }
+    }
+    // Meadows where butterflies by day and fireflies by night gather (grass and forest edges).
+    for (let y = 2; y < template.height - 2; y += 2) {
+      for (let x = 2; x < template.width - 2; x += 2) {
+        const code = terrainAt(template, x, y);
+        if (code === 'g' || code === 'f') this.meadows.push({ x, y });
+      }
+    }
+    for (let i = 0; i < 26 && this.meadows.length > 0; i++) {
+      const m = this.meadows[(i * 37) % this.meadows.length]!;
+      const p = cellToWorld(m.x, m.y);
+      const night = i % 2 === 1;
+      const img = scene.add
+        .image(p.x, p.y - 30, night ? 'firefly' : 'butterfly')
+        .setDepth(180000)
+        .setAlpha(0);
+      if (night) img.setBlendMode(Phaser.BlendModes.ADD);
+      else img.setTint([0xf4f1e6, 0xf0cc3e, 0xb27cd0, 0xe8a87c][i % 4]!);
+      this.flutter.push({ img, hx: p.x, hy: p.y - 30, phase: i * 1.7, night });
+    }
+    // Slow cloud shadows drifting over the valley: the whole town breathes with the weather.
+    for (let i = 0; i < 4; i++) {
+      const cloud = scene.add
+        .image(0, 0, 'cloud_shadow')
+        .setDepth(190000)
+        .setAlpha(0.16)
+        .setScale(3 + (i % 3), 2 + (i % 2));
+      const p = cellToWorld(i * 13, (i * 29) % 48);
+      cloud.setPosition(p.x - 1500 + i * 900, p.y);
+      this.clouds.push(cloud);
     }
     // Coal dust around the mine heads.
     for (const c of mineCells) {
@@ -71,6 +110,43 @@ export class Ambience {
       g.fillStyle(0xffffff, 1).fillCircle(2, 2, 2);
       g.generateTexture('mote', 4, 4);
       g.destroy();
+    }
+    if (!tex.exists('cloud_shadow')) {
+      const canvas = tex.createCanvas('cloud_shadow', 256, 128)!;
+      const ctx = canvas.getContext();
+      for (const [x, y, r] of [
+        [128, 64, 60],
+        [80, 70, 44],
+        [176, 60, 48],
+        [120, 44, 40],
+      ] as const) {
+        const grad = ctx.createRadialGradient(x, y, 4, x, y, r);
+        grad.addColorStop(0, 'rgba(10,14,20,0.55)');
+        grad.addColorStop(1, 'rgba(10,14,20,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 256, 128);
+      }
+      canvas.refresh();
+    }
+    if (!tex.exists('butterfly')) {
+      const g = this.scene.make.graphics({}, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillEllipse(3, 4, 6, 7);
+      g.fillEllipse(9, 4, 6, 7);
+      g.fillStyle(0x2a2a2a, 1).fillRect(5.5, 1, 1, 7);
+      g.generateTexture('butterfly', 12, 9);
+      g.destroy();
+    }
+    if (!tex.exists('firefly')) {
+      const canvas = tex.createCanvas('firefly', 16, 16)!;
+      const ctx = canvas.getContext();
+      const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+      grad.addColorStop(0, 'rgba(230,255,150,1)');
+      grad.addColorStop(0.3, 'rgba(200,240,90,0.6)');
+      grad.addColorStop(1, 'rgba(200,240,90,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 16, 16);
+      canvas.refresh();
     }
     if (!tex.exists('crow')) {
       const g = this.scene.make.graphics({}, false);
@@ -116,6 +192,27 @@ export class Ambience {
       }
     }
     const view = this.scene.cameras.main.worldView;
+    // Cloud shadows drift with the wind and wrap around; they fade out at night.
+    for (const c of this.clouds) {
+      c.x += 14 * dt;
+      c.y += 4 * dt;
+      if (c.x - c.displayWidth / 2 > 4200) c.x = -4200;
+      if (c.y > 3600) c.y = -200;
+      c.setAlpha(0.16 * (1 - night));
+    }
+    // Butterflies flutter around their meadow by day; fireflies blink there at night.
+    for (const f of this.flutter) {
+      f.phase += dt * (f.night ? 0.8 : 1.6);
+      const active = f.night ? night : 1 - night;
+      const x = f.hx + Math.sin(f.phase * 0.9) * 46 + Math.sin(f.phase * 2.3) * 12;
+      const y = f.hy + Math.cos(f.phase * 0.7) * 22 + Math.sin(f.phase * 3.1) * 8;
+      f.img.setPosition(x, y);
+      if (f.night) {
+        f.img.setAlpha(active * (0.4 + 0.6 * Math.max(0, Math.sin(f.phase * 5))));
+      } else {
+        f.img.setAlpha(active * 0.95).setScale(1, 0.35 + 0.65 * Math.abs(Math.sin(f.phase * 22)));
+      }
+    }
     for (let i = this.crows.length - 1; i >= 0; i--) {
       const c = this.crows[i]!;
       c.phase += dt * 9;

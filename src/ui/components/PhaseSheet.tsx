@@ -1,5 +1,7 @@
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
+import { LAUREATE_REWARD } from '../../core/index.ts';
+import { Portrait } from './Portrait.tsx';
 import type { GameSession } from '../../game/session.ts';
 import { useSession } from '../useSession.ts';
 import styles from '../ui.module.css';
@@ -11,7 +13,13 @@ import styles from '../ui.module.css';
 export function PhaseSheet({ session }: { session: GameSession }) {
   const { state } = useSession(session);
   const phase = state.phase;
-  if (phase.kind === 'district' || phase.kind === 'capital' || session.cinematic) return null;
+  if (
+    phase.kind === 'district' ||
+    phase.kind === 'capital' ||
+    phase.kind === 'arena' ||
+    session.cinematic
+  )
+    return null;
 
   let body = '';
   let action: LocaleKey;
@@ -28,17 +36,17 @@ export function PhaseSheet({ session }: { session: GameSession }) {
       action = 'phase.selection.action';
       onAction = () => session.dispatch({ type: 'capital/depart' });
       break;
-    case 'arena':
-      body = t('phase.arena.body');
-      action = 'phase.arena.action';
-      onAction = () => session.dispatch({ type: 'arena/conclude' });
-      break;
     case 'aftermath':
       body = t('phase.aftermath.body', { days: state.away.days });
       action = 'phase.aftermath.action';
       onAction = () => session.dispatch({ type: 'home/return' });
       break;
   }
+
+  const result =
+    phase.kind === 'aftermath'
+      ? state.competition.history.find((h) => h.edition === phase.edition)?.result
+      : undefined;
 
   return (
     <div className={styles.sheetArea}>
@@ -56,6 +64,43 @@ export function PhaseSheet({ session }: { session: GameSession }) {
           {t('calendar.edition', { games: t('games.name'), edition: phase.edition })}
         </p>
         <p className={styles.sheetBody}>{body}</p>
+        {result && (
+          <div className={styles.results} data-testid="results">
+            <p className={styles.sheetBody}>
+              {result.winnerName
+                ? t('aft.winner', {
+                    name: result.winnerName,
+                    district: String(result.winnerDistrict),
+                  })
+                : t('aft.nobody')}
+            </p>
+            {result.home.map((r) => {
+              const c = state.population.citizens[r.citizenId];
+              return (
+                <div key={r.citizenId} className={styles.rival}>
+                  {c && <Portrait genes={c.genes} sex={c.sex} age={18} dead={!r.alive} size={40} />}
+                  <span>
+                    <strong>{r.name}</strong>
+                    <small>
+                      {r.alive
+                        ? t('aft.alive', { kills: r.kills })
+                        : t('aft.dead', {
+                            place: r.place,
+                            cause: t(`aft.cause.${r.cause ?? 'combat'}` as LocaleKey),
+                          })}
+                      {r.killer ? ` ${t('aft.killedBy', { killer: r.killer })}` : ''}
+                    </small>
+                  </span>
+                </div>
+              );
+            })}
+            <p className={styles.regimeLine}>
+              {result.home.some((r) => r.alive)
+                ? t('aft.reward', { food: LAUREATE_REWARD.food, credits: LAUREATE_REWARD.credits })
+                : t('aft.grief')}
+            </p>
+          </div>
+        )}
         <button type="button" className={`${styles.button} ${styles.primary}`} onClick={onAction}>
           {t(action)}
         </button>

@@ -3,6 +3,7 @@ import type { PhaseKind } from '../core/index.ts';
 import type { GameSession } from '../game/session.ts';
 import type { RendererHandle } from '../game/renderer.ts';
 import { PALETTE } from './palette.ts';
+import { ARENA_SCENE, ArenaScene } from './scenes/ArenaScene.ts';
 import { DISTRICT_SCENE, DistrictScene } from './scenes/DistrictScene.ts';
 import { PHASE_SCENE, PhaseScene } from './scenes/PhaseScene.ts';
 
@@ -21,7 +22,7 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
     input: { activePointers: 3 },
     maxLights: 16,
     audio: { noAudio: true },
-    scene: [new DistrictScene(session), new PhaseScene()],
+    scene: [new DistrictScene(session), new PhaseScene(), new ArenaScene(session)],
   });
 
   // Simulation time is real time: use raw timestamps, not Phaser's smoothed/capped delta,
@@ -41,10 +42,16 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
     // The Criba happens in the district's own plaza.
     if (kind === 'district' || kind === 'selection') {
       if (scenes.isActive(PHASE_SCENE)) scenes.stop(PHASE_SCENE);
+      if (scenes.isActive(ARENA_SCENE)) scenes.stop(ARENA_SCENE);
       if (scenes.isSleeping(DISTRICT_SCENE)) scenes.wake(DISTRICT_SCENE);
       else if (!scenes.isActive(DISTRICT_SCENE)) scenes.start(DISTRICT_SCENE);
+    } else if (kind === 'arena') {
+      if (scenes.isActive(DISTRICT_SCENE)) scenes.sleep(DISTRICT_SCENE);
+      scenes.stop(PHASE_SCENE);
+      scenes.start(ARENA_SCENE);
     } else {
       if (scenes.isActive(DISTRICT_SCENE)) scenes.sleep(DISTRICT_SCENE);
+      scenes.stop(ARENA_SCENE);
       scenes.stop(PHASE_SCENE);
       scenes.start(PHASE_SCENE, { kind });
     }

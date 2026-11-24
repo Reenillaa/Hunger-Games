@@ -58,7 +58,9 @@ export interface Citizen {
   birthDay: number;
   alive: boolean;
   deathDay?: number;
-  deathCause?: 'age' | 'hunger' | 'illness' | 'accident' | 'games';
+  deathCause?: 'age' | 'hunger' | 'illness' | 'accident' | 'games' | 'regime';
+  /** Edition the citizen won (Laureados live on in the district's memory). */
+  laureate?: number;
   genes: PortraitGenes;
   motherId: string | null;
   fatherId: string | null;

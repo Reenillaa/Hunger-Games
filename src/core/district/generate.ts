@@ -41,8 +41,9 @@ export type FootprintTable = Record<StructureKind, { w: number; d: number }>;
 
 /** Fixed landmarks of District XII (positions designed against the d12 template). */
 const LANDMARKS: { kind: StructureKind; x: number; y: number }[] = [
-  { kind: 'town_hall', x: 21, y: 18 },
-  { kind: 'stage', x: 25, y: 21 },
+  // The Criba is held on the stage built against the town hall's steps, facing the plaza.
+  { kind: 'town_hall', x: 25, y: 17 },
+  { kind: 'stage', x: 25, y: 20 },
   { kind: 'mine_headframe', x: 15, y: 7 },
   { kind: 'warehouse', x: 38, y: 20 },
   { kind: 'economato', x: 31, y: 25 },

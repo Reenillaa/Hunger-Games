@@ -10,7 +10,14 @@ import type { ResourceId, StructureKind } from '../district/template.ts';
 import { allocateLabor, checkPlacement, def, storageCapacity } from '../economy/economy.ts';
 import { nextId } from '../state/gameState.ts';
 import { createGames, resolveCapitalDay } from '../games/capital.ts';
+import { applyHomecoming, recordResults } from '../games/aftermath.ts';
+import { resolveEvent } from '../regime/regime.ts';
+import { DISTRICT_EVENTS } from '../../content/districtEvents.ts';
 import type { Interview, OpeningPlan, Outfit, Posture, TrainingFocus } from '../games/types.ts';
+import type { Order, Stance } from '../arena/arena.ts';
+import { arenaDay, capsuleCost, createArena, playUntilInterrupt } from '../arena/arena.ts';
+import { ARENA_SIZE } from '../arena/map.ts';
+import { ITEMS } from '../../content/arenaItems.ts';
 
 /**
  * Every player decision is a serializable command. UI and renderer never mutate state:
@@ -19,8 +26,13 @@ import type { Interview, OpeningPlan, Outfit, Posture, TrainingFocus } from '../
 export type Command =
   | { type: 'capital/depart' }
   | { type: 'capital/advance-day' }
+  | { type: 'arena/advance'; maxRounds?: number }
+  | { type: 'arena/order'; actorId: string; order: Order | null }
+  | { type: 'arena/stance'; stance: Stance }
+  | { type: 'arena/gift'; actorId: string; item: string }
   | { type: 'arena/conclude' }
   | { type: 'home/return' }
+  | { type: 'event/choose'; option: number }
   | {
       type: 'capital/choose';
       contestantId: string;
@@ -84,6 +96,20 @@ function pay(state: GameState, cost: Partial<Record<ResourceId, number>>, sign =
 }
 
 const inDistrict = (state: GameState) => requirePhase(state, 'district');
+
+const invalid = (message: string): CommandError => ({ code: 'invalid', message });
+
+function requireArena(state: GameState): CommandError | null {
+  return requirePhase(state, 'arena') ?? (state.arena ? null : invalid('No arena'));
+}
+
+/** Plays arena rounds and counts the days the delegation spends away. */
+function advanceArena(state: GameState, maxRounds: number): void {
+  const arena = state.arena!;
+  const before = arenaDay(arena.round);
+  playUntilInterrupt(state, maxRounds);
+  state.away.days += arenaDay(arena.round) - before;
+}
 
 const DAY_OF_CHOICE: Record<string, number[]> = {
   posture: [1],
@@ -286,26 +312,100 @@ const HANDLERS: HandlerMap = {
       if (state.phase.day < CAPITAL_DAYS) {
         enterPhase(state, { ...state.phase, day: state.phase.day + 1 }, null, ctx);
       } else {
+        state.arena = createArena(state);
         enterPhase(state, { kind: 'arena', edition: state.phase.edition }, 'arenaStarted', ctx);
       }
+    },
+  },
+  'arena/advance': {
+    validate: (state) =>
+      requireArena(state) ?? (state.arena!.finished ? invalid('Finished') : null),
+    apply(state, cmd) {
+      advanceArena(state, cmd.maxRounds ?? 24);
+    },
+  },
+  'arena/order': {
+    validate(state, cmd) {
+      const err = requireArena(state);
+      if (err) return err;
+      const a = state.arena!.actors[cmd.actorId];
+      if (!a?.player || !a.alive) return { code: 'not-found', message: cmd.actorId };
+      const o = cmd.order;
+      if (o?.kind === 'move' && !(o.x >= 0 && o.y >= 0 && o.x < ARENA_SIZE && o.y < ARENA_SIZE))
+        return invalid('Out of the arena');
+      if (o?.kind === 'attack' && !state.arena!.actors[o.target]?.alive)
+        return invalid('No target');
+      return null;
+    },
+    apply(state, cmd) {
+      state.arena!.actors[cmd.actorId]!.order = cmd.order;
+    },
+  },
+  'arena/stance': {
+    validate: (state, cmd) =>
+      requireArena(state) ??
+      (['cautious', 'balanced', 'aggressive'].includes(cmd.stance) ? null : invalid('Stance')),
+    apply(state, cmd) {
+      state.arena!.stance = cmd.stance;
+    },
+  },
+  'arena/gift': {
+    validate(state, cmd) {
+      const err = requireArena(state);
+      if (err) return err;
+      const arena = state.arena!;
+      const a = arena.actors[cmd.actorId];
+      if (!a?.player || !a.alive) return { code: 'not-found', message: cmd.actorId };
+      if (!ITEMS[cmd.item]) return invalid('Unknown item');
+      if (capsuleCost(cmd.item, arena.round) > arena.patronage)
+        return { code: 'cost', message: 'Not enough patronage' };
+      return null;
+    },
+    apply(state, cmd) {
+      const arena = state.arena!;
+      arena.patronage -= capsuleCost(cmd.item, arena.round);
+      arena.capsules.push({ round: arena.round, actorId: cmd.actorId, item: cmd.item });
     },
   },
   'arena/conclude': {
     validate: (state) => requirePhase(state, 'arena'),
     apply(state, _cmd, ctx) {
       if (state.phase.kind !== 'arena') return;
+      // Anything left is fought out without the player (the games always end).
+      if (state.arena) while (!state.arena.finished) advanceArena(state, 24 * 30);
+      recordResults(state);
       enterPhase(state, { kind: 'aftermath', edition: state.phase.edition }, 'arenaConcluded', ctx);
+    },
+  },
+  'event/choose': {
+    validate(state, cmd) {
+      const err = inDistrict(state);
+      if (err) return err;
+      const pending = state.regime.pending;
+      const ev = pending ? DISTRICT_EVENTS.find((d) => d.id === pending.eventId) : null;
+      if (!ev) return invalid('No pending event');
+      const option = ev.options[cmd.option];
+      if (!option) return invalid('Unknown option');
+      const credits = option.effects.credits ?? 0;
+      if (credits < 0 && state.economy.resources.credits < -credits)
+        return { code: 'cost', message: 'Not enough credits' };
+      return null;
+    },
+    apply(state, cmd, ctx) {
+      resolveEvent(state, cmd.option, ctx);
     },
   },
   'home/return': {
     validate: (state) => requirePhase(state, 'aftermath'),
     apply(state, _cmd, ctx) {
       const days = state.away.days;
+      applyHomecoming(state, ctx);
       enterPhase(state, { kind: 'district' }, 'returnedHome', ctx, { daysAway: days });
       runAutopilotDays(state, days, ctx.emit);
       state.away.days = 0;
       state.competition.current = null;
       state.games = null;
+      state.arena = null;
       allocateLabor(state);
     },
   },
