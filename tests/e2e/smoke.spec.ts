@@ -68,7 +68,7 @@ test('walking skeleton: district → selection → capital → arena → return'
   await expect(sheet).toHaveAttribute('data-phase', 'selection');
   await expect(page.getByTestId('date')).toContainText('Otoño · Día 1');
   await expect(sheet).toContainText('Ofrendas:');
-  await sheet.getByRole('button', { name: 'Partir hacia Áurea' }).click();
+  await sheet.getByRole('button', { name: 'Partir hacia el Capitolio' }).click();
 
   const capital = page.getByTestId('capital');
   for (let day = 1; day <= 7; day++) {

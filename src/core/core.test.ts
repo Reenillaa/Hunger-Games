@@ -107,7 +107,7 @@ describe('yearly cycle (walking skeleton)', () => {
     playCompetition(s);
     expect(s.phase.kind).toBe('district');
     const away = s.chronicle.at(-1)!.daysAway!;
-    // The week in Áurea plus the days the games lasted.
+    // The week in the Capitol plus the days the games lasted.
     expect(away).toBeGreaterThan(CAPITAL_DAYS);
     expect(s.clock.tick).toBe(selectionTick + away * TICKS_PER_DAY);
     expect(s.away.days).toBe(0);

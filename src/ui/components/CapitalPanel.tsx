@@ -48,7 +48,7 @@ function Stat({ label, value, max }: { label: string; value: number; max: number
   );
 }
 
-/** The seven days in Áurea: one decision screen per day, built on the real contestants. */
+/** The seven days in the Capitol: one decision screen per day, built on the real contestants. */
 export function CapitalPanel({ session }: { session: GameSession }) {
   const { state } = useSession(session);
   const [budget, setBudget] = useState(0);
@@ -170,8 +170,7 @@ export function CapitalPanel({ session }: { session: GameSession }) {
                     <span>
                       <span>{r.name}</span>
                       <small className={styles.slotMeta}>
-                        {t('cap.district', { n: d.numeral, name: d.name })} ·{' '}
-                        {t('pop.age', { n: r.age })}
+                        {d.name} · {t('pop.age', { n: r.age })}
                         {scouted && r.shownScore !== null
                           ? ` · ${t('cap.score', { n: r.shownScore })}`
                           : ''}

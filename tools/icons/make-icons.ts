@@ -15,7 +15,7 @@ mkdirSync(outDir, { recursive: true });
 // Maskable icons need the emblem inside the central 80% safe zone and a full-bleed background.
 const maskable = svg
   .replace('rx="10"', 'rx="0"')
-  .replace('<path', '<g transform="translate(6.4 6.4) scale(0.8)"><path')
+  .replace(/(<path d="M32 32m)/, '<g transform="translate(6.4 6.4) scale(0.8)">$1')
   .replace('</svg>', '</g></svg>');
 
 const targets = [

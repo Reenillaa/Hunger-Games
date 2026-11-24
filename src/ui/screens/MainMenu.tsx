@@ -102,11 +102,11 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
                 className={`${styles.seal} ${id === 'aurea' ? styles.sealCapital : ''} ${home ? styles.sealHome : ''}`}
                 style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
                 aria-pressed={selected === id}
-                aria-label={d ? `${t('map.district', { n: d.numeral })} · ${d.name}` : 'Áurea'}
+                aria-label={d ? d.name : t('capital.name')}
                 onClick={() => setSelected(id as PlaceId)}
               >
                 <span className={styles.sealWax}>{d ? d.numeral : '✦'}</span>
-                <span className={styles.sealLabel}>{d ? d.name : 'Áurea'}</span>
+                <span className={styles.sealLabel}>{d ? d.name : t('capital.name')}</span>
               </button>
             );
           })}
@@ -139,13 +139,10 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
 
       <aside className={styles.mapCard} aria-live="polite" data-testid="place-card">
         <p className={styles.mapCardKicker}>
-          {district ? t('map.district', { n: district.numeral }) : t('map.capital')}
+          {district ? district.industry : t('map.capital')}
           {isHome && <span className={styles.homeTag}>{t('map.home')}</span>}
         </p>
-        <h2 className={styles.mapCardTitle}>{district ? district.name : 'Áurea'}</h2>
-        {district && (
-          <p className={styles.mapCardMeta}>{t('map.industry', { industry: district.industry })}</p>
-        )}
+        <h2 className={styles.mapCardTitle}>{district ? district.name : t('capital.name')}</h2>
         <p className={styles.mapCardText}>
           {t((district ? `dist.${district.id}` : 'dist.aurea') as LocaleKey)}
         </p>

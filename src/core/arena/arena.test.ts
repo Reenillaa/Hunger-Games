@@ -40,7 +40,7 @@ describe('the arena', () => {
     const alive = Object.values(s.arena!.actors).filter((a) => a.alive);
     expect(alive.length).toBeLessThanOrEqual(1);
     expect(s.arena!.finished).not.toBeNull();
-    // The delegation spent the week in Áurea plus the days of the games.
+    // The delegation spent the week in the Capitol plus the days of the games.
     expect(s.away.days).toBeGreaterThanOrEqual(7);
   });
 

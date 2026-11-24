@@ -72,4 +72,4 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 10 | Despliegue en GitHub Pages (job `deploy` relanzado tras activar Pages) | Correcto; `https://reenillaa.github.io/Hunger-Games/` responde 200 con los assets de la arena |
 | 2026-11-24 | 10 | UI v2: `vitest` 106/106, `playwright` **14/14**, lint/typecheck sin errores | Capturas antes/después en escritorio y móvil horizontal: `docs/images/ui-v2-*.jpg` |
 | 2026-11-24 | 10 | Mapa de inicio: `vitest` 106/106, `playwright` **14/14**, lint/typecheck sin errores | Capturas en escritorio, iPhone horizontal y vertical sin errores de consola; los 13 sellos coinciden con los puntos dibujados (`docs/images/worldmap-*.jpg`). Corregidos: ficha que tapaba Vergel y cabecera que rozaba Bastión en horizontal |
-
+| 2026-11-24 | 10 | Renombrado (Distrito 1–12, el Capitolio) y emblema propio: `vitest` 106/106, `playwright` **14/14** | Sin errores; iconos PWA regenerados con `node tools/icons/make-icons.ts` |

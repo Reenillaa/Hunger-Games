@@ -54,12 +54,28 @@ export const CloseIcon = () => (
     <path d="M6 6l12 12M18 6L6 18" />
   </Icon>
 );
-/** Emblem: a coal shard split by the tithe line. */
+/** Emblem of the Capitol (original): twelve rays — the districts — converging on a cut gem. */
 export const EmblemIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" {...props}>
-    <path d="M32 4 56 22 48 58H16L8 22Z" fill="none" stroke="currentColor" strokeWidth="3" />
-    <path d="M32 4v54M8 22h48" stroke="currentColor" strokeWidth="2" opacity="0.6" />
-    <circle cx="32" cy="34" r="5" fill="currentColor" />
+    <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" strokeWidth="2.5" />
+    <path
+      d="M39.12 5.44L39.89 2.54 M51.45 12.55L53.57 10.43 M58.56 24.88L61.46 24.11 M58.56 39.12L61.46 39.89 M51.45 51.45L53.57 53.57 M39.12 58.56L39.89 61.46 M24.88 58.56L24.11 61.46 M12.55 51.45L10.43 53.57 M5.44 39.12L2.54 39.89 M5.44 24.88L2.54 24.11 M12.55 12.55L10.43 10.43 M24.88 5.44L24.11 2.54"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <path
+      d="M28.76 7.21L32.00 21.00L35.24 7.21Z M41.59 8.91L37.50 22.47L47.20 12.15Z M51.85 16.80L41.53 26.50L55.09 22.41Z M56.79 28.76L43.00 32.00L56.79 35.24Z M55.09 41.59L41.53 37.50L51.85 47.20Z M47.20 51.85L37.50 41.53L41.59 55.09Z M35.24 56.79L32.00 43.00L28.76 56.79Z M22.41 55.09L26.50 41.53L16.80 51.85Z M12.15 47.20L22.47 37.50L8.91 41.59Z M7.21 35.24L21.00 32.00L7.21 28.76Z M8.91 22.41L22.47 26.50L12.15 16.80Z M16.80 12.15L26.50 22.47L22.41 8.91Z"
+      fill="currentColor"
+      opacity="0.85"
+    />
+    <path d="M32 22L39 28L36.5 39H27.5L25 28Z" fill="currentColor" />
+    <path
+      d="M25 28H39M32 22L29.5 28L32 39L34.5 28Z"
+      fill="none"
+      stroke="#16161a"
+      strokeWidth="0.9"
+      opacity="0.55"
+    />
   </svg>
 );
 
