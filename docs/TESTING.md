@@ -78,4 +78,4 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 10 | Tanda de pulido: `vitest` 106/106, `playwright` **16/16** (nuevo: mapa + ajustes + crónica, escritorio e iPhone) | Encontrado y corregido un fallo real: Escape no cerraba los diálogos (el listener se re-suscribía durante el propio evento) |
 | 2026-11-24 | 10 | Equilibrio de la arena con política "jugador cuidadoso" (150 partidas headless, script ad hoc) | Victorias del Distrito 12: 5,8 % → 6,7 % (mecenas diarios) → 5,0 % (solo esconderse) → **19,3 %** (emboscadas + buenas decisiones en el Capitolio) |
 | 2026-11-24 | 10 | WebP | Sprites y personajes 18,3 MB → 3,0 MB; `public/assets` total ≈ 14 MB |
-
+| 2026-11-24 | 10 | HUD v3: `vitest` 106/106, `playwright` **16/16**; capturas escritorio/iPhone (`docs/images/hud-v3-*.jpg`) | Corregidos: banda superior detrás del lienzo (faltaba contexto de apilado) y quinta casilla de recursos cortada en iPhone vertical |

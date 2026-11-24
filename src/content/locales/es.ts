@@ -559,6 +559,9 @@ export const es = {
   'pro.4':
     'Alimenta a tu gente, cumple la cuota… y prepárate para el día en que el Heraldo lea sus nombres.',
   'arena.patrons': 'Los Mecenas renuevan su apoyo: +{n} de mecenazgo.',
+  'hud.quotaShort': 'Cuota',
+  'hud.moraleShort': 'Moral',
+  'hud.attentionShort': 'Vigilancia',
 } as const;
 
 export type LocaleKey = keyof typeof es;

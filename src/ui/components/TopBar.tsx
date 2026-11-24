@@ -11,7 +11,9 @@ import {
   PeopleIcon,
   PlayIcon,
 } from '../icons/Icons.tsx';
+import { dateFromTick } from '../../core/index.ts';
 import { formatCountdown, formatDate, formatHour } from '../format.ts';
+import { EmblemIcon, SeasonIcon } from '../icons/Icons.tsx';
 import { useSession } from '../useSession.ts';
 import styles from '../ui.module.css';
 
@@ -36,83 +38,105 @@ interface Props {
 export function TopBar({ session, onSave, onMenu }: Props) {
   const { state, speed } = useSession(session);
   const inDistrict = state.phase.kind === 'district';
+  const date = dateFromTick(state.clock.tick);
+  const hourAngle = ((date.hour % 12) / 12) * 360;
+  const isNight = date.hour < 6 || date.hour >= 20;
   return (
-    <header className={`${styles.panel} ${styles.topBar}`} data-testid="top-bar">
-      <span className={styles.district}>{t('district.d12.name')}</span>
-      <div className={styles.calendar}>
-        <span className={styles.date} data-testid="date">
-          {formatDate(state.clock.tick)} · {formatHour(state.clock.tick)}
+    <header className={styles.hudTop} data-testid="top-bar">
+      <div className={styles.crest}>
+        <span className={styles.crestMedal}>
+          <EmblemIcon />
         </span>
-        {inDistrict && (
-          <span className={styles.countdown} data-testid="countdown">
-            {formatCountdown(state)}
-          </span>
-        )}
+        <span className={styles.crestRibbon}>{t('district.d12.name')}</span>
       </div>
-      <span className={styles.spacer} />
-      {inDistrict && (
-        <div className={styles.group} role="group" aria-label="Velocidad">
-          {SPEEDS.map(({ speed: s, label, icon: Icon, key }) => (
+
+      <div className={styles.datePlaque}>
+        <svg className={styles.clockDial} viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" className={isNight ? styles.dialNight : styles.dialDay} />
+          {Array.from({ length: 12 }, (_, i) => (
+            <line
+              key={i}
+              x1="20"
+              y1="4"
+              x2="20"
+              y2={i % 3 === 0 ? 8 : 6}
+              transform={`rotate(${i * 30} 20 20)`}
+              className={styles.dialTick}
+            />
+          ))}
+          <line
+            x1="20"
+            y1="20"
+            x2="20"
+            y2="9"
+            transform={`rotate(${hourAngle} 20 20)`}
+            className={styles.dialHand}
+          />
+          <circle cx="20" cy="20" r="2" className={styles.dialPin} />
+        </svg>
+        <div className={styles.calendar}>
+          <span className={styles.date} data-testid="date">
+            <SeasonIcon season={date.season} />
+            {formatDate(state.clock.tick)} · {formatHour(state.clock.tick)}
+          </span>
+          {inDistrict && (
+            <span className={styles.countdown} data-testid="countdown">
+              {formatCountdown(state)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.hudRight}>
+        {inDistrict && (
+          <div className={styles.speedDial} role="group" aria-label="Velocidad">
+            {SPEEDS.map(({ speed: s, label, icon: Icon, key }) => (
+              <button
+                key={s}
+                type="button"
+                className={styles.medal}
+                aria-pressed={speed === s}
+                aria-label={t(label)}
+                title={`${t(label)} (${key})`}
+                onClick={() => session.setSpeed(s)}
+              >
+                <Icon />
+              </button>
+            ))}
+          </div>
+        )}
+        <div className={styles.medalRow}>
+          {[
+            {
+              label: t('pop.title'),
+              icon: <PeopleIcon />,
+              on: () => session.ui.togglePanel('population'),
+            },
+            {
+              label: t('chr.open'),
+              icon: <ChronicleIcon />,
+              on: () => session.ui.togglePanel('chronicle'),
+            },
+            { label: t('hud.save'), icon: <LedgerIcon />, on: onSave },
+            {
+              label: t('set.open'),
+              icon: <GearIcon />,
+              on: () => session.ui.togglePanel('settings'),
+            },
+            { label: t('hud.menu'), icon: <MenuIcon />, on: onMenu },
+          ].map((b) => (
             <button
-              key={s}
+              key={b.label}
               type="button"
-              className={styles.iconButton}
-              aria-pressed={speed === s}
-              aria-label={t(label)}
-              title={`${t(label)} (${key})`}
-              onClick={() => session.setSpeed(s)}
+              className={`${styles.medal} ${styles.medalSmall}`}
+              aria-label={b.label}
+              title={b.label}
+              onClick={b.on}
             >
-              <Icon />
+              {b.icon}
             </button>
           ))}
         </div>
-      )}
-      <div className={styles.group}>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={t('pop.title')}
-          title={t('pop.title')}
-          onClick={() => session.ui.togglePanel('population')}
-        >
-          <PeopleIcon />
-        </button>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={t('chr.open')}
-          title={t('chr.open')}
-          onClick={() => session.ui.togglePanel('chronicle')}
-        >
-          <ChronicleIcon />
-        </button>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={t('set.open')}
-          title={t('set.open')}
-          onClick={() => session.ui.togglePanel('settings')}
-        >
-          <GearIcon />
-        </button>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={t('hud.save')}
-          title={t('hud.save')}
-          onClick={onSave}
-        >
-          <LedgerIcon />
-        </button>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={t('hud.menu')}
-          title={t('hud.menu')}
-          onClick={onMenu}
-        >
-          <MenuIcon />
-        </button>
       </div>
     </header>
   );

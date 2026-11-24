@@ -221,3 +221,4 @@ Auditoría del 2026-11-23: la skill **no está instalada** en esta sesión (no a
 | I-34 | Sonido **100 % procedural** (Web Audio): sin ficheros ni licencias, se desbloquea con el primer toque (iOS). | Ambiente vivo sin peso de descarga. |
 | I-35 | Arena: mecenas que donan cada mañana según la popularidad y las bajas, y **emboscadas** (escondido + presa a tiro que no te ha visto). | Hacer que las decisiones del Capitolio y la prudencia cuenten: ganar ≈ 19 % jugando bien. |
 
+| I-36 | HUD v3 propia: banda de hierro con filo dorado, medallón con el emblema y cinta del distrito, placa colgante con reloj de esfera, icono de estación y cuenta atrás, medallones redondos para velocidad y menús, casillas de recursos con disco de color y barra de capacidad, anillos de moral y vigilancia, barra de cuota. Solo CSS/SVG. | Petición del cliente de una HUD "de juego de estrategia" más bonita, sin copiar la de ningún juego concreto. |
