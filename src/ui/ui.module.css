@@ -39,8 +39,10 @@
 /* ---------- Ledger panel (player UI language) ---------- */
 .panel {
   position: relative;
-  background: var(--panel-bg);
-  border: var(--border);
+  background:
+    linear-gradient(180deg, rgb(30 28 33 / 0.94), rgb(16 15 19 / 0.95)),
+    repeating-linear-gradient(90deg, transparent 0 7px, rgb(255 255 255 / 0.012) 7px 8px);
+  border: 1px solid #6e5420;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   backdrop-filter: blur(10px) saturate(1.1);
@@ -2335,4 +2337,67 @@
   .speedDial {
     gap: 2px;
   }
+}
+
+/* Gold corner brackets on every panel (iron plate with gilded fittings). */
+.panel::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(#e3c06a, #e3c06a) top left / 14px 2px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) top left / 2px 14px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) top right / 14px 2px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) top right / 2px 14px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) bottom left / 14px 2px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) bottom left / 2px 14px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) bottom right / 14px 2px no-repeat,
+    linear-gradient(#e3c06a, #e3c06a) bottom right / 2px 14px no-repeat;
+  opacity: 0.85;
+}
+
+.sheetTitle,
+.dialogTitle {
+  background: linear-gradient(180deg, #fff1cf, #d9b468);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* An ornamental rule under panel titles: line · diamond · line. */
+.dialogHeader,
+.sheetHeader {
+  position: relative;
+  padding-bottom: var(--space-2);
+}
+
+.dialogHeader::after,
+.sheetHeader::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 7px;
+  background:
+    linear-gradient(
+        90deg,
+        transparent,
+        #8c6b22 20%,
+        #8c6b22 46%,
+        transparent 46%,
+        transparent 54%,
+        #8c6b22 54%,
+        #8c6b22 80%,
+        transparent
+      )
+      center / 100% 1px no-repeat,
+    linear-gradient(45deg, transparent 40%, #e3c06a 40%, #e3c06a 60%, transparent 60%) center / 7px
+      7px no-repeat;
+}
+
+.regimeLine {
+  color: var(--c-gold);
 }
