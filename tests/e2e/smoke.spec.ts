@@ -20,7 +20,7 @@ test('boots, starts a new game and renders the district', async ({ page }) => {
   await startNewGame(page);
   await expect(page.getByTestId('date')).toContainText('Año 1 · Primavera · Día 1');
   // The clock runs from the start: allow a few in-game hours to pass before this check.
-  await expect(page.getByTestId('countdown')).toContainText(/La Criba en 20 d [0-4] h/);
+  await expect(page.getByTestId('countdown')).toContainText(/La Cosecha en 20 d [0-4] h/);
   await expect(page.getByTestId('game-canvas').locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -58,7 +58,7 @@ test('walking skeleton: district → selection → capital → arena → return'
   const errors = trackErrors(page);
   await startNewGame(page, '?debug');
   await page.getByRole('button', { name: 'Pausa' }).click();
-  await page.getByRole('button', { name: 'Ir a la Criba' }).click();
+  await page.getByRole('button', { name: 'Ir a la Cosecha' }).click();
   // The ceremony plays first (built from the real draw) and can be skipped.
   await expect(page.getByTestId('cinematic')).toBeVisible();
   await page.getByRole('button', { name: 'Saltar' }).click();

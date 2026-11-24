@@ -10,8 +10,8 @@ export const es = {
   'district.d12.name': 'Distrito 12',
   'capital.name': 'El Capitolio',
   'regime.name': 'La Concordia',
-  'selection.name': 'La Criba',
-  'games.name': 'Los Juegos del Diezmo',
+  'selection.name': 'La Cosecha',
+  'games.name': 'Los Juegos',
 
   'menu.continue': 'Continuar',
   'menu.newGame': 'Nueva partida',
@@ -39,12 +39,12 @@ export const es = {
   'hud.save': 'Guardar',
 
   'phase.district': 'Distrito',
-  'phase.selection': 'La Criba',
+  'phase.selection': 'La Cosecha',
   'phase.capital': 'El Capitolio',
   'phase.arena': 'Arena',
   'phase.aftermath': 'Regreso',
 
-  'phase.selection.body': 'Hoy es el día de la Criba.',
+  'phase.selection.body': 'Hoy es el día de la Cosecha.',
   'phase.selection.action': 'Partir hacia el Capitolio',
   'phase.capital.body': 'Día {day} de {total} en el Capitolio.',
   'phase.capital.action': 'Siguiente día',
@@ -91,7 +91,7 @@ export const es = {
   'b.town_hall': 'Ayuntamiento',
   'b.warehouse': 'Almacén',
   'b.economato': 'Economato',
-  'b.stage': 'Estrado de la Criba',
+  'b.stage': 'Estrado de la Cosecha',
   'b.lumber_camp': 'Aserradero',
   'b.quarry': 'Cantera',
   'b.garden': 'Huerto comunal',
@@ -164,7 +164,7 @@ export const es = {
   'pop.title': 'Población',
   'pop.count': '{n} habitantes · {adults} adultos · {children} menores',
   'pop.search': 'Buscar por nombre',
-  'pop.eligible': 'Elegibles para la Criba',
+  'pop.eligible': 'Elegibles para la Cosecha',
   'pop.all': 'Todos',
   'pop.age': '{n} años',
   'pop.unemployed': 'Sin trabajo',
@@ -207,11 +207,11 @@ export const es = {
   'notice.died': 'Ha muerto {name}',
   'notice.coupled': '{a} y {b} forman pareja',
 
-  'hist.selected': 'Su nombre sale en la Criba (edición {edition})',
+  'hist.selected': 'Su nombre sale en la Cosecha (edición {edition})',
   'hist.laureate': 'Laureado/a de los Juegos (edición {edition})',
 
-  'cri.title': 'LA CRIBA',
-  'cri.subtitle': 'Año {year} de la Concordia · Los Juegos del Diezmo, edición {edition}',
+  'cri.title': 'LA COSECHA',
+  'cri.subtitle': 'Año {year} de la Concordia · Los Juegos, edición {edition}',
   'cri.gather':
     'Todo el Distrito XII se reúne en la plaza. Los jóvenes de doce a dieciocho años, separados por edades, frente al estrado.',
   'cri.herald': 'Heraldo del Capitolio',
@@ -321,7 +321,7 @@ export const es = {
 
   'debug.title': 'Depuración',
   'debug.day': '+1 día',
-  'debug.toSelection': 'Ir a la Criba',
+  'debug.toSelection': 'Ir a la Cosecha',
   'arena.title': 'La arena · Día {day} · {hour}',
   'arena.alive': '{n} con vida',
   'arena.spectacle': 'Espectáculo',
@@ -409,7 +409,7 @@ export const es = {
   'ret.coffin': 'Un ataúd de pino con el nombre de {name}.',
   'ret.mother': '{mother} no suelta la mano de nadie.',
   'ret.silence': 'Esa noche no suena ninguna radio en el distrito.',
-  'ret.life': 'La vida sigue. La próxima Criba, también.',
+  'ret.life': 'La vida sigue. La próxima Cosecha, también.',
   'ev.inspection.title': 'Inspección de los Custodios',
   'ev.inspection.body':
     'Un pelotón de Custodios revisa los almacenes casa por casa. Buscan grano escondido… o una excusa.',
@@ -514,7 +514,7 @@ export const es = {
   'map.play': 'Nueva partida',
   'map.home': 'Tu distrito',
   'dist.aurea':
-    'Sobre su meseta en la cordillera, el Capitolio brilla de noche con la energía de todos. Cada año reúne a veinticuatro jóvenes para los Juegos del Diezmo.',
+    'Sobre su meseta en la cordillera, el Capitolio brilla de noche con la energía de todos. Cada año reúne a veinticuatro jóvenes para los Juegos.',
   'dist.1':
     'Joyeros y orfebres al servicio de la capital. Ricos, leales y orgullosos: sus hijos se entrenan para ganar.',
   'dist.2': 'Canteras y cuarteles. De aquí salen los Custodios… y los tributos mejor preparados.',
