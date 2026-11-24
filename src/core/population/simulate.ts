@@ -27,6 +27,13 @@ export const JOB_SKILL: Partial<Record<StructureKind, SkillId>> = {
   infirmary: 'medicine',
   school: 'teaching',
   town_hall: 'social',
+  farm: 'farming',
+  fishery: 'survival',
+  tavern: 'social',
+  bakery: 'crafting',
+  windmill: 'farming',
+  smokehouse: 'crafting',
+  market: 'social',
 };
 
 export function note(c: Citizen, day: number, key: string, vars?: Record<string, string>): void {

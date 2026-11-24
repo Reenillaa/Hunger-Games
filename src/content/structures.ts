@@ -19,6 +19,12 @@ export const STRUCTURE_FOOTPRINTS: Record<StructureKind, { w: number; d: number 
   school: { w: 3, d: 2 },
   farm: { w: 3, d: 3 },
   fishery: { w: 3, d: 2 },
+  tavern: { w: 2, d: 2 },
+  bakery: { w: 2, d: 2 },
+  windmill: { w: 2, d: 2 },
+  smokehouse: { w: 2, d: 2 },
+  market: { w: 2, d: 2 },
+  well: { w: 1, d: 1 },
 };
 
 export const PROP_KINDS: readonly PropKind[] = [

@@ -26,7 +26,13 @@ export type StructureKind =
   | 'infirmary'
   | 'school'
   | 'farm'
-  | 'fishery';
+  | 'fishery'
+  | 'tavern'
+  | 'bakery'
+  | 'windmill'
+  | 'smokehouse'
+  | 'market'
+  | 'well';
 
 export type ResourceId = 'food' | 'wood' | 'stone' | 'coal' | 'credits';
 

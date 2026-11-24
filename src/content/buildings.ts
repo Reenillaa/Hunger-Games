@@ -23,6 +23,8 @@ export interface BuildingDef {
   requires?: 'coalSeam' | 'nearForest' | 'nearRock' | 'nearWater';
   /** Production stops in winter (gardens). */
   seasonal?: boolean;
+  /** Daily morale per level while built and staffed (taverns, wells). */
+  morale?: number;
 }
 
 export const RESOURCE_IDS: readonly ResourceId[] = ['food', 'wood', 'stone', 'coal', 'credits'];
@@ -138,6 +140,61 @@ export const BUILDINGS: Record<StructureKind, BuildingDef> = {
     workers: [4, 7, 10],
     produces: { food: 0.3 },
     requires: 'nearWater',
+  },
+  tavern: {
+    kind: 'tavern',
+    category: 'service',
+    buildable: true,
+    cost: { wood: 35, stone: 10 },
+    buildWork: 60,
+    workers: [2, 3, 4],
+    morale: 0.35,
+  },
+  bakery: {
+    kind: 'bakery',
+    category: 'production',
+    buildable: true,
+    cost: { wood: 25, stone: 20 },
+    buildWork: 60,
+    workers: [3, 4, 6],
+    produces: { food: 0.22 },
+  },
+  windmill: {
+    kind: 'windmill',
+    category: 'production',
+    buildable: true,
+    cost: { wood: 45, stone: 15 },
+    buildWork: 90,
+    workers: [2, 3, 4],
+    produces: { food: 0.4 },
+  },
+  smokehouse: {
+    kind: 'smokehouse',
+    category: 'production',
+    buildable: true,
+    cost: { wood: 30, stone: 10 },
+    buildWork: 55,
+    workers: [3, 4, 6],
+    produces: { food: 0.26 },
+    requires: 'nearWater',
+  },
+  market: {
+    kind: 'market',
+    category: 'production',
+    buildable: true,
+    cost: { wood: 30 },
+    buildWork: 40,
+    workers: [2, 3, 5],
+    produces: { credits: 0.12 },
+  },
+  well: {
+    kind: 'well',
+    category: 'service',
+    buildable: true,
+    cost: { stone: 15 },
+    buildWork: 20,
+    workers: [0, 0, 0],
+    morale: 0.08,
   },
   town_hall: {
     kind: 'town_hall',

@@ -41,6 +41,15 @@ def town_core(terrain, radius: float, seed: int) -> None:
             terrain[y][x] = "p"
 
 
+def flatten_core(elevation) -> None:
+    px, py = (PLAZA[0] + PLAZA[2]) / 2, (PLAZA[1] + PLAZA[3]) / 2
+    for y in range(H):
+        for x in range(W):
+            d = math.hypot(x - px, y - py)
+            if d < 13 and elevation[y][x] > 0:
+                elevation[y][x] = round(elevation[y][x] * max(0.0, (d - 8) / 5), 2)
+
+
 def railway(terrain, elevation) -> None:
     for y in range(8, H):
         for x in RAIL_X:
@@ -91,8 +100,14 @@ def build_d11() -> dict:
             if abs(x - cx) <= 0.9 and terrain[y][x] not in ("R",):
                 terrain[y][x] = "w"
                 elevation[y][x] = -0.25
+    # Rolling hills under the fields (the town core stays level).
+    for y in range(H):
+        for x in range(W):
+            if terrain[y][x] in ("g", "f") and elevation[y][x] == 0.0:
+                elevation[y][x] = round(0.55 * max(0.0, fbm(x * 0.8, y * 0.8, 44) - 0.3), 2)
     railway(terrain, elevation)
     town_core(terrain, 7.5, 11)
+    flatten_core(elevation)
     road = make_road(terrain, elevation)
     road([(24, 20), (23, 12), (20, 4)])        # north fields
     road([(29, 20), (34, 10), (38, 5)])        # north-east fields
@@ -131,8 +146,16 @@ def build_d4() -> dict:
         for x in range(W):
             if terrain[y][x] == "g" and y < 12 and x > 30 and fbm(x, y, 31) > 0.45:
                 terrain[y][x] = "f"
+    # The land climbs from the beach towards the cliffs: a terraced coast.
+    for y in range(H):
+        for x in range(W):
+            if terrain[y][x] in ("g", "f"):
+                elevation[y][x] = round(min(1.1, max(0.0, (x - 14) * 0.03) + max(0.0, (14 - y) * 0.08)), 2)
+            if terrain[y][x] == "R":
+                elevation[y][x] = round(min(4.5, elevation[y][x] * 1.5 + 0.6), 2)
     railway(terrain, elevation)
     town_core(terrain, 8.0, 17)
+    flatten_core(elevation)
     road = make_road(terrain, elevation)
     road([(24, 23), (16, 22), (14, 22)])       # harbour
     road([(29, 24), (36, 24), (43, 24)])       # station

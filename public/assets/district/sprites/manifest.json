@@ -980,6 +980,322 @@
         "shadow",
         "normal"
       ]
+    },
+    "house_shack__d11": {
+      "name": "house_shack__d11",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        536,
+        410
+      ],
+      "anchor": [
+        268.0,
+        278.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d11": {
+      "name": "house_terrace__d11",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        676,
+        461
+      ],
+      "anchor": [
+        338.0,
+        316.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d11": {
+      "name": "town_hall__d11",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        947,
+        631
+      ],
+      "anchor": [
+        473.5,
+        458.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d11": {
+      "name": "warehouse__d11",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        717,
+        582
+      ],
+      "anchor": [
+        358.5,
+        428.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "house_shack__d4": {
+      "name": "house_shack__d4",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        560,
+        439
+      ],
+      "anchor": [
+        280.0,
+        312.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d4": {
+      "name": "house_terrace__d4",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        707,
+        488
+      ],
+      "anchor": [
+        353.5,
+        358.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d4": {
+      "name": "town_hall__d4",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        857,
+        832
+      ],
+      "anchor": [
+        428.5,
+        625.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d4": {
+      "name": "warehouse__d4",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        803,
+        547
+      ],
+      "anchor": [
+        401.5,
+        368.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "tavern": {
+      "name": "tavern",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        567,
+        435
+      ],
+      "anchor": [
+        283.5,
+        300.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "bakery": {
+      "name": "bakery",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        523,
+        475
+      ],
+      "anchor": [
+        261.5,
+        326.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "windmill": {
+      "name": "windmill",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        394,
+        441
+      ],
+      "anchor": [
+        197.0,
+        351.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "smokehouse": {
+      "name": "smokehouse",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        484,
+        375
+      ],
+      "anchor": [
+        242.0,
+        270.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "market": {
+      "name": "market",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        441,
+        314
+      ],
+      "anchor": [
+        220.5,
+        228.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "well": {
+      "name": "well",
+      "kind": "building",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        351,
+        280
+      ],
+      "anchor": [
+        175.5,
+        239.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
     }
   }
 }

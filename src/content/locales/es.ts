@@ -573,6 +573,18 @@ export const es = {
   'bd.fishery': 'Barcas y redes: comida todo el año. Debe estar junto al agua.',
   'card.dossier': 'Expediente · Distrito {n}',
   'card.laureate': 'Laureado/a',
+  'b.tavern': 'Taberna',
+  'bd.tavern': 'Licor de raíces y canciones a media voz. Sube la moral cada día.',
+  'b.bakery': 'Horno comunal',
+  'bd.bakery': 'Pan negro para todos, también en invierno.',
+  'b.windmill': 'Molino',
+  'bd.windmill': 'Muele el grano: mucha comida con pocos brazos.',
+  'b.smokehouse': 'Ahumadero',
+  'bd.smokehouse': 'Pescado ahumado que aguanta el invierno. Junto al agua.',
+  'b.market': 'Mercadillo',
+  'bd.market': 'Trueque y puestos: algunos créditos cada día.',
+  'b.well': 'Pozo',
+  'bd.well': 'Agua limpia y un sitio donde hablar. Un poco de moral.',
 } as const;
 
 export type LocaleKey = keyof typeof es;

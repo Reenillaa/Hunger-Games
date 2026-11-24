@@ -179,6 +179,15 @@ export function economyDay(state: GameState, date: CalendarDate, ctx: SimContext
         state.district.structures.filter((s) => s.built && def(s.kind).housing).length * 0.5,
     );
   }
+  // Taverns and wells: small daily comforts (staffed taverns only).
+  let comfort = 0;
+  for (const s of state.district.structures) {
+    const m = def(s.kind).morale;
+    if (!s.built || !m) continue;
+    const staffed = def(s.kind).workers[0] === 0 || s.workers > 0;
+    if (staffed) comfort += m * s.level;
+  }
+  if (comfort > 0) e.morale = Math.min(100, e.morale + comfort);
   if (date.dayOfSeason === 1 && date.absoluteDay > 0) settleQuota(state, date, ctx);
   allocateLabor(state);
 }

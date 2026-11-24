@@ -105,6 +105,8 @@ export class DistrictScene extends Phaser.Scene {
     const kinds = new Set<string>([
       ...Object.entries(sprites.assets)
         .filter(([, a]) => a.kind === 'building')
+        // Only this district's regional architecture (plus the shared models).
+        .filter(([k]) => !k.includes('__') || k.endsWith(`__${district.templateId}`))
         .map(([k]) => k),
       ...district.props.map((p) => p.kind),
     ]);
@@ -209,6 +211,9 @@ export class DistrictScene extends Phaser.Scene {
 
   /** Visual variant (same footprint, other materials) chosen from the position: stable per save. */
   private spriteKey(s: PlacedStructure, sprites: SpriteManifest): string {
+    // Regional architecture first (e.g. house_shack__d11): every district builds its own way.
+    const regional = `${s.kind}__${this.session.getState().meta.homeDistrictId}`;
+    if (sprites.assets[regional]) return regional;
     const variants = Object.keys(sprites.assets).filter(
       (k) => k === s.kind || (k.startsWith(`${s.kind}_`) && k.length === s.kind.length + 2),
     );

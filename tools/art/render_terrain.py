@@ -60,8 +60,10 @@ MAPS["d11"] = {
     "out": "public/assets/districts/d11/terrain",
     "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#151a12",
     "dirt_tint": "#6E5A42",
+    "grass_tint": "#8FA048", "grass_amount": 0.35,
+    "dry_tint": "#D8B04E", "dry_amount": 0.55, "dry_saturation": 0.95, "dry_value": 0.85,
     "layers": {
-        "dry": {"g": 0.55, "f": 0.1, "s": 0.4},
+        "dry": {"g": 0.75, "f": 0.15, "s": 0.5},
         "forest": {},
         "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "f": 0.35},
         "coal": {},
@@ -74,6 +76,8 @@ MAPS["d4"] = {
     "out": "public/assets/districts/d4/terrain",
     "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": False, "background": "#101a20",
     "dirt_tint": "#D8C08E",
+    "grass_tint": "#5E8A6A", "grass_amount": 0.4,
+    "dry_tint": "#9AA27A", "dry_amount": 0.35,
     "layers": {
         "dry": {"g": 0.3, "s": 0.4},
         "forest": {"f": 1.0},
@@ -279,8 +283,8 @@ def terrain_material() -> bpy.types.Material:
     def tex(key, **kwargs):
         return M.pbr_sockets(nodes, links, key, **{**common, **kwargs})
 
-    state = tex("grass_patchy", scale=0.7, normal_strength=1.6, saturation=0.85, value=0.72, tint="#5E7F38", tint_amount=0.3)
-    state = blend(state, tex("grass_dry", scale=0.6, normal_strength=1.6, saturation=0.7, value=0.7, tint="#8C8044", tint_amount=0.3), breakup("dry", 0.3, 1.3))
+    state = tex("grass_patchy", scale=0.7, normal_strength=1.6, saturation=0.85, value=0.72, tint=CFG.get("grass_tint", "#5E7F38"), tint_amount=CFG.get("grass_amount", 0.3))
+    state = blend(state, tex("grass_dry", scale=0.6, normal_strength=1.6, saturation=CFG.get("dry_saturation", 0.7), value=CFG.get("dry_value", 0.7), tint=CFG.get("dry_tint", "#8C8044"), tint_amount=CFG.get("dry_amount", 0.3)), breakup("dry", 0.3, 1.3))
     state = blend(state, tex("dirt_light", scale=0.55, normal_strength=1.8, saturation=0.55, value=0.58 if MAP != "d4" else 0.95, tint=CFG.get("dirt_tint", "#6E5A42"), tint_amount=0.25 if MAP != "d4" else 0.55), breakup("dirt", 0.28, 1.1))
     state = blend(state, tex("dirt_coal", scale=0.6, normal_strength=1.8, saturation=0.3, value=0.33, tint="#3B3A2E", tint_amount=0.3), breakup("forest", 0.3, 1.5))
     state = blend(state, tex("dirt_coal", scale=0.7, normal_strength=2.0, saturation=0.2, value=0.4), breakup("coal", 0.18, 1.0))
