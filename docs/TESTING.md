@@ -82,4 +82,5 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 10 | Paneles con el lenguaje de la HUD v3 (esquinas doradas, títulos en oro, filete ornamental): `vitest` 106/106, `playwright` 16/16 | `docs/images/hud-v3-panels.jpg` |
 | 2026-11-24 | 10 | Distritos 4 y 11 + retratos v2: `vitest` **111/111** (nuevos: generación conectada de los 3 distritos, cuota de comida con reserva, lonja junto al agua), `playwright` **18/18** (nuevo: partida en el Distrito 4 desde el mapa) | Capturas `docs/images/district-d11.jpg`, `district-d4.jpg`, `citizen-dossier.jpg`; render de terreno d11 655 s, d4 ≈ 700 s |
 | 2026-11-24 | 10 | Arquitectura regional, biomas con relieve y 6 estructuras nuevas: `vitest` **113/113** (nuevos: catálogo sprite/huella/miniatura, taberna sube la moral), `playwright` 18/18 | Capturas `docs/images/regional-districts.jpg`, `new-structures.jpg`; terrenos d11 688 s y d4 ≈ 700 s |
+| 2026-11-24 | 10 | Planos propios d11/d4 + economato, escuela y enfermería regionales: `vitest` 113/113, `playwright` 18/18 | `docs/images/district-plans.jpg`; renders d11 671 s, d4 ≈ 700 s |
 

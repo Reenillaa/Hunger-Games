@@ -64,6 +64,7 @@ MAPS["d11"] = {
     "dry_tint": "#D8B04E", "dry_amount": 0.55, "dry_saturation": 0.95, "dry_value": 0.85,
     "layers": {
         "dry": {"g": 0.75, "f": 0.15, "s": 0.5},
+        "field": {"c": 1.0},
         "forest": {},
         "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "f": 0.35},
         "coal": {},
@@ -291,6 +292,28 @@ def terrain_material() -> bpy.types.Material:
     state = blend(state, tex("gravel", scale=1.0, normal_strength=2.0, saturation=0.2, value=0.5), breakup("gravel", 0.12, 2.0))
     state = blend(state, tex("cobble", scale=0.32, normal_strength=2.2, saturation=0.3, value=0.55, tint="#5B5753", tint_amount=0.2), breakup("cobble", 0.1, 2.0))
 
+    # Cultivated parcels: furrows of dark soil alternating with golden stubble (District 11).
+    if "field" in LAYERS:
+        coord = nodes.new("ShaderNodeTexCoord")
+        wave = nodes.new("ShaderNodeTexWave")
+        wave.wave_type, wave.bands_direction = "BANDS", "X"
+        wave.inputs["Scale"].default_value = 1.6
+        wave.inputs["Distortion"].default_value = 1.2
+        wave.inputs["Detail"].default_value = 2.0
+        links.new(coord.outputs["Object"], wave.inputs["Vector"])
+        furrow = nodes.new("ShaderNodeMix")
+        furrow.data_type = "RGBA"
+        links.new(wave.outputs["Fac"], furrow.inputs["Factor"])
+        furrow.inputs["A"].default_value = S.hex_rgba("#4A3524")
+        furrow.inputs["B"].default_value = S.hex_rgba("#C9A24E")
+        rough = nodes.new("ShaderNodeValue")
+        rough.outputs[0].default_value = 0.92
+        bump = nodes.new("ShaderNodeBump")
+        bump.inputs["Strength"].default_value = 0.6
+        links.new(wave.outputs["Fac"], bump.inputs["Height"])
+        state = blend(state, {"color": furrow.outputs["Result"], "roughness": rough.outputs[0], "normal": bump.outputs["Normal"]},
+                      breakup("field", 0.1, 2.0))
+
     # Rock: by membership OR by steep slope.
     geo = nodes.new("ShaderNodeNewGeometry")
     sep = nodes.new("ShaderNodeSeparateXYZ")
@@ -505,11 +528,11 @@ def scatter(terrain: bpy.types.Object) -> None:
     """Hair-particle instancing of vegetation and ground detail; density from terrain layers."""
     mesh = terrain.data
     n = len(mesh.vertices)
-    names = ("dry", "dirt", "coal", "gravel", "cobble", "rock", "forest", "outside", "wet", "soot")
-    L = {k: [v.value for v in mesh.attributes[k].data] for k in names}
-    dens = {k: [0.0] * n for k in ("grass", "lush", "tall", "bush", "fern", "flower", "leaf", "reed", "puddle", "pebble")}
+    names = ("dry", "dirt", "coal", "gravel", "cobble", "rock", "forest", "outside", "wet", "soot", "field")
+    L = {k: ([v.value for v in mesh.attributes[k].data] if k in mesh.attributes else [0.0] * n) for k in names}
+    dens = {k: [0.0] * n for k in ("grass", "lush", "tall", "bush", "fern", "flower", "leaf", "reed", "puddle", "pebble", "wheat")}
     for i, v in enumerate(mesh.vertices):
-        bare = max(L["dirt"][i], L["coal"][i], L["gravel"][i], L["cobble"][i], L["rock"][i])
+        bare = max(L["dirt"][i], L["coal"][i], L["gravel"][i], L["cobble"][i], L["rock"][i], L["field"][i])
         water = 1.0 if v.co.z < -0.05 else 0.0
         alive = (1 - bare) * (1 - water) * (1 - L["outside"][i]) * (1 - 0.7 * L["soot"][i])
         wild = noise.noise(Vector((v.co.x * 0.25, v.co.y * 0.25, 5.0))) * 0.5 + 0.5
@@ -525,6 +548,7 @@ def scatter(terrain: bpy.types.Object) -> None:
         dens["leaf"][i] = (1 - water) * (1 - L["outside"][i]) * (1 - L["cobble"][i]) * (0.15 + 0.85 * L["forest"][i]) * (1 - L["rock"][i])
         dens["reed"][i] = L["wet"][i] ** 1.5 * (1 - water) * (1 - L["cobble"][i]) * (1 - L["rock"][i])
         dens["puddle"][i] = L["coal"][i] * (1 - water) * (1 - L["outside"][i])
+        dens["wheat"][i] = L["field"][i] * (1 - water) * (0.5 + 0.5 * wild)
         dens["pebble"][i] = min(1.0, 0.5 * L["dirt"][i] + 0.4 * L["forest"][i] + 0.4 * L["rock"][i] + 0.3 * L["soot"][i]) * (1 - water) * (1 - L["cobble"][i])
     for name, values in dens.items():
         group = terrain.vertex_groups.new(name=name)
@@ -553,8 +577,13 @@ def scatter(terrain: bpy.types.Object) -> None:
         ("leaf", _leaf(leaf_mat), 26000, 1.0, 10),
         ("puddle", _puddle(puddle_mat), 260, 1.0, 6),
         ("pebble", _blob("Pebble", 0.05, 0.45, M.district_materials()["stone"], 0.2, 1), 16000, 1.0, 7),
+        ("wheat", _blades("WheatClump", 14, 0.06, 0.18, 0.3, 0.012,
+                          _random_colour_material("Wheat", ["#D8B04E", "#C89A3A", "#E6C46A", "#B8903A"]), 11),
+         140000 if "field" in LAYERS else 0, 1.0, 11),
     ]
     for name, obj, count, size, seed in sources:
+        if count == 0:
+            continue
         mod = terrain.modifiers.new(name, "PARTICLE_SYSTEM")
         settings = mod.particle_system.settings
         settings.type = "HAIR"

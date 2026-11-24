@@ -1,3 +1,4 @@
+import { TEMPLATES } from '../../content/maps/index.ts';
 import * as Phaser from 'phaser';
 import type { GameState } from '../../core/index.ts';
 import { ageOf, livingCitizens } from '../../core/index.ts';
@@ -28,6 +29,9 @@ export class CeremonyStage {
     sheets: Record<string, CharacterSheet>,
   ) {
     this.scene = scene;
+    const plaza = TEMPLATES[state.district.templateId]?.plaza ?? { x0: 24, y0: 20 };
+    const X = plaza.x0 - 24;
+    const Y = plaza.y0 - 20;
     const current = state.competition.current;
     const day = Math.floor(state.clock.tick / 24);
     const youths = Object.keys(current?.entries ?? {})
@@ -46,8 +50,8 @@ export class CeremonyStage {
       const k = c!.sex === 'F' ? iF++ : iM++;
       const col = Math.floor(k / 2) % 3;
       const row = Math.floor(k / 6);
-      const x = (c!.sex === 'F' ? 24 : 27) + col;
-      const y = 23 + (row % 2);
+      const x = (c!.sex === 'F' ? 24 : 27) + col + X;
+      const y = 23 + (row % 2) + Y;
       const [ox, oy] = SLOTS[(k % 2) + (row >= 2 ? 2 : 0)]!;
       this.byCitizen.set(
         c!.id,
@@ -56,8 +60,8 @@ export class CeremonyStage {
     }
     // Adults behind and around.
     adults.forEach((c, i) => {
-      const x = 23 + (i % 8);
-      const y = 25 + Math.floor(i / 8) * 0.5;
+      const x = 23 + (i % 8) + X;
+      const y = 25 + Math.floor(i / 8) * 0.5 + Y;
       const [ox, oy] = SLOTS[i % 4]!;
       this.person(
         sheets,
@@ -67,13 +71,13 @@ export class CeremonyStage {
       );
     });
     // Stage against the town hall: the herald from the capital (gold) and the wardens.
-    const herald = this.person(sheets, 'woman_b', 26.5, 20.7, 1, 0.3);
+    const herald = this.person(sheets, 'woman_b', 26.5 + X, 20.7 + Y, 1, 0.3);
     herald.setTint(0xf2d48a);
-    this.person(sheets, 'warden', 25.4, 20.5, 1, 0.3);
-    this.person(sheets, 'warden', 27.4, 20.4, 1, 0.3);
+    this.person(sheets, 'warden', 25.4 + X, 20.5 + Y, 1, 0.3);
+    this.person(sheets, 'warden', 27.4 + X, 20.4 + Y, 1, 0.3);
     // Wardens guarding the town hall's doors behind the stage.
-    this.person(sheets, 'warden', 24.3, 20.2, 1);
-    this.person(sheets, 'warden', 28.6, 20.2, 1);
+    this.person(sheets, 'warden', 24.3 + X, 20.2 + Y, 1);
+    this.person(sheets, 'warden', 28.6 + X, 20.2 + Y, 1);
     this.spotlight = scene.add
       .image(0, 0, 'glow')
       .setBlendMode(Phaser.BlendModes.ADD)

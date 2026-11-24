@@ -1296,6 +1296,144 @@
         "shadow",
         "normal"
       ]
+    },
+    "economato__d11": {
+      "name": "economato__d11",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        555,
+        411
+      ],
+      "anchor": [
+        277.5,
+        279.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "economato__d4": {
+      "name": "economato__d4",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        555,
+        411
+      ],
+      "anchor": [
+        277.5,
+        279.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "infirmary__d11": {
+      "name": "infirmary__d11",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        561,
+        384
+      ],
+      "anchor": [
+        280.5,
+        284.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "infirmary__d4": {
+      "name": "infirmary__d4",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        561,
+        384
+      ],
+      "anchor": [
+        280.5,
+        284.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "school__d11": {
+      "name": "school__d11",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        657,
+        430
+      ],
+      "anchor": [
+        328.5,
+        305.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "school__d4": {
+      "name": "school__d4",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        657,
+        430
+      ],
+      "anchor": [
+        328.5,
+        305.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
     }
   }
 }

@@ -278,7 +278,7 @@ export function checkPlacement(
   for (const [cx, cy] of cells) {
     const code = terrainAt(t, cx, cy);
     if (code === null) return 'out-of-map';
-    const allowed = d.requires === 'coalSeam' ? 'vsgd' : 'gd';
+    const allowed = d.requires === 'coalSeam' ? 'vsgdc' : 'gdc';
     if (!allowed.includes(code)) return 'blocked';
     if (occupied.has(`${cx},${cy}`)) return 'occupied';
   }

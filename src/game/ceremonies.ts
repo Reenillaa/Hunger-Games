@@ -1,11 +1,18 @@
+import { TEMPLATES } from '../content/maps/index.ts';
 import type { Citizen, GameState } from '../core/index.ts';
 import { ageOf, fullName } from '../core/index.ts';
 import type { CineStep } from './cinematic.ts';
 import type { LocaleKey } from '../content/i18n.ts';
 import { t } from '../content/i18n.ts';
 
-const PLAZA = { x: 26, y: 24 };
-const STAGE = { x: 26, y: 20 };
+/** Camera marks of the district's own plaza (each map has its own plan). */
+function marks(state: Readonly<GameState>) {
+  const p = TEMPLATES[state.district.templateId]?.plaza ?? { x0: 24, y0: 20, x1: 29, y1: 26 };
+  return {
+    PLAZA: { x: (p.x0 + p.x1) / 2, y: (p.y0 + p.y1) / 2 + 1 },
+    STAGE: { x: p.x0 + 2, y: p.y0 },
+  };
+}
 
 function relative(state: Readonly<GameState>, id: string | null): Citizen | null {
   const c = id ? state.population.citizens[id] : null;
@@ -63,6 +70,7 @@ export function reactionLines(state: Readonly<GameState>, c: Citizen): string[] 
 
 /** The Criba, built from the real draw: who, how many slips, and who cries for them. */
 export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
+  const { PLAZA, STAGE } = marks(state);
   const current = state.competition.current;
   if (!current) return [];
   const day = Math.floor(state.clock.tick / 24);
@@ -128,10 +136,10 @@ export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
   return steps;
 }
 
-const STATION = { x: 42, y: 24 };
-
 /** The return of the delegation: built from the recorded results of the edition. */
 export function buildReturnCeremony(state: Readonly<GameState>, edition: number): CineStep[] {
+  const { PLAZA } = marks(state);
+  const STATION = homeProfile(state.meta.homeDistrictId).station;
   const result = state.competition.history.find((h) => h.edition === edition)?.result;
   if (!result || result.home.length === 0) return [];
   const steps: CineStep[] = [
@@ -175,8 +183,9 @@ import { homeProfile } from '../content/homeDistricts.ts';
 export function buildPrologue(state: Readonly<GameState>): CineStep[] {
   const profile = homeProfile(state.meta.homeDistrictId);
   const n = String(profile.number);
+  const { PLAZA, STAGE } = marks(state);
   return [
-    { kind: 'camera', cell: { x: 30, y: 30 }, zoom: 0.55, ms: 0 },
+    { kind: 'camera', cell: { x: PLAZA.x + 4, y: PLAZA.y + 4 }, zoom: 0.55, ms: 0 },
     { kind: 'title', title: t('pro.title'), subtitle: t('pro.subtitle', { n }), ms: 3600 },
     { kind: 'fade', to: 'clear', ms: 800 },
     { kind: 'line', text: t('pro.1'), ms: 4600 },

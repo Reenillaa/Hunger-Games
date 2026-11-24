@@ -25,15 +25,17 @@ export interface HomeDistrictProfile {
   clutter: [PropKind, number, number][];
   /** A cell worth showing in the prologue (the mine, the fields, the harbour). */
   showcase: { x: number; y: number };
+  /** Where the Capitol's train stops (return ceremony). */
+  station: { x: number; y: number };
 }
 
-const SHARED: { kind: StructureKind; x: number; y: number }[] = [
-  // The Cosecha is held on the stage built against the town hall's steps, facing the plaza.
-  { kind: 'town_hall', x: 25, y: 17 },
-  { kind: 'stage', x: 25, y: 20 },
-  { kind: 'warehouse', x: 38, y: 20 },
-  { kind: 'economato', x: 31, y: 25 },
-];
+/** Town hall on the north side of the plaza with the Cosecha stage against its steps. */
+function civic(plaza: { x0: number; y0: number }): { kind: StructureKind; x: number; y: number }[] {
+  return [
+    { kind: 'town_hall', x: plaza.x0 + 1, y: plaza.y0 - 3 },
+    { kind: 'stage', x: plaza.x0 + 1, y: plaza.y0 },
+  ];
+}
 
 export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfile> = {
   d12: {
@@ -46,7 +48,9 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     signature: 'mine_headframe',
     heating: 'coal',
     landmarks: [
-      ...SHARED,
+      ...civic({ x0: 24, y0: 20 }),
+      { kind: 'warehouse', x: 38, y: 20 },
+      { kind: 'economato', x: 31, y: 25 },
       { kind: 'mine_headframe', x: 15, y: 7 },
       { kind: 'lumber_camp', x: 12, y: 31 },
       { kind: 'quarry', x: 37, y: 9 },
@@ -62,6 +66,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
       ['supplies', 33, 27],
     ],
     showcase: { x: 17, y: 10 },
+    station: { x: 42, y: 24 },
   },
   d11: {
     id: 'd11',
@@ -73,21 +78,24 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     signature: 'farm',
     heating: 'wood',
     landmarks: [
-      ...SHARED,
-      { kind: 'farm', x: 27, y: 6 },
-      { kind: 'farm', x: 33, y: 31 },
-      { kind: 'lumber_camp', x: 6, y: 18 },
-      { kind: 'quarry', x: 40, y: 4 },
+      ...civic({ x0: 9, y0: 31 }),
+      { kind: 'warehouse', x: 17, y: 28 },
+      { kind: 'economato', x: 13, y: 38 },
+      { kind: 'farm', x: 24, y: 10 },
+      { kind: 'farm', x: 32, y: 22 },
+      { kind: 'lumber_camp', x: 31, y: 34 },
+      { kind: 'quarry', x: 3, y: 3 },
     ],
     houses: { house_terrace: 8, house_shack: 14 },
     startResources: { food: 220, wood: 140, stone: 50, coal: 20, credits: 90 },
     trees: ['fruit_tree'],
     clutter: [
-      ['supplies', 37, 23],
-      ['supplies', 33, 27],
-      ['supplies', 30, 10],
+      ['supplies', 18, 31],
+      ['supplies', 15, 37],
+      ['supplies', 27, 12],
     ],
-    showcase: { x: 28, y: 8 },
+    showcase: { x: 25, y: 12 },
+    station: { x: 42, y: 33 },
   },
   d4: {
     id: 'd4',
@@ -99,23 +107,27 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     signature: 'fishery',
     heating: 'wood',
     landmarks: [
-      ...SHARED,
-      { kind: 'fishery', x: 15, y: 18 },
-      { kind: 'fishery', x: 13, y: 28 },
-      { kind: 'lumber_camp', x: 36, y: 12 },
-      { kind: 'quarry', x: 22, y: 8 },
+      ...civic({ x0: 19, y0: 18 }),
+      { kind: 'warehouse', x: 14, y: 23 },
+      { kind: 'economato', x: 27, y: 23 },
+      { kind: 'fishery', x: 16, y: 29 },
+      { kind: 'fishery', x: 15, y: 13 },
+      { kind: 'lumber_camp', x: 31, y: 7 },
+      { kind: 'quarry', x: 36, y: 24 },
     ],
     houses: { house_terrace: 9, house_shack: 13 },
     startResources: { food: 200, wood: 110, stone: 60, coal: 20, credits: 110 },
     trees: ['pine_a', 'pine_b', 'pine_c'],
     clutter: [
-      ['boat', 10, 21],
-      ['boat', 9, 24],
-      ['boat', 8, 30],
-      ['supplies', 18, 23],
-      ['supplies', 37, 23],
+      ['boat', 9, 21],
+      ['boat', 8, 19],
+      ['boat', 7, 29],
+      ['boat', 10, 27],
+      ['boat', 9, 11],
+      ['supplies', 18, 21],
     ],
-    showcase: { x: 13, y: 22 },
+    showcase: { x: 12, y: 20 },
+    station: { x: 42, y: 20 },
   },
 };
 

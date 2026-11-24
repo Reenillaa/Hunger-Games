@@ -1036,6 +1036,72 @@ def well(m) -> None:
     K.cylinder(0.07, 0.1, (0.05, -0.05, 0.6), m["metal_rust"], verts=10, name="Bucket")
 
 
+def _regional_shop(m, walls, roof, ridge, awning_cols, sign) -> None:
+    W, D, H = 1.5, 1.3, 0.85
+    K.box((W, D, H), (0, 0, H / 2), walls, bevel=0.03, name="Walls")
+    gable(W, D, H, 0.42, roof, ridge=ridge)
+    for k in range(5):
+        K.box((0.3, 0.45, 0.03), (-0.6 + k * 0.3, -D / 2 - 0.2, 0.72), awning_cols[k % 2], rot=(0.3, 0, 0), name="Awning")
+    K.door(Vector((-0.35, -D / 2 - 0.02, 0.4)), "-y", m)
+    K.window(Vector((0.25, -D / 2 - 0.02, 0.48)), "-y", m, lit=True, w=0.5, h=0.32)
+    K.box((0.7, 0.03, 0.16), (0, -D / 2 - 0.03, 0.82), sign, name="Sign")
+    for i, x in enumerate((0.55, 0.75)):
+        K.crate((x, -D / 2 - 0.3, 0), m, s=0.18, rot=0.3 * i)
+
+
+def economato__d11(m) -> None:
+    _regional_shop(m, _whitewash(), _tiles(), M.flat("RidgeTile", "#8E3E22", 0.8),
+                   [M.flat("AwnGreen", "#4E6A3A", 0.8), M.flat("AwnCream", "#E6DCC8", 0.8)], M.flat("SignOchre", "#C9A44C", 0.6))
+
+
+def economato__d4(m) -> None:
+    _regional_shop(m, M.flat("BoardSea", "#5E8AA8", 0.8), _slate(), M.flat("WhiteTrim", "#EDEAE2", 0.6),
+                   [M.flat("AwnBlue", "#2E4E6E", 0.8), M.flat("AwnWhite", "#EDEAE2", 0.8)], M.flat("SignWhite", "#EDEAE2", 0.6))
+
+
+def _clinic(m, walls, roof, ridge) -> None:
+    W, D, H = 1.5, 1.3, 0.9
+    K.box((W, D, H), (0, 0, H / 2), walls, bevel=0.03, name="Walls")
+    gable(W, D, H, 0.4, roof, ridge=ridge)
+    K.door(Vector((0, -D / 2 - 0.02, 0.42)), "-y", m)
+    for x in (-0.48, 0.48):
+        K.window(Vector((x, -D / 2 - 0.02, 0.52)), "-y", m, lit=x < 0)
+    red = M.flat("CrossRed", "#B0283A", 0.6)
+    K.box((0.26, 0.02, 0.08), (0, -D / 2 - 0.03, 0.82), red, name="CrossH")
+    K.box((0.08, 0.02, 0.26), (0, -D / 2 - 0.03, 0.82), red, name="CrossV")
+    K.box((0.04, 0.4, 0.02), (W / 2 + 0.25, 0, 0.5), m["beam"], name="Line")
+    K.box((0.02, 0.3, 0.25), (W / 2 + 0.25, 0, 0.36), M.flat("Sheet", "#F2EEE4", 0.9), name="Sheet")
+
+
+def infirmary__d11(m) -> None:
+    _clinic(m, _whitewash(), _tiles(), M.flat("RidgeTile", "#8E3E22", 0.8))
+
+
+def infirmary__d4(m) -> None:
+    _clinic(m, M.flat("Stucco", "#EDEAE2", 0.8), M.flat("RoofBlue", "#3E6A8E", 0.55), M.flat("WhiteTrim", "#EDEAE2", 0.6))
+
+
+def _schoolhouse(m, walls, roof, ridge, bell_mat) -> None:
+    W, D, H = 2.4, 1.2, 0.85
+    K.box((W, D, H), (0, 0, H / 2), walls, bevel=0.03, name="Walls")
+    gable(W, D, H, 0.4, roof, ridge=ridge)
+    K.box((0.3, 0.3, 0.35), (0, 0, H + 0.55), walls, name="BellCote")
+    K.box((0.38, 0.38, 0.05), (0, 0, H + 0.75), roof, name="BellRoof")
+    K.cylinder(0.06, 0.1, (0, -0.16, H + 0.55), bell_mat, verts=12, name="Bell")
+    K.door(Vector((-0.9, -D / 2 - 0.02, 0.4)), "-y", m)
+    for x in (-0.3, 0.3, 0.9):
+        K.window(Vector((x, -D / 2 - 0.02, 0.52)), "-y", m, lit=x > 0.5)
+    K.box((0.5, 0.03, 0.3), (0.3, -D / 2 - 0.4, 0.3), M.flat("Chalkboard", "#2E3A2E", 0.7), name="Board")
+
+
+def school__d11(m) -> None:
+    _schoolhouse(m, _whitewash(), _tiles(), M.flat("RidgeTile", "#8E3E22", 0.8), M.flat("Brass", "#C9A44C", 0.3, metallic=0.9))
+
+
+def school__d4(m) -> None:
+    _schoolhouse(m, M.flat("BoardOchre", "#C9A86A", 0.8), _slate(), M.flat("WhiteTrim", "#EDEAE2", 0.6), M.flat("Brass", "#C9A44C", 0.3, metallic=0.9))
+
+
 CATALOGUE = {
     # name: (builder, footprint (w, d), canvas (w, h) px at 2x, kind)
     "house_shack": (house_shack, (2, 2), "building"),
@@ -1095,6 +1161,12 @@ CATALOGUE = {
     "house_terrace__d4": (house_terrace__d4, (3, 2), "building"),
     "town_hall__d4": (town_hall__d4, (3, 3), "building"),
     "warehouse__d4": (warehouse__d4, (3, 3), "building"),
+    "economato__d11": (economato__d11, (2, 2), "building"),
+    "economato__d4": (economato__d4, (2, 2), "building"),
+    "infirmary__d11": (infirmary__d11, (2, 2), "building"),
+    "infirmary__d4": (infirmary__d4, (2, 2), "building"),
+    "school__d11": (school__d11, (3, 2), "building"),
+    "school__d4": (school__d4, (3, 2), "building"),
     "poster_b": (poster_b, (1, 1), "prop"),
 }
 

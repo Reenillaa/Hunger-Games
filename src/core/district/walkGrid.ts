@@ -12,6 +12,7 @@ const TERRAIN_COST: Record<TerrainCode, number> = {
   v: 1.6,
   t: 2,
   g: 2,
+  c: 2.2,
   f: 2.6,
   s: 3.5,
   w: Infinity,

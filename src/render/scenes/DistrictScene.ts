@@ -191,7 +191,8 @@ export class DistrictScene extends Phaser.Scene {
         height: bounds.height * 0.9 + 260,
       },
     });
-    const plaza = cellToWorld(26.5, 23.5);
+    const pz = template?.plaza ?? { x0: 24, y0: 20, x1: 29, y1: 26 };
+    const plaza = cellToWorld((pz.x0 + pz.x1) / 2, (pz.y0 + pz.y1) / 2);
     // Small screens start further out so the whole town core is visible.
     const fit = Math.min(this.scale.width, this.scale.height) / 1100;
     this.cameras.main.setZoom(Phaser.Math.Clamp(fit, 0.45, 0.75)).centerOn(plaza.x, plaza.y);

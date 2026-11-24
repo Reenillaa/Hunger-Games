@@ -1,5 +1,5 @@
 /** Terrain template shared with the art pipeline (src/content/maps/*.json). */
-export type TerrainCode = 'R' | 's' | 'v' | 'w' | 'b' | 'f' | 'g' | 'd' | 'p' | 't' | 'r';
+export type TerrainCode = 'R' | 's' | 'v' | 'w' | 'b' | 'f' | 'g' | 'd' | 'p' | 't' | 'r' | 'c';
 
 export interface DistrictTemplate {
   id: string;
@@ -53,7 +53,7 @@ export type PropKind =
   | 'boat';
 
 /** Cells where the player may build (Phase 3 rules start from this). */
-export const BUILDABLE: ReadonlySet<TerrainCode> = new Set(['g', 'd']);
+export const BUILDABLE: ReadonlySet<TerrainCode> = new Set(['g', 'd', 'c']);
 
 export function terrainAt(t: DistrictTemplate, x: number, y: number): TerrainCode | null {
   if (x < 0 || y < 0 || x >= t.width || y >= t.height) return null;
