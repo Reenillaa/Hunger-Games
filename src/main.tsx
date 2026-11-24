@@ -5,6 +5,7 @@ import { SaveRepository } from './persistence/saveRepository.ts';
 import { App } from './ui/App.tsx';
 import type { AppServices } from './ui/services.ts';
 import { ServicesContext } from './ui/services.ts';
+import '@fontsource-variable/cinzel';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/oswald';
 import './ui/theme/tokens.css';

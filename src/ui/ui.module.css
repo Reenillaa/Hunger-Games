@@ -1332,3 +1332,463 @@
   max-height: 40vh;
   overflow-y: auto;
 }
+
+/* ---------- World map (start screen) ---------- */
+.worldMenu {
+  position: fixed;
+  inset: 0;
+  background: #0d0906;
+  overflow: hidden;
+}
+
+.mapViewport {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+
+.mapViewport::-webkit-scrollbar {
+  display: none;
+}
+
+/* The sheet always covers the screen (16:9) and scrolls when the screen is narrower. */
+.mapStage {
+  position: relative;
+  width: max(100vw, calc(100vh * 16 / 9));
+  height: max(100vh, calc(100vw * 9 / 16));
+  transform: translate(var(--px, 0), var(--py, 0)) scale(1.02);
+  transition: transform 0.6s ease-out;
+}
+
+.mapImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+/* Candlelight: a warm glow that breathes, and a dark vignette around the table. */
+.candle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 88%, rgb(255 150 60 / 0.16), transparent 40%),
+    radial-gradient(ellipse at 88% 12%, rgb(255 170 80 / 0.12), transparent 35%),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(8 5 3 / 0.55) 100%);
+  animation: flicker 5s ease-in-out infinite;
+  mix-blend-mode: soft-light;
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.86;
+  }
+  23% {
+    opacity: 0.97;
+  }
+  55% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.88;
+  }
+}
+
+.seal {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.sealWax {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--font-map);
+  font-weight: 700;
+  font-size: 13px;
+  color: #f6e6c4;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.6);
+  background: radial-gradient(circle at 35% 30%, #c4473c, #8e1f1b 60%, #5e100e);
+  box-shadow:
+    0 0 0 3px rgb(142 31 27 / 0.35),
+    0 3px 8px rgb(0 0 0 / 0.55),
+    inset 0 -3px 6px rgb(0 0 0 / 0.35),
+    inset 0 2px 3px rgb(255 200 180 / 0.25);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.sealCapital .sealWax {
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  color: #3a2a08;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
+  background: radial-gradient(circle at 35% 30%, #fff1b8, #d6ac45 55%, #8c6b22);
+  box-shadow:
+    0 0 0 3px rgb(201 164 76 / 0.4),
+    0 0 24px rgb(255 210 120 / 0.55),
+    0 3px 8px rgb(0 0 0 / 0.55);
+}
+
+.sealHome .sealWax {
+  box-shadow:
+    0 0 0 3px rgb(232 162 74 / 0.6),
+    0 0 18px rgb(232 162 74 / 0.6),
+    0 3px 8px rgb(0 0 0 / 0.55);
+}
+
+.sealLabel {
+  font-family: var(--font-map);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: #2f2114;
+  padding: 1px 8px;
+  border-radius: 2px;
+  background: rgb(240 224 186 / 0.85);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  white-space: nowrap;
+}
+
+.seal:hover .sealWax,
+.seal:focus-visible .sealWax {
+  transform: scale(1.15);
+}
+
+.seal:focus-visible {
+  outline: none;
+}
+
+.seal:focus-visible .sealLabel {
+  outline: 2px solid var(--c-lamp);
+}
+
+.seal[aria-pressed='true'] .sealWax {
+  transform: scale(1.18);
+  animation: sealPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes sealPulse {
+  50% {
+    box-shadow:
+      0 0 0 8px rgb(232 162 74 / 0.25),
+      0 0 28px rgb(255 190 100 / 0.7),
+      0 3px 8px rgb(0 0 0 / 0.55);
+  }
+}
+
+.mapHeader {
+  position: absolute;
+  top: calc(var(--space-4) + var(--safe-top));
+  left: calc(var(--space-4) + var(--safe-left));
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  max-width: min(440px, calc(100vw - 32px));
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgb(16 11 7 / 0.82), rgb(16 11 7 / 0.65));
+  border: 1px solid rgb(201 164 76 / 0.3);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+}
+
+.emblemSmall {
+  width: 44px;
+  height: 44px;
+  color: var(--c-lamp);
+  filter: drop-shadow(0 0 12px rgb(232 162 74 / 0.45));
+}
+
+.mapGameTitle {
+  margin: 0;
+  font-family: var(--font-map);
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: 0.18em;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff3d6, #d7b36a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mapHeader .tagline {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.mapHeaderActions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.continueMeta {
+  display: block;
+  font-weight: 500;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* The selected place, written on a scrap of parchment. */
+.mapCard {
+  position: absolute;
+  left: calc(var(--space-4) + var(--safe-left));
+  bottom: calc(var(--space-4) + var(--safe-bottom));
+  width: min(360px, calc(100vw - 32px));
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  color: #2f2114;
+  border-radius: 3px;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgb(255 248 228 / 0.7), transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgb(160 120 60 / 0.35), transparent 55%),
+    linear-gradient(160deg, #efe0b8, #dcc48f);
+  box-shadow:
+    0 14px 40px rgb(0 0 0 / 0.6),
+    inset 0 0 40px rgb(120 80 30 / 0.35),
+    inset 0 0 0 1px rgb(80 55 25 / 0.35);
+  animation: cardIn 0.35s ease-out;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) rotate(-0.6deg);
+  }
+}
+
+.mapCardKicker {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-map);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8e1f1b;
+}
+
+.homeTag {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #8e1f1b;
+  color: #f6e6c4;
+}
+
+.mapCardTitle {
+  margin: 0;
+  font-family: var(--font-map);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.05;
+}
+
+.mapCardMeta {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: #5a4128;
+}
+
+.mapCardText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.mapCardBars {
+  display: grid;
+  gap: 4px;
+}
+
+.inkBar {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: #5a4128;
+}
+
+.inkTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(80 55 25 / 0.2);
+  overflow: hidden;
+}
+
+.inkTrack > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #6e4a24, #8e1f1b);
+}
+
+.mapLocked {
+  margin: var(--space-1) 0 0;
+  font-size: 13px;
+  font-style: italic;
+  color: #6e5132;
+}
+
+.mapPlay {
+  margin-top: var(--space-2);
+  min-height: 50px;
+  font-size: 16px;
+}
+
+.mapFooter {
+  position: absolute;
+  right: calc(var(--space-4) + var(--safe-right));
+  bottom: calc(var(--space-4) + var(--safe-bottom));
+  display: grid;
+  gap: var(--space-1);
+  justify-items: end;
+  max-width: calc(100vw - 420px);
+}
+
+.mapFooter .note {
+  color: rgb(240 224 186 / 0.75);
+  text-shadow: 0 1px 2px #000;
+}
+
+@media (max-width: 760px) {
+  .mapFooter {
+    display: none;
+  }
+
+  .mapCard {
+    left: calc(var(--space-2) + var(--safe-left));
+    right: calc(var(--space-2) + var(--safe-right));
+    bottom: calc(var(--space-2) + var(--safe-bottom));
+    width: auto;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .mapCardTitle {
+    font-size: 24px;
+  }
+
+  .mapCardText {
+    font-size: 13px;
+  }
+}
+
+@media (max-height: 500px) {
+  .mapHeader {
+    grid-template-columns: auto 1fr auto;
+    padding: var(--space-2) var(--space-3);
+    top: calc(var(--space-2) + var(--safe-top));
+  }
+
+  .mapHeader .tagline {
+    display: none;
+  }
+
+  .mapHeaderActions {
+    grid-column: auto;
+  }
+
+  .mapCard {
+    left: auto;
+    bottom: calc(var(--space-2) + var(--safe-bottom));
+    right: calc(var(--space-2) + var(--safe-right));
+    width: min(280px, 38vw);
+    max-height: 62vh;
+    overflow-y: auto;
+    gap: 4px;
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+
+  .mapCardTitle {
+    font-size: 20px;
+  }
+
+  .mapCardText {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .mapPlay {
+    min-height: 40px;
+    margin-top: 2px;
+  }
+
+  .mapCardBars,
+  .mapCardMeta {
+    display: none;
+  }
+
+  .mapFooter {
+    display: none;
+  }
+
+  .sealWax {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .sealLabel {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 520px) {
+  .mapHeader .tagline {
+    display: none;
+  }
+}
+
+@media (max-height: 500px) {
+  .emblemSmall {
+    display: none;
+  }
+
+  .mapHeader {
+    grid-template-columns: auto auto;
+    left: calc(var(--space-2) + var(--safe-left));
+  }
+
+  .mapGameTitle {
+    font-size: 22px;
+  }
+
+  .mapHeaderActions .button {
+    min-height: 34px;
+    font-size: 13px;
+  }
+}

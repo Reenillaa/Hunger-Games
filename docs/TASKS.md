@@ -28,6 +28,7 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F10-04 | Equilibrado: ganar con el Distrito XII debe ser posible con buenas órdenes (objetivo 10–20 % jugando bien) | P1 | Simulación headless con política "jugador prudente" |
 | F10-05 | Arena: árboles y ruinas en el terreno de la arena con oclusión transparente verificada en iPhone | P2 | Captura en iPhone real |
 | F10-06 | Crónica de ediciones (Laureados, caídos) consultable desde el distrito | P2 | Panel con el historial real |
+| F10-08 | Hacer jugables otros distritos (plantilla, economía y perfil propios) desde el mapa de inicio | P2 | Seleccionar otro distrito en el mapa inicia una partida en él |
 | F10-07 | Prueba en iPhone real + PWA instalada (C-3) | P0 | Checklist de `TESTING.md` §3 |
 
 ## Investigación (cuando exista la Reverse Engineering Skill)

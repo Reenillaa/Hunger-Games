@@ -501,6 +501,33 @@ export const es = {
   'arena.tab.team': 'Equipo',
   'arena.expand': 'Mostrar panel',
   'arena.collapse': 'Ocultar panel',
+  'map.title': 'La Concordia',
+  'map.subtitle': 'Doce distritos y una capital',
+  'map.hint': 'Elige un lugar del mapa',
+  'map.capital': 'Capital de la Concordia',
+  'map.district': 'Distrito {n}',
+  'map.wealth': 'Riqueza',
+  'map.academies': 'Academias',
+  'map.industry': 'Industria: {industry}',
+  'map.locked': 'Por ahora solo puedes gobernar el Distrito XII.',
+  'map.soon': 'Próximamente',
+  'map.play': 'Nueva partida',
+  'map.home': 'Tu distrito',
+  'dist.aurea':
+    'Sobre su meseta en la cordillera, Áurea brilla de noche con la energía de todos. Cada año reúne a veinticuatro jóvenes para los Juegos del Diezmo.',
+  'dist.1':
+    'Joyeros y orfebres al servicio de la capital. Ricos, leales y orgullosos: sus hijos se entrenan para ganar.',
+  'dist.2': 'Canteras y cuarteles. De aquí salen los Custodios… y los tributos mejor preparados.',
+  'dist.3': 'Talleres y laboratorios. Ingenio de sobra, músculo poco.',
+  'dist.4': 'Puerto y redes en el golfo occidental. Nadadores fuertes y cuchillos rápidos.',
+  'dist.5': 'Presas y centrales que iluminan Áurea mientras ellos cenan a oscuras.',
+  'dist.6': 'El nudo ferroviario: todos los trenes del régimen pasan por aquí.',
+  'dist.7': 'Bosques del norte y aserraderos. Saben usar un hacha.',
+  'dist.8': 'Fábricas textiles. Turnos de catorce horas y un malestar que no se apaga.',
+  'dist.9': 'Las llanuras doradas del sur: el granero de la Concordia.',
+  'dist.10': 'Pastos y rebaños. Gente paciente que sabe sobrevivir a la intemperie.',
+  'dist.11': 'Huertas y frutales vigilados por torres. Robar una manzana se paga caro.',
+  'dist.12': 'Minas de carbón en las tierras altas del este. El distrito más pobre. El tuyo.',
 } as const;
 
 export type LocaleKey = keyof typeof es;
