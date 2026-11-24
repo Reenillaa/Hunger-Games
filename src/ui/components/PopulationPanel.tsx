@@ -27,7 +27,7 @@ export function PopulationPanel({ session }: { session: GameSession }) {
         a.lastNames[0].localeCompare(b.lastNames[0]) || a.firstName.localeCompare(b.firstName),
     );
   return (
-    <Dialog title={t('pop.title')} onClose={() => session.ui.togglePanel('population')}>
+    <Dialog title={t('pop.title')} onClose={() => session.ui.closePanel()}>
       <p className={styles.slotMeta}>
         {t('pop.count', { n: living.length, adults, children: living.length - adults })}
       </p>

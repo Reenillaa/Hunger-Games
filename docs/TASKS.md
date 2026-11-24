@@ -22,13 +22,15 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 
 | ID | Tarea | Prio | Criterio de aceptación |
 |---|---|---|---|
-| F10-01 | Sprites y terreno a WebP (con PNG/JPEG de respaldo) | P1 | Peso de arte −40 % sin pérdida visible |
-| F10-02 | Pantalla de ajustes: calidad (Bajo/Medio/Alto), movimiento reducido, tamaño de texto | P1 | Se guarda por dispositivo; `?quality=` sigue funcionando |
+| F10-01 | Sprites y personajes a WebP | ✅ | 18,3 MB → 3,0 MB; normales fuera de `public/` (`tools/art/to_webp.py`) |
+| F10-02 | Ajustes: calidad, tamaño de texto, movimiento reducido, volumen | ✅ | `SettingsDialog`, `src/platform/settings.ts`; E2E nuevo |
 | F10-03 | Accesibilidad: foco visible, `aria` en paneles, contraste AA en HUD | P1 | Revisión con lector de pantalla y teclado |
-| F10-04 | Equilibrado: ganar con el Distrito XII debe ser posible con buenas órdenes (objetivo 10–20 % jugando bien) | P1 | Simulación headless con política "jugador prudente" |
+| F10-04 | Equilibrado de la arena | ✅ | Jugando bien el Distrito 12 gana ≈ 19 % (150 partidas headless); sin órdenes ≈ 1–5 % |
 | F10-05 | Arena: árboles y ruinas en el terreno de la arena con oclusión transparente verificada en iPhone | P2 | Captura en iPhone real |
-| F10-06 | Crónica de ediciones (Laureados, caídos) consultable desde el distrito | P2 | Panel con el historial real |
+| F10-06 | Crónica de ediciones | ✅ | `ChroniclePanel` desde la barra superior; E2E nuevo |
 | F10-08 | Hacer jugables otros distritos (plantilla, economía y perfil propios) desde el mapa de inicio | P2 | Seleccionar otro distrito en el mapa inicia una partida en él |
+| F10-09 | Sonido procedural (viento, mina, pájaros, grillos, multitud, campana de la Cosecha, cañonazo por cada caído) | ✅ | `src/platform/audio.ts` + `AudioDirector` |
+| F10-10 | Prólogo cinemático de nueva partida | ✅ | `buildPrologue`; el reloj espera a que termine |
 | F10-07 | Prueba en iPhone real + PWA instalada (C-3) | P0 | Checklist de `TESTING.md` §3 |
 
 ## Investigación (cuando exista la Reverse Engineering Skill)

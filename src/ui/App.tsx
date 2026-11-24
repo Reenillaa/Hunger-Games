@@ -34,13 +34,14 @@ export function App() {
   useEffect(() => installGlobalErrorHandlers(setFatal), []);
 
   const start = useCallback(
-    (state: GameState) => {
+    (state: GameState, fresh = false) => {
       detachAutosave.current?.();
       const next = new GameSession(state);
       if (repository) {
         detachAutosave.current = attachAutosave(next, repository, () => notify(t('save.failed')));
         void repository.autosave(next.getState()).catch(() => notify(t('save.failed')));
       }
+      if (fresh) next.playPrologue();
       setLoadOpen(false);
       setSession(next);
     },
@@ -49,7 +50,7 @@ export function App() {
 
   const newGame = () => {
     void requestPersistentStorage();
-    start(createNewGame({ seed: randomSeed() }));
+    start(createNewGame({ seed: randomSeed() }), true);
   };
 
   const continueLatest = async () => {

@@ -11,6 +11,10 @@ import { SelectionPanel } from '../components/SelectionPanel.tsx';
 import { PhaseSheet } from '../components/PhaseSheet.tsx';
 import { ArenaPanel } from '../components/ArenaPanel.tsx';
 import { EventDialog } from '../components/EventDialog.tsx';
+import { ChroniclePanel } from '../components/ChroniclePanel.tsx';
+import { SettingsDialog } from '../components/SettingsDialog.tsx';
+import { AudioDirector } from '../AudioDirector.tsx';
+import { useUi } from '../useUi.ts';
 import { SaveDialog } from '../components/SaveDialog.tsx';
 import { TopBar } from '../components/TopBar.tsx';
 import { useServices } from '../services.ts';
@@ -28,6 +32,7 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const [saveOpen, setSaveOpen] = useState(false);
   const lastSpeed = useRef<GameSpeed>(1);
+  const ui = useUi(session);
 
   useEffect(() => {
     const parent = host.current;
@@ -79,6 +84,9 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
       </div>
       <CinematicOverlay session={session} />
       <PopulationPanel session={session} />
+      <ChroniclePanel session={session} />
+      {ui.panel === 'settings' && <SettingsDialog onClose={() => session.ui.closePanel()} />}
+      <AudioDirector session={session} />
       <CitizenCard session={session} />
       {saveOpen && (
         <SaveDialog

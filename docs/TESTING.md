@@ -75,3 +75,7 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 10 | Renombrado (Distrito 1–12, el Capitolio) y emblema propio: `vitest` 106/106, `playwright` **14/14** | Sin errores; iconos PWA regenerados con `node tools/icons/make-icons.ts` |
 | 2026-11-24 | 10 | Renombrado a la Cosecha / los Juegos: `vitest` 106/106, `playwright` **14/14** | Sin errores |
 | 2026-11-24 | 10 | Carteles de propaganda propios en el distrito: `vitest` 106/106, `playwright` (ver commit) | Captura `docs/images/propaganda-posters.png`, sin errores de consola |
+| 2026-11-24 | 10 | Tanda de pulido: `vitest` 106/106, `playwright` **16/16** (nuevo: mapa + ajustes + crónica, escritorio e iPhone) | Encontrado y corregido un fallo real: Escape no cerraba los diálogos (el listener se re-suscribía durante el propio evento) |
+| 2026-11-24 | 10 | Equilibrio de la arena con política "jugador cuidadoso" (150 partidas headless, script ad hoc) | Victorias del Distrito 12: 5,8 % → 6,7 % (mecenas diarios) → 5,0 % (solo esconderse) → **19,3 %** (emboscadas + buenas decisiones en el Capitolio) |
+| 2026-11-24 | 10 | WebP | Sprites y personajes 18,3 MB → 3,0 MB; `public/assets` total ≈ 14 MB |
+

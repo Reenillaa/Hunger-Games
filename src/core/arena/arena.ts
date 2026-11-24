@@ -648,7 +648,7 @@ function decide(state: GameState, arena: ArenaState, a: ArenaActor, rng: RngStat
     ['eat', (100 - a.hunger) / 90],
     ['rest', a.energy < 30 && !nearest ? (100 - a.energy) / 80 : 0],
     ['heal', a.bleeding > 0 ? 0.6 + a.bleeding * 0.2 : 0],
-    ['explore', 0.3],
+    ['explore', stance === 'cautious' ? 0.12 : 0.3],
     [
       'cache',
       arena.round < 3 && t.choices.plan === 'fight'
@@ -671,8 +671,25 @@ function decide(state: GameState, arena: ArenaState, a: ArenaActor, rng: RngStat
         ? 0.9 - bold + a.stress / 200
         : 0,
     ],
-    ['hide', nearest && t.skills.stealth >= 6 && theirPower > myPower ? 0.7 : 0],
+    [
+      'hide',
+      nearest && (t.skills.stealth >= 6 || stance === 'cautious') && theirPower > myPower * 0.8
+        ? 0.7 + (stance === 'cautious' ? 0.25 : 0)
+        : stance === 'cautious' && !nearest
+          ? 0.22
+          : 0,
+    ],
   ];
+  // Ambush: hidden, the prey in reach and unaware of us. The patient survive this way.
+  if (
+    nearest &&
+    a.hidden &&
+    distance(a.x, a.y, nearest.b.x, nearest.b.y) <= weaponOf(a).range &&
+    lineOfSight(a.x, a.y, nearest.b.x, nearest.b.y) &&
+    (!nearest.actor.beliefs[a.id] || arena.round - nearest.actor.beliefs[a.id]!.round > 2) &&
+    myPower > theirPower * 0.55
+  )
+    scores.push(['hunt', 1.15 + (stance === 'cautious' ? 0.2 : 0)]);
   // Alliances and betrayals.
   const ally = Object.values(arena.actors).find((o) => o.alive && o.id !== a.id && allies(a, o));
   if (
@@ -817,8 +834,19 @@ function decide(state: GameState, arena: ArenaState, a: ArenaActor, rng: RngStat
 
 // ------------------------------------------------------------------------------- director & round
 
-function director(_state: GameState, arena: ArenaState, rng: RngState): void {
+function director(state: GameState, arena: ArenaState, rng: RngState): void {
   const day = arenaDay(arena.round);
+  // Every morning the patrons pledge more for the home contestants still alive: the audience's
+  // love (popularity from the week in the Capitol) and every kill on screen pay off.
+  if (arenaHour(arena.round) === 8) {
+    let pledge = 0;
+    for (const a of teamOf(arena))
+      pledge += Math.round(contestant(state, a.id).popularity * 0.6 + a.kills * 12);
+    if (pledge > 0) {
+      arena.patronage += pledge;
+      log(arena, { round: arena.round, key: 'arena.patrons', vars: { n: String(pledge) } });
+    }
+  }
   arena.spectacle = clamp(arena.spectacle - 1.5, 0, 100);
   if (day >= 3 && arena.round % 6 === 0) arena.zone = Math.max(4, arena.zone - 1.5);
   if (arena.round > ROUNDS_PER_DAY * 7) arena.zone = Math.max(2, arena.zone - 2);

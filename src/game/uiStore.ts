@@ -10,7 +10,7 @@ export interface UiState {
   /** Citizen whose sheet is open. */
   citizenId: string | null;
   /** Side panel open from the HUD. */
-  panel: 'population' | null;
+  panel: 'population' | 'chronicle' | 'settings' | null;
   /** Arena: the contestant of the home team the player is directing. */
   arenaActorId: string | null;
 }
@@ -53,6 +53,11 @@ export class UiStore {
 
   openCitizen(id: string | null): void {
     this.set({ citizenId: id });
+  }
+
+  /** Idempotent close (Escape and the backdrop may both fire). */
+  closePanel(): void {
+    if (this.state.panel !== null) this.set({ panel: null });
   }
 
   togglePanel(panel: UiState['panel']): void {

@@ -79,6 +79,17 @@ export const EmblemIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const ChronicleIcon = () => (
+  <Icon>
+    <path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2zM6 18a2 2 0 0 1 2-2h10M10 8h5M10 11h5" />
+  </Icon>
+);
+export const GearIcon = () => (
+  <Icon>
+    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+  </Icon>
+);
+
 /* ---- resources (same grid and stroke as the HUD icons) ---- */
 export const FoodIcon = () => (
   <Icon>

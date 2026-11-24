@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { t } from '../../content/i18n.ts';
 import { CloseIcon } from '../icons/Icons.tsx';
 import styles from '../ui.module.css';
@@ -13,11 +13,15 @@ export function Dialog({
   onClose(): void;
   children: ReactNode;
 }) {
+  // Registered once: re-subscribing on every render could drop the listener in the middle of
+  // the very key event that triggered the render (another handler updating the store first).
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close.current();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <section

@@ -23,6 +23,7 @@ const PUBLIC_EVENTS = new Set([
   'arena.feast',
   'arena.victory',
   'arena.nobody',
+  'arena.patrons',
 ]);
 
 const itemName = (id: string) => t(`arena.item.${id}` as LocaleKey);

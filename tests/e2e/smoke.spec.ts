@@ -13,6 +13,10 @@ async function startNewGame(page: Page, query = '') {
   await expect(page.getByTestId('main-menu')).toBeVisible();
   await page.getByRole('button', { name: 'Nueva partida' }).click();
   await expect(page.getByTestId('top-bar')).toBeVisible();
+  // A new game opens with the prologue; the clock waits until it ends or is skipped.
+  await expect(page.getByTestId('cinematic')).toBeVisible();
+  await page.getByRole('button', { name: 'Saltar' }).click();
+  await expect(page.getByTestId('cinematic')).toHaveCount(0);
 }
 
 test('boots, starts a new game and renders the district', async ({ page }) => {
@@ -177,5 +181,27 @@ test('population list and citizen sheet with family links', async ({ page }) => 
   await list.getByRole('button').first().click();
   await expect(page.getByTestId('citizen-card')).toBeVisible();
   await expect(page.getByText('Personalidad').or(page.getByText('Atributos'))).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('settings, chronicle and the world map', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('./');
+  // Every district and the Capitol can be inspected on the map.
+  await page.getByRole('button', { name: 'Distrito 4' }).click();
+  await expect(page.getByTestId('place-card')).toContainText('Distrito 4');
+  await expect(page.getByTestId('place-card')).toContainText('solo puedes gobernar el Distrito 12');
+  await page.getByRole('button', { name: 'El Capitolio' }).click();
+  await expect(page.getByTestId('place-card')).toContainText('Capital');
+  await page.getByRole('button', { name: 'Distrito 12' }).click();
+  await page.getByRole('button', { name: 'Nueva partida' }).click();
+  await page.getByRole('button', { name: 'Saltar' }).click();
+  // Settings persist per device.
+  await page.getByRole('button', { name: 'Ajustes' }).click();
+  await page.getByTestId('settings').getByRole('button', { name: 'Grande', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('style', /--ui-zoom: 1.15/);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Crónica' }).click();
+  await expect(page.getByTestId('chronicle')).toContainText('Todavía no ha habido ninguna Cosecha');
   expect(errors).toEqual([]);
 });

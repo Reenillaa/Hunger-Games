@@ -20,6 +20,7 @@
 | Fase 9 · Régimen | ✅ 10 dilemas de distrito, atención y malestar, toque de queda (−15 % producción), represalias públicas, guarnición. |
 | Inicio | ✅ Mapa de La Concordia en pergamino (render propio con luz de velas): 12 distritos y Áurea consultables; el XII es el jugable. |
 | Interfaz | ✅ UI v2: fuentes Inter/Oswald, paneles con estilo propio, menú con el distrito de fondo, construcción con miniaturas, arena plegable con pestañas. |
+| Pulido (Fase 10) | 🟡 Hecho: WebP, ajustes (texto, movimiento, volumen, calidad), sonido procedural, crónica, prólogo, equilibrio de la arena. Pendiente: prueba en iPhone real. |
 | Móvil / PWA | 🟡 Layout adaptado (emulación). **Sin probar en iPhone real.** |
 | Pruebas | Ver `TESTING.md` (registro real de ejecuciones). |
 | Estado de partida | ✅ v8 con cadena de migraciones v1→v8. |

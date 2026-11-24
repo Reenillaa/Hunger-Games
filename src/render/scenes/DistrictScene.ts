@@ -95,7 +95,7 @@ export class DistrictScene extends Phaser.Scene {
       this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
     ).characters;
     for (const sheet of Object.values(characters)) {
-      this.load.spritesheet(`char_${sheet.name}`, `${ART_BASE}/characters/${sheet.name}.png`, {
+      this.load.spritesheet(`char_${sheet.name}`, `${ART_BASE}/characters/${sheet.name}.webp`, {
         frameWidth: sheet.frameWidth,
         frameHeight: sheet.frameHeight,
       });
@@ -110,9 +110,9 @@ export class DistrictScene extends Phaser.Scene {
       const asset = sprites.assets[kind];
       if (!asset) continue;
       const path = `${ART_BASE}/sprites/${kind}`;
-      this.load.image(kind, `${path}.png`);
-      if (asset.layers.includes('shadow')) this.load.image(`${kind}_s`, `${path}_s.png`);
-      if (asset.layers.includes('emission')) this.load.image(`${kind}_e`, `${path}_e.png`);
+      this.load.image(kind, `${path}.webp`);
+      if (asset.layers.includes('shadow')) this.load.image(`${kind}_s`, `${path}_s.webp`);
+      if (asset.layers.includes('emission')) this.load.image(`${kind}_e`, `${path}_e.webp`);
     }
     const bar = this.add.graphics().setScrollFactor(0);
     this.load.on('progress', (p: number) => {

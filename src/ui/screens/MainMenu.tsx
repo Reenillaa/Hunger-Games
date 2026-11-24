@@ -8,6 +8,8 @@ import type { Quality } from '../../platform/settings.ts';
 import { getQuality, setQuality } from '../../platform/settings.ts';
 import { isStoragePersistent } from '../../platform/storage.ts';
 import { describeSlot } from '../components/SlotList.tsx';
+import { SettingsDialog } from '../components/SettingsDialog.tsx';
+import { setAmbience } from '../../platform/audio.ts';
 import { EmblemIcon } from '../icons/Icons.tsx';
 import { useServices } from '../services.ts';
 import styles from '../ui.module.css';
@@ -41,6 +43,8 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
   const [latest, setLatest] = useState<SlotMeta | null>(null);
   const [persistent, setPersistent] = useState(true);
   const [quality, setQ] = useState<Quality>(getQuality);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  useEffect(() => setAmbience('menu'), []);
   const [selected, setSelected] = useState<PlaceId>(`d${HOME_DISTRICT_NUMBER}`);
   const viewport = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -134,6 +138,9 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
           <button type="button" className={styles.button} onClick={onLoad}>
             {t('menu.load')}
           </button>
+          <button type="button" className={styles.button} onClick={() => setSettingsOpen(true)}>
+            {t('set.open')}
+          </button>
         </div>
       </header>
 
@@ -187,6 +194,7 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
         )}
         <p className={styles.note}>{t('game.placeholderNotice')}</p>
       </footer>
+      {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
     </main>
   );
 }

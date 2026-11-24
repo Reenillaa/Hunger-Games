@@ -1,7 +1,9 @@
 import { t } from '../../content/i18n.ts';
 import type { GameSession, GameSpeed } from '../../game/session.ts';
 import {
+  ChronicleIcon,
   FastIcon,
+  GearIcon,
   FastestIcon,
   LedgerIcon,
   MenuIcon,
@@ -74,6 +76,24 @@ export function TopBar({ session, onSave, onMenu }: Props) {
           onClick={() => session.ui.togglePanel('population')}
         >
           <PeopleIcon />
+        </button>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={t('chr.open')}
+          title={t('chr.open')}
+          onClick={() => session.ui.togglePanel('chronicle')}
+        >
+          <ChronicleIcon />
+        </button>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={t('set.open')}
+          title={t('set.open')}
+          onClick={() => session.ui.togglePanel('settings')}
+        >
+          <GearIcon />
         </button>
         <button
           type="button"

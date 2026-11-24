@@ -163,3 +163,21 @@ export function buildReturnCeremony(state: Readonly<GameState>, edition: number)
   );
   return steps;
 }
+
+const MINE = { x: 17, y: 10 };
+
+/** The opening of a new game: the world in four lines, over the district itself. */
+export function buildPrologue(): CineStep[] {
+  return [
+    { kind: 'camera', cell: { x: 30, y: 30 }, zoom: 0.55, ms: 0 },
+    { kind: 'title', title: t('pro.title'), subtitle: t('pro.subtitle'), ms: 3600 },
+    { kind: 'fade', to: 'clear', ms: 800 },
+    { kind: 'line', text: t('pro.1'), ms: 4600 },
+    { kind: 'camera', cell: STAGE, zoom: 0.9, ms: 0 },
+    { kind: 'line', text: t('pro.2'), ms: 4600 },
+    { kind: 'camera', cell: MINE, zoom: 0.75, ms: 0 },
+    { kind: 'line', text: t('pro.3'), ms: 4400 },
+    { kind: 'camera', cell: PLAZA, zoom: 0.7, ms: 0 },
+    { kind: 'line', text: t('pro.4'), ms: 5200 },
+  ];
+}

@@ -2,7 +2,7 @@ import type { Command, CommandResult, DomainEvent, GameState } from '../core/ind
 import { advanceTick, applyCommand, collectingContext } from '../core/index.ts';
 import { EventBus } from './eventBus.ts';
 import { UiStore } from './uiStore.ts';
-import { buildReturnCeremony, buildSelectionCeremony } from './ceremonies.ts';
+import { buildPrologue, buildReturnCeremony, buildSelectionCeremony } from './ceremonies.ts';
 import type { CineStep } from './cinematic.ts';
 import { CinematicPlayer } from './cinematic.ts';
 
@@ -66,6 +66,11 @@ export class GameSession {
     this.changed();
   }
 
+  /** Played once when a new game starts (skippable; the clock waits for it). */
+  playPrologue(): void {
+    this.playCinematic('prologue', buildPrologue());
+  }
+
   private playSelectionCeremony(): void {
     const steps = buildSelectionCeremony(this.state);
     if (steps.length > 0) this.playCinematic('selection', steps);
@@ -108,7 +113,7 @@ export class GameSession {
 
   /** True when district time is allowed to flow. */
   isClockRunning(): boolean {
-    return this.state.phase.kind === 'district' && this.speed > 0;
+    return this.state.phase.kind === 'district' && this.speed > 0 && !this.cinematic;
   }
 
   dispatch(command: Command): CommandResult {

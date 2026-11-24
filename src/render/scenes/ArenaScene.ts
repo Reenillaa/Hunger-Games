@@ -22,6 +22,7 @@ import type { CharacterSheet } from '../district/townsfolk.ts';
 import { directionIndex } from '../district/townsfolk.ts';
 import { TILE_H, TILE_W, cellToWorld, depthOf, mapBounds, pickCell } from '../iso/projection.ts';
 import { PALETTE } from '../palette.ts';
+import { getSettings } from '../../platform/settings.ts';
 
 export const ARENA_SCENE = 'arena';
 const ARENA_BASE = 'assets/arena';
@@ -125,14 +126,14 @@ export class ArenaScene extends Phaser.Scene {
     for (const kind of PROPS) {
       const asset = sprites.assets[kind];
       if (!asset || this.textures.exists(kind)) continue;
-      this.load.image(kind, `${ART_BASE}/sprites/${kind}.png`);
+      this.load.image(kind, `${ART_BASE}/sprites/${kind}.webp`);
       if (asset.layers.includes('shadow'))
-        this.load.image(`${kind}_s`, `${ART_BASE}/sprites/${kind}_s.png`);
+        this.load.image(`${kind}_s`, `${ART_BASE}/sprites/${kind}_s.webp`);
     }
     for (const name of SHEETS) {
       const sheet = characters[name];
       if (!sheet || this.textures.exists(`char_${name}`)) continue;
-      this.load.spritesheet(`char_${name}`, `${ART_BASE}/characters/${name}.png`, {
+      this.load.spritesheet(`char_${name}`, `${ART_BASE}/characters/${name}.webp`, {
         frameWidth: sheet.frameWidth,
         frameHeight: sheet.frameHeight,
       });
@@ -453,7 +454,7 @@ export class ArenaScene extends Phaser.Scene {
     if (e.key === 'arena.hit' || e.key === 'arena.crit') {
       text = `−${e.vars?.d ?? ''}`;
       color = e.key === 'arena.crit' ? '#FF6B4A' : '#F2C14E';
-      this.cameras.main.shake(120, 0.002);
+      if (!getSettings().reducedMotion) this.cameras.main.shake(120, 0.002);
     } else if (e.key === 'arena.miss') text = t('arena.fx.miss');
     else if (e.key === 'arena.killed') {
       text = '✝';

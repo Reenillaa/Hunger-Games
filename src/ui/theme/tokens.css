@@ -49,3 +49,11 @@
     animation: none !important;
   }
 }
+
+/* The player's own choice (Ajustes) overrides the OS setting. */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  transition: none !important;
+  animation: none !important;
+}
