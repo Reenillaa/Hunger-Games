@@ -190,7 +190,9 @@ test('settings, chronicle and the world map', async ({ page }) => {
   // Every district and the Capitol can be inspected on the map.
   await page.getByRole('button', { name: 'Distrito 5' }).click();
   await expect(page.getByTestId('place-card')).toContainText('Distrito 5');
-  await expect(page.getByTestId('place-card')).toContainText('todavía no se puede gobernar');
+  // All twelve districts are playable; the Capitol can only be inspected.
+  await expect(page.getByTestId('place-card')).toContainText('Jugable');
+  await expect(page.getByTestId('place-trade')).toContainText('Cuota: Carbón');
   await page.getByRole('button', { name: 'El Capitolio' }).click();
   await expect(page.getByTestId('place-card')).toContainText('Capital');
   await expect(page.getByTestId('place-card').getByRole('button')).toHaveCount(0);
@@ -222,6 +224,23 @@ test('a new game in the coastal district from the map', async ({ page }) => {
   await page.getByRole('button', { name: 'Pausa' }).click();
   await page.getByRole('button', { name: 'Construir' }).click();
   await expect(page.getByRole('menuitem', { name: /Lonja/ })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('a new game in the grain district (generated plan and regional architecture)', async ({
+  page,
+}) => {
+  const errors = trackErrors(page);
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Distrito 9' }).click();
+  await expect(page.getByTestId('place-trade')).toContainText('Cuota: Comida');
+  await page.getByRole('button', { name: 'Nueva partida' }).click();
+  await page.getByRole('button', { name: 'Saltar' }).click();
+  await expect(page.getByTestId('top-bar')).toContainText('Distrito 9');
+  await expect(page.getByTestId('game-canvas').locator('canvas')).toBeVisible();
+  await page.getByRole('button', { name: 'Pausa' }).click();
+  await page.getByRole('button', { name: 'Construir' }).click();
+  await expect(page.getByRole('menuitem', { name: /Granja/ })).toBeVisible();
   expect(errors).toEqual([]);
 });
 

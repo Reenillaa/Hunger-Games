@@ -365,7 +365,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
 };
 
 /** Profiles whose pre-rendered terrain is still being produced: inspectable, not yet playable. */
-const TERRAIN_PENDING = new Set<number>([1, 3, 5, 6, 8, 9, 10]);
+const TERRAIN_PENDING = new Set<number>([8, 10]);
 
 export const PLAYABLE_DISTRICTS = Object.values(HOME_DISTRICTS)
   .map((d) => d.number)

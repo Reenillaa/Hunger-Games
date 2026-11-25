@@ -1662,6 +1662,804 @@
         "normal",
         "emission"
       ]
+    },
+    "town_hall__d1": {
+      "name": "town_hall__d1",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        867,
+        631
+      ],
+      "anchor": [
+        433.5,
+        458.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d9": {
+      "name": "house_shack__d9",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        573,
+        409
+      ],
+      "anchor": [
+        286.5,
+        309.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d1": {
+      "name": "house_shack__d1",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        550,
+        435
+      ],
+      "anchor": [
+        275.0,
+        335.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d1": {
+      "name": "house_terrace__d1",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        703,
+        525
+      ],
+      "anchor": [
+        351.5,
+        391.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d1": {
+      "name": "warehouse__d1",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        774,
+        561
+      ],
+      "anchor": [
+        387.0,
+        366.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d1": {
+      "name": "economato__d1",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        545,
+        403
+      ],
+      "anchor": [
+        272.5,
+        283.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d3": {
+      "name": "house_shack__d3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        550,
+        410
+      ],
+      "anchor": [
+        275.0,
+        310.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d3": {
+      "name": "house_terrace__d3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        703,
+        501
+      ],
+      "anchor": [
+        351.5,
+        367.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d3": {
+      "name": "town_hall__d3",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        867,
+        711
+      ],
+      "anchor": [
+        433.5,
+        538.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d3": {
+      "name": "warehouse__d3",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        774,
+        561
+      ],
+      "anchor": [
+        387.0,
+        366.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d3": {
+      "name": "economato__d3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        545,
+        403
+      ],
+      "anchor": [
+        272.5,
+        283.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d5": {
+      "name": "house_shack__d5",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        385
+      ],
+      "anchor": [
+        271.0,
+        285.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d5": {
+      "name": "house_terrace__d5",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        468
+      ],
+      "anchor": [
+        344.5,
+        335.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d5": {
+      "name": "town_hall__d5",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        883,
+        633
+      ],
+      "anchor": [
+        441.5,
+        460.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d5": {
+      "name": "warehouse__d5",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        841,
+        504
+      ],
+      "anchor": [
+        420.5,
+        352.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d5": {
+      "name": "economato__d5",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        561,
+        400
+      ],
+      "anchor": [
+        280.5,
+        281.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d6": {
+      "name": "house_shack__d6",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        385
+      ],
+      "anchor": [
+        271.0,
+        285.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d6": {
+      "name": "house_terrace__d6",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        468
+      ],
+      "anchor": [
+        344.5,
+        335.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d6": {
+      "name": "town_hall__d6",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        921,
+        676
+      ],
+      "anchor": [
+        460.5,
+        460.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d6": {
+      "name": "warehouse__d6",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        790,
+        547
+      ],
+      "anchor": [
+        395.0,
+        352.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d6": {
+      "name": "economato__d6",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        561,
+        400
+      ],
+      "anchor": [
+        280.5,
+        281.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d8": {
+      "name": "house_shack__d8",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        505,
+        399
+      ],
+      "anchor": [
+        252.5,
+        299.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d8": {
+      "name": "house_terrace__d8",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        653,
+        478
+      ],
+      "anchor": [
+        326.5,
+        345.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d8": {
+      "name": "town_hall__d8",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        847,
+        782
+      ],
+      "anchor": [
+        423.5,
+        609.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d8": {
+      "name": "warehouse__d8",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        755,
+        617
+      ],
+      "anchor": [
+        377.5,
+        465.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d8": {
+      "name": "economato__d8",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        524,
+        425
+      ],
+      "anchor": [
+        262.0,
+        305.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d9": {
+      "name": "house_terrace__d9",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        720,
+        492
+      ],
+      "anchor": [
+        360.0,
+        358.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d9": {
+      "name": "town_hall__d9",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        914,
+        661
+      ],
+      "anchor": [
+        457.0,
+        488.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d9": {
+      "name": "warehouse__d9",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        821,
+        571
+      ],
+      "anchor": [
+        410.5,
+        376.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d9": {
+      "name": "economato__d9",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        592,
+        423
+      ],
+      "anchor": [
+        296.0,
+        303.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d10": {
+      "name": "house_shack__d10",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        404
+      ],
+      "anchor": [
+        271.0,
+        285.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d10": {
+      "name": "house_terrace__d10",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        487
+      ],
+      "anchor": [
+        344.5,
+        335.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "town_hall__d10": {
+      "name": "town_hall__d10",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        883,
+        710
+      ],
+      "anchor": [
+        441.5,
+        537.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "warehouse__d10": {
+      "name": "warehouse__d10",
+      "kind": "building",
+      "footprint": [
+        3,
+        3
+      ],
+      "size": [
+        790,
+        547
+      ],
+      "anchor": [
+        395.0,
+        352.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "economato__d10": {
+      "name": "economato__d10",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        561,
+        400
+      ],
+      "anchor": [
+        280.5,
+        281.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
     }
   }
 }

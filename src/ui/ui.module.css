@@ -1702,6 +1702,12 @@
     display: none;
   }
 
+  /* On a phone held upright the header and the card cover the top and bottom of the sheet:
+     leave room so every seal can be scrolled clear of them. */
+  .mapViewport {
+    padding: 190px 0 250px;
+  }
+
   .mapCard {
     left: calc(var(--space-2) + var(--safe-left));
     right: calc(var(--space-2) + var(--safe-right));

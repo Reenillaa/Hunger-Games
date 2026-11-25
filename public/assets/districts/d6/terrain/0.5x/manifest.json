@@ -1,0 +1,13 @@
+{
+  "scale": 0.5,
+  "tile": 1024,
+  "cols": 4,
+  "rows": 2,
+  "width": 3368,
+  "height": 1888,
+  "originAnchor": [
+    1684.0,
+    283.89
+  ],
+  "background": "#121214"
+}
