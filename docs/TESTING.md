@@ -88,3 +88,4 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-25 | 10 | Música generativa + objetivos: `vitest` 117/117, `playwright` 20/20 | Corregido: el objetivo «construye algo nuevo» salía cumplido al empezar (contaba los huertos iniciales) |
 | 2026-11-25 | 10 | Arena Tundra: `vitest` **118/118** (nuevo: ediciones pares en la Tundra, frío y final de partida), `playwright` 20/20 | Render 608 s ×2; corregido: suelo del bosque verde en vez de nevado, juncos alrededor del lago helado (`docs/images/arena-tundra.jpg`) |
 
+| 2026-11-25 | 10 | Dilemas regionales, vestuario por distrito, ficha del mapa con cuota/oficio, 7 perfiles nuevos (bloqueados hasta tener terreno): `vitest` **126/126** (nuevo: dilemas regionales), `playwright` 20/20 | Encontrado y corregido: la ficha del mapa, al crecer, tapaba el sello del Distrito 4 en 1280×720 (barras en dos columnas, línea de oficio en una sola fila) |

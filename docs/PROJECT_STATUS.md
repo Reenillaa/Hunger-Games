@@ -2,7 +2,7 @@
 
 > Responsabilidad: **qué existe y funciona hoy**, sin adornos. Se actualiza al final de cada sesión de trabajo.
 
-**Última actualización:** 2026-11-24 · **Fases hechas:** 0–9 (jugables de punta a punta) · **Siguiente:** 10 (pulido) · **Rama:** `claude/dreamy-turing-n5zefc`
+**Última actualización:** 2026-11-25 · **Fases hechas:** 0–9 (jugables de punta a punta) · **Siguiente:** 10 (pulido) · **Rama:** `claude/dreamy-turing-n5zefc`
 
 ## Resumen
 
@@ -17,15 +17,15 @@
 | Fase 6 · Áurea | ✅ 7 días de decisiones (postura, vestuario, entrenamiento, evaluación, entrevista, plan) y 22 rivales generados. |
 | Fase 7 · Arena | ✅ Dos arenas (Bosque y Tundra helada, alternas por edición). Bosque 40×40 (río con vados, lago, colinas con cuevas, ruinas, Relicario). Rondas de 1 h, IA por utilidad con creencias, alianzas y traiciones, combate con probabilidades transparentes, supervivencia, director (fuego, perímetro, festín), cápsulas de Mecenas, órdenes e interrupciones, niebla de guerra. |
 | Fase 8 · Continuidad | ✅ Resultados por edición, caídos enterrados como ciudadanos reales (duelo familiar), Laureado con recompensa y trauma, ceremonia de regreso. |
-| Fase 9 · Régimen | ✅ 10 dilemas de distrito, atención y malestar, toque de queda (−15 % producción), represalias públicas, guarnición. |
-| Inicio | ✅ Mapa de La Concordia en pergamino: los 12 distritos y el Capitolio consultables; **jugables el 2 (montaña), el 4 (costa), el 7 (bosque), el 11 (campos) y el 12 (minas)**, cada uno con su terreno, cuota y edificios. |
+| Fase 9 · Régimen | ✅ 10 dilemas comunes + 10 regionales (temporal en el 4, incendio en el 7, plaga en el 11 y el 9, apagón en el 5…), atención y malestar, toque de queda (−15 % producción), represalias públicas, guarnición. |
+| Inicio | ✅ Mapa de La Concordia en pergamino: los 12 distritos y el Capitolio consultables; **jugables el 2, 4, 7, 11 y 12**; los otros 7 ya tienen plano, perfil, arquitectura y dilemas, a la espera de su terreno renderizado. |
 | Interfaz | ✅ UI v2: fuentes Inter/Oswald, paneles con estilo propio, menú con el distrito de fondo, construcción con miniaturas, arena plegable con pestañas. |
 | Leyes | ✅ 7 leyes del distrito con efectos diarios (máx. 3). |
 | Interfaz | ✅ UI v4 cristal (glassmorphism). |
 | Pulido (Fase 10) | 🟡 Hecho: WebP, ajustes (texto, movimiento, volumen, calidad), sonido procedural, crónica, prólogo, equilibrio de la arena. Pendiente: prueba en iPhone real. |
 | Móvil / PWA | 🟡 Layout adaptado (emulación). **Sin probar en iPhone real.** |
 | Pruebas | Ver `TESTING.md` (registro real de ejecuciones). |
-| Estado de partida | ✅ v8 con cadena de migraciones v1→v8. |
+| Estado de partida | ✅ v10 con cadena de migraciones v1→v10. |
 
 ## Métricas medidas
 

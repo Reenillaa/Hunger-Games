@@ -1273,6 +1273,192 @@ def economato__d2(m) -> None:
     K.crate((0.55, -D / 2 - 0.3, 0), m, s=0.18)
 
 
+# ----------------------------------------------------------------------------- style-driven districts
+
+STYLES = {
+    "d1": dict(walls="#EDE8DE", roof="#C9C2B4", roof_kind="flat", trim="#C9A44C", feature="dome", stack=None),
+    "d3": dict(walls="#8E969C", roof="#4E565C", roof_kind="flat", trim="#6FA0C8", feature="antenna", stack=None),
+    "d5": dict(walls="#8E4A3A", roof="#3A3A40", roof_kind="gable", trim="#D8C8A8", feature="chimney", stack="cooling"),
+    "d6": dict(walls="#5A4038", roof="#3E4652", roof_kind="gable", trim="#C8B48A", feature="canopy", stack=None),
+    "d8": dict(walls="#B07A48", roof="#4A4040", roof_kind="saw", trim="#E6DCC8", feature="clock", stack="stacks"),
+    "d9": dict(walls="#C8B89A", roof="#C8A858", roof_kind="thatch", trim="#8E6A3A", feature="silo", stack=None),
+    "d10": dict(walls="#9C3A2E", roof="#4A3A2E", roof_kind="gable", trim="#EDEAE2", feature="cupola", stack=None),
+}
+
+
+def _style_mats(st):
+    return (M.flat(f"W{st['walls']}", st["walls"], 0.8), M.flat(f"R{st['roof']}", st["roof"], 0.75),
+            M.flat(f"T{st['trim']}", st["trim"], 0.5, metallic=0.6 if st["trim"] == "#C9A44C" else 0.0))
+
+
+def _style_roof(st, W, D, z, rise, roof, trim) -> None:
+    kind = st["roof_kind"]
+    if kind == "flat":
+        K.box((W + 0.08, D + 0.08, 0.08), (0, 0, z + 0.04), roof, name="FlatRoof")
+        for side in (-1, 1):
+            K.box((W + 0.1, 0.06, 0.14), (0, side * (D / 2 + 0.02), z + 0.15), trim, name="Parapet")
+            K.box((0.06, D + 0.1, 0.14), (side * (W / 2 + 0.02), 0, z + 0.15), trim, name="Parapet")
+    elif kind == "saw":
+        n = max(2, int(W / 0.6))
+        for k in range(n):
+            x = -W / 2 + (k + 0.5) * W / n
+            K.box((W / n, D, 0.05), (x, 0, z + 0.2), roof, rot=(0, 0.6, 0), name="Saw")
+            K.box((0.03, D, 0.3), (x + W / n * 0.45, 0, z + 0.15), M.flat("SawGlass", "#9FC8E0", 0.1), name="SawGlass")
+    elif kind == "thatch":
+        gable(W, D, z, rise * 1.2, roof, overhang=0.18)
+        K.box((W + 0.4, 0.12, 0.12), (0, 0, z + rise * 1.2 + 0.03), roof, name="ThatchRidge")
+    else:
+        gable(W, D, z, rise, roof, ridge=trim)
+
+
+def _style_body(m, st, W, D, H, doors=1) -> None:
+    walls, roof, trim = _style_mats(st)
+    K.box((W, D, H), (0, 0, H / 2), walls, bevel=0.02, name="Walls")
+    K.box((W + 0.04, D + 0.04, 0.08), (0, 0, 0.04), trim, name="Base")
+    _style_roof(st, W, D, H, 0.42, roof, trim)
+    xs = [-W / 2 + (i + 0.5) * W / doors for i in range(doors)]
+    for i, x in enumerate(xs):
+        K.door(Vector((x - 0.15, -D / 2 - 0.02, 0.4)), "-y", m, w=0.3, h=0.7)
+        K.window(Vector((x + 0.22, -D / 2 - 0.02, 0.55)), "-y", m, lit=i % 2 == 0, w=0.24, h=0.32)
+    K.window(Vector((W / 2 + 0.02, 0.0, 0.55)), "+x", m, lit=True, w=0.26, h=0.32)
+    if st["roof_kind"] in ("gable", "thatch"):
+        K.box((0.2, 0.2, 0.5), (W / 2 - 0.3, 0.2, H + 0.4), walls, name="Chimney")
+    if st["feature"] == "dome":
+        # Marble villas: a pergola and potted bay trees on the roof terrace, gilded door frames.
+        wood = M.flat("Pergola", "#E9E2D2", 0.6)
+        for x in (-W / 2 + 0.2, -W / 2 + 0.75):
+            for y in (-D / 2 + 0.2, D / 2 - 0.2):
+                K.box((0.05, 0.05, 0.45), (x, y, H + 0.3), wood, name="PergolaPost")
+        for k in range(6):
+            K.box((0.62, 0.035, 0.035), (-W / 2 + 0.47, -D / 2 + 0.2 + k * (D - 0.4) / 5, H + 0.54), wood, name="PergolaSlat")
+        green = M.flat("Bay", "#4E7A3A", 0.8)
+        for x in (W / 2 - 0.25, W / 2 - 0.55):
+            K.cylinder(0.08, 0.14, (x, -D / 2 + 0.25, H + 0.15), m["stone"], verts=12, name="Pot")
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, radius=0.13, location=(x, -D / 2 + 0.25, H + 0.33))
+            bpy.context.active_object.data.materials.append(green)
+        for x in xs:
+            K.box((0.38, 0.03, 0.06), (x - 0.15, -D / 2 - 0.04, 0.78), trim, name="Lintel")
+    elif st["feature"] == "antenna":
+        # Technician housing: solar panels and a humming air unit on the roof, a lit glass band.
+        panel = M.flat("Solar", "#1E2C44", 0.25, metallic=0.4)
+        for k in range(2 if W < 2 else 4):
+            K.box((0.42, 0.55, 0.03), (-W / 2 + 0.35 + k * 0.52, 0.05, H + 0.2), panel, rot=(0.35, 0, 0), name="Solar")
+        K.box((0.3, 0.3, 0.22), (W / 2 - 0.3, D / 2 - 0.3, H + 0.19), m["iron"], name="AirUnit")
+        K.cylinder(0.1, 0.03, (W / 2 - 0.3, D / 2 - 0.3, H + 0.31), M.flat("Fan", "#2A2E32", 0.5), verts=16, name="Fan")
+        K.box((W + 0.02, 0.03, 0.08), (0, -D / 2 - 0.01, H - 0.12), M.flat("LedBand", "#9FC8E0", 0.2, emission="#CFE8FF", strength=1.2), name="LedBand")
+    if st["feature"] == "cupola":
+        K.box((W + 0.1, 0.45, 0.04), (0, -D / 2 - 0.2, 0.62), roof, rot=(0.2, 0, 0), name="Porch")
+        for x in (-W / 2 + 0.1, W / 2 - 0.1):
+            K.box((0.05, 0.05, 0.6), (x, -D / 2 - 0.38, 0.3), trim, name="PorchPost")
+
+
+def style_house(key: str, terrace: bool):
+    def build(m) -> None:
+        st = STYLES[key]
+        if terrace:
+            _style_body(m, st, 2.5, 1.2, 1.0 if st["roof_kind"] != "flat" else 1.25, doors=2)
+        else:
+            _style_body(m, st, 1.45, 1.2, 0.9 if st["roof_kind"] != "flat" else 1.1)
+    return build
+
+
+def style_town_hall(key: str):
+    def build(m) -> None:
+        st = STYLES[key]
+        walls, roof, trim = _style_mats(st)
+        W, D, H = 2.6, 2.0, 1.5
+        K.box((W + 0.2, D + 0.2, 0.15), (0, 0, 0.075), m["stone"], name="Plinth")
+        K.box((W, D, H), (0, 0, 0.15 + H / 2), walls, bevel=0.02, name="Walls")
+        _style_roof(st, W, D, 0.15 + H, 0.55, roof, trim)
+        for i in range(4):
+            K.box((1.5 - i * 0.12, 0.2, 0.05), (0, -D / 2 - 0.4 + i * 0.09, 0.025 + i * 0.05), m["stone"], name="Step")
+        K.door(Vector((0, -D / 2 - 0.02, 0.6)), "-y", m, w=0.5, h=0.9)
+        for x in (-0.85, 0.85):
+            K.window(Vector((x, -D / 2 - 0.02, 0.85)), "-y", m, lit=x < 0, w=0.3, h=0.55)
+        gold = M.flat("Gold", "#C9A44C", roughness=0.35, metallic=0.9)
+        K.box((0.5, 0.02, 0.7), (0.45, -D / 2 - 0.04, 1.25), m["cloth_red"], name="Banner")
+        K.cylinder(0.11, 0.02, (0.45, -D / 2 - 0.06, 1.4), gold, rot=(1.5708, 0, 0), verts=20, name="Emblem")
+        top = 0.15 + H
+        f = st["feature"]
+        if f == "dome":
+            for x in (-0.7, -0.25, 0.25, 0.7):
+                K.cylinder(0.08, 1.2, (x, -D / 2 - 0.25, 0.75), walls, verts=14, name="Column")
+            K.box((1.7, 0.4, 0.1), (0, -D / 2 - 0.2, 1.4), trim, name="Entablature")
+            K.cylinder(0.6, 0.35, (0, 0.1, top + 0.35), walls, verts=24, name="Drum")
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=0.6, location=(0, 0.1, top + 0.55))
+            dome = bpy.context.active_object
+            dome.scale = (1, 1, 0.8)
+            dome.data.materials.append(gold)
+        elif f == "antenna":
+            K.box((W + 0.05, 0.06, 0.35), (0, -D / 2 - 0.01, H * 0.62), M.flat("GlassBand", "#9FC8E0", 0.1, emission="#CFE8FF", strength=0.6), name="GlassBand")
+            K.cylinder(0.04, 1.8, (0.8, 0.4, top + 0.9), m["iron"], verts=8, name="Mast")
+            for z in (0.6, 1.1, 1.5):
+                K.box((0.5 - z * 0.15, 0.03, 0.03), (0.8, 0.4, top + z), m["iron"], name="Dish")
+            K.cylinder(0.05, 0.05, (0.8, 0.4, top + 1.82), M.flat("Beacon", "#FF4A3A", 0.3, emission="#FF4A3A", strength=4), verts=8, name="Beacon")
+        elif f == "chimney":
+            K.cylinder(0.22, 2.6, (0.9, 0.5, 1.3), walls, verts=16, name="Stack")
+            K.cylinder(0.26, 0.12, (0.9, 0.5, 2.6), trim, verts=16, name="StackRim")
+            K.cylinder(0.25, 0.03, (-0.6, -D / 2 - 0.03, 1.3), M.flat("ClockFace", "#E9E4D8", 0.5), rot=(1.5708, 0, 0), verts=24, name="Clock")
+        elif f == "canopy":
+            K.box((W + 0.6, 0.9, 0.05), (0, -D / 2 - 0.45, 1.05), m["roof_dark"], rot=(0.08, 0, 0), name="Canopy")
+            for x in (-1.3, -0.45, 0.45, 1.3):
+                K.cylinder(0.035, 1.0, (x, -D / 2 - 0.82, 0.5), m["iron"], verts=8, name="CanopyPost")
+            K.cylinder(0.32, 0.04, (0, -D / 2 - 0.03, 1.5), M.flat("ClockFace", "#E9E4D8", 0.5), rot=(1.5708, 0, 0), verts=28, name="Clock")
+            K.cylinder(0.35, 0.03, (0, -D / 2 - 0.02, 1.5), gold, rot=(1.5708, 0, 0), verts=28, name="ClockRim")
+        elif f == "clock":
+            K.box((0.6, 0.6, 2.0), (-0.9, 0.4, top + 1.0 - 0.6), walls, bevel=0.02, name="ClockTower")
+            K.cylinder(0.2, 0.03, (-0.9, 0.09, top + 1.0), M.flat("ClockFace", "#E9E4D8", 0.5), rot=(1.5708, 0, 0), verts=24, name="Clock")
+            gable(0.6, 0.6, top + 1.4, 0.35, roof)
+        elif f == "silo":
+            K.cylinder(0.45, 2.6, (0.9, 0.5, 1.3), M.flat("SiloStone", "#B8A88A", 0.85), verts=24, name="Silo")
+            bpy.ops.mesh.primitive_cone_add(vertices=24, radius1=0.5, radius2=0.05, depth=0.5, location=(0.9, 0.5, 2.85))
+            bpy.context.active_object.data.materials.append(roof)
+        elif f == "cupola":
+            K.box((0.5, 0.5, 0.45), (0, 0.1, top + 0.75), trim, name="Cupola")
+            bpy.ops.mesh.primitive_cone_add(vertices=4, radius1=0.42, radius2=0, depth=0.35, location=(0, 0.1, top + 1.15))
+            c = bpy.context.active_object
+            c.rotation_euler = (0, 0, math.radians(45))
+            c.data.materials.append(roof)
+            K.cylinder(0.015, 0.4, (0, 0.1, top + 1.45), m["iron"], verts=6, name="Vane")
+            K.box((0.25, 0.02, 0.08), (0.05, 0.1, top + 1.55), m["iron"], name="VaneArrow")
+    return build
+
+
+def style_warehouse(key: str):
+    def build(m) -> None:
+        st = STYLES[key]
+        walls, roof, trim = _style_mats(st)
+        W, D, H = 2.4, 2.0, 1.1
+        K.box((W, D, H), (0, 0, H / 2), walls, bevel=0.02, name="Walls")
+        _style_roof(st, W, D, H, 0.45, roof, trim)
+        K.box((0.9, 0.04, 0.75), (0, -D / 2 - 0.02, 0.38), m["planks"], name="Gate")
+        if st["stack"] == "cooling":
+            bpy.ops.mesh.primitive_cone_add(vertices=28, radius1=0.7, radius2=0.45, depth=1.8, location=(0.8, 0.9, 0.9))
+            bpy.context.active_object.data.materials.append(M.flat("Concrete", "#B8B4AC", 0.9))
+        elif st["stack"] == "stacks":
+            for x in (-0.8, 0.0):
+                K.cylinder(0.14, 2.2, (x, 0.7, 1.1), walls, verts=12, name="Stack")
+        else:
+            for i in range(4):
+                K.crate((0.9 + (i % 2) * 0.25, -D / 2 - 0.3 - (i // 2) * 0.25, 0), m, s=0.2, rot=0.3 * i)
+    return build
+
+
+def style_shop(key: str):
+    def build(m) -> None:
+        st = STYLES[key]
+        walls, roof, trim = _style_mats(st)
+        W, D, H = 1.5, 1.3, 0.9
+        K.box((W, D, H), (0, 0, H / 2), walls, bevel=0.02, name="Walls")
+        _style_roof(st, W, D, H, 0.38, roof, trim)
+        for k in range(5):
+            K.box((0.3, 0.45, 0.03), (-0.6 + k * 0.3, -D / 2 - 0.2, 0.74), trim if k % 2 else roof, rot=(0.3, 0, 0), name="Awning")
+        K.door(Vector((-0.35, -D / 2 - 0.02, 0.4)), "-y", m)
+        K.window(Vector((0.25, -D / 2 - 0.02, 0.5)), "-y", m, lit=True, w=0.5, h=0.32)
+        K.crate((0.55, -D / 2 - 0.3, 0), m, s=0.18)
+    return build
+
+
 CATALOGUE = {
     # name: (builder, footprint (w, d), canvas (w, h) px at 2x, kind)
     "house_shack": (house_shack, (2, 2), "building"),
@@ -1350,6 +1536,13 @@ CATALOGUE = {
     "economato__d2": (economato__d2, (2, 2), "building"),
     "poster_b": (poster_b, (1, 1), "prop"),
 }
+
+for _k in ("d1", "d3", "d5", "d6", "d8", "d9", "d10"):
+    CATALOGUE[f"house_shack__{_k}"] = (style_house(_k, False), (2, 2), "building")
+    CATALOGUE[f"house_terrace__{_k}"] = (style_house(_k, True), (3, 2), "building")
+    CATALOGUE[f"town_hall__{_k}"] = (style_town_hall(_k), (3, 3), "building")
+    CATALOGUE[f"warehouse__{_k}"] = (style_warehouse(_k), (3, 3), "building")
+    CATALOGUE[f"economato__{_k}"] = (style_shop(_k), (2, 2), "building")
 
 
 def frame_for(objects) -> tuple[int, int, float]:

@@ -256,6 +256,96 @@ def build_d2() -> dict:
     return pack("d2", terrain, elevation, D2_PLAZA)
 
 
+def build_generic(map_id: str, plaza, seed: int, *, hills: float = 1.0, river=None, lake=None,
+                  seams=(), crops: str = "", gardens: bool = False, paddocks: bool = False,
+                  woods: float = 0.0, yard: bool = False, roads=()) -> dict:
+    """A district plan from ingredients: hills at the back, a river, a lake, coal seams, crops,
+    formal gardens, hedged paddocks, woods, a rail yard and its own street layout."""
+    terrain, elevation = blank("g")
+    for y in range(H):
+        for x in range(W):
+            n = fbm(x, y, seed)
+            back = (3.5 + 2.0 * n - y) * hills
+            if back > 0.6:
+                terrain[y][x] = "R" if back > 1.8 else "s"
+                elevation[y][x] = round(min(3.5, 0.5 + back * 0.6), 2)
+            elif woods and fbm(x * 1.2, y * 1.2, seed + 3) > 1 - woods:
+                terrain[y][x] = "f"
+            else:
+                elevation[y][x] = round(0.4 * max(0.0, fbm(x * 0.7, y * 0.7, seed + 5) - 0.4), 2)
+    if crops:
+        for y in range(H):
+            for x in range(W):
+                if terrain[y][x] == "g" and (crops == "all" or fbm(x * 0.8, y * 0.8, seed + 7) > 0.45):
+                    terrain[y][x] = "c"
+    if gardens:
+        # Formal gardens: clipped hedge rows (f) in neat squares.
+        for y in range(6, H - 4):
+            for x in range(4, 42):
+                if terrain[y][x] in ("g", "c") and (x % 6 in (0, 1)) and (y % 6 in (0, 1, 2, 3)) and fbm(x, y, seed + 9) > 0.4:
+                    terrain[y][x] = "f"
+    if paddocks:
+        # Hedged paddocks: lines of hedge every 7 cells with gaps for gates.
+        for y in range(5, H):
+            for x in range(0, 43):
+                if terrain[y][x] == "g" and ((x % 7 == 0 and y % 5 != 2) or (y % 7 == 0 and x % 5 != 2)):
+                    terrain[y][x] = "f"
+    for (cx, cy) in seams:
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                if terrain[cy + dy][cx + dx] in ("g", "s", "c", "f"):
+                    terrain[cy + dy][cx + dx] = "v"
+    if river:
+        for y in range(H):
+            rx = river(y)
+            for x in range(W):
+                if abs(x - rx) <= 0.9 and terrain[y][x] != "R":
+                    terrain[y][x] = "w"
+                    elevation[y][x] = -0.25
+    if lake:
+        lx, ly, lr = lake
+        for y in range(H):
+            for x in range(W):
+                if math.hypot(x - lx, (y - ly) * 1.2) < lr + (fbm(x, y, seed + 11) - 0.5) * 2:
+                    terrain[y][x] = "w"
+                    elevation[y][x] = -0.25
+    railway(terrain, elevation, 6)
+    if yard:
+        # A marshalling yard: extra tracks beside the main line and a branch to the town.
+        for y in range(10, H - 2):
+            for x in (38, 40, 42):
+                if terrain[y][x] not in ("w", "R"):
+                    terrain[y][x] = "t"
+                    elevation[y][x] = 0.0
+        for x in range(30, 46):
+            if terrain[36][x] not in ("w",):
+                terrain[36][x] = "t"
+    town_core(terrain, plaza, 6.5, seed + 13)
+    flatten(elevation, plaza)
+    road = make_road(terrain, elevation)
+    for r in roads:
+        road(r)
+    return pack(map_id, terrain, elevation, plaza)
+
+
+GENERIC = {
+    "d1": dict(plaza=(21, 14, 26, 19), seed=101, hills=0.8, gardens=True, lake=(16, 36, 4.5),
+               roads=[[(26, 16), (36, 16), (43, 16)], [(23, 19), (22, 30), (24, 46)], [(21, 16), (10, 16), (4, 22)]]),
+    "d3": dict(plaza=(24, 28, 29, 33), seed=103, hills=0.7, woods=0.12, river=lambda y: 8 + 0.15 * y,
+               roads=[[(29, 30), (43, 30)], [(26, 28), (26, 8)], [(24, 31), (4, 31)], [(18, 8), (18, 46)], [(34, 8), (34, 46)], [(4, 20), (43, 20)], [(4, 40), (43, 40)]]),
+    "d5": dict(plaza=(12, 22, 17, 27), seed=105, hills=1.3, seams=[(10, 9), (22, 8), (32, 9)], lake=(32, 24, 6),
+               roads=[[(17, 24), (43, 34)], [(14, 22), (12, 12), (10, 9)], [(15, 22), (22, 12)], [(14, 27), (14, 46)]]),
+    "d6": dict(plaza=(22, 20, 27, 25), seed=107, hills=0.9, woods=0.1, yard=True,
+               roads=[[(27, 22), (43, 22)], [(24, 25), (24, 46)], [(22, 22), (6, 22), (4, 12)], [(25, 20), (25, 8)]]),
+    "d8": dict(plaza=(18, 24, 23, 29), seed=108, hills=1.0, river=lambda y: 30 + 4 * math.sin(y / 7),
+               roads=[[(23, 26), (43, 26)], [(20, 24), (20, 8)], [(18, 26), (4, 26)], [(20, 29), (20, 46)], [(8, 14), (36, 14)], [(8, 38), (36, 38)]]),
+    "d9": dict(plaza=(30, 10, 35, 15), seed=109, hills=0.4, crops="all", river=lambda y: 12 + 3 * math.sin(y / 6),
+               roads=[[(35, 12), (43, 12)], [(32, 15), (28, 30), (24, 46)], [(30, 12), (4, 20)], [(30, 30), (6, 40)]]),
+    "d10": dict(plaza=(14, 14, 19, 19), seed=110, hills=0.6, paddocks=True, river=lambda y: 36 - 0.2 * y,
+                roads=[[(19, 16), (43, 16)], [(16, 19), (18, 46)], [(14, 16), (4, 24)], [(18, 30), (40, 34)]]),
+}
+
+
 def pack(map_id: str, terrain, elevation, plaza) -> dict:
     return {
         "id": map_id,
@@ -269,7 +359,8 @@ def pack(map_id: str, terrain, elevation, plaza) -> dict:
 
 
 def main() -> None:
-    for data in (build_d11(), build_d4(), build_d7(), build_d2()):
+    generic = [build_generic(k, **v) for k, v in GENERIC.items()]
+    for data in (build_d11(), build_d4(), build_d7(), build_d2(), *generic):
         out = ROOT / f"src/content/maps/{data['id']}.json"
         out.write_text(json.dumps(data, separators=(",", ":")) + "\n", encoding="utf8")
         print(data["id"])

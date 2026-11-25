@@ -152,7 +152,11 @@ export function CapitalPanel({ session }: { session: GameSession }) {
                       aria-pressed={current(c, choice, day) === value}
                       onClick={() => choose(c, choice, value)}
                     >
-                      {t(`cap.opt.${value}` as LocaleKey)}
+                      {t(
+                        (value === 'identity'
+                          ? `cap.opt.identity.${state.meta.homeDistrictId}`
+                          : `cap.opt.${value}`) as LocaleKey,
+                      )}
                     </button>
                   ))}
                 </div>

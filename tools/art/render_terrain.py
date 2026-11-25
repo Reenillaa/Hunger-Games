@@ -119,6 +119,113 @@ MAPS["d2"] = {
         "rock": {"R": 1.0, "s": 0.75},
     },
 }
+MAPS["d1"] = {
+    "out": "public/assets/districts/d1/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#141a14",
+    "dirt_tint": "#8E7A5E", "grass_tint": "#5E9A4A", "grass_amount": 0.45,
+    "dry_tint": "#9AAE5A", "dry_amount": 0.2,
+    "layers": {
+        "dry": {"g": 0.15, "s": 0.3},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {},
+        "gravel": {"t": 1.0, "r": 0.9},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d3"] = {
+    "out": "public/assets/districts/d3/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#121418",
+    "dirt_tint": "#6E6A62", "grass_tint": "#6E8A5A", "grass_amount": 0.3,
+    "dry_tint": "#8E8E6E", "dry_amount": 0.4,
+    "layers": {
+        "dry": {"g": 0.45, "s": 0.5},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {},
+        "gravel": {"t": 1.0, "r": 1.0, "d": 0.3},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d5"] = {
+    "out": "public/assets/districts/d5/terrain",
+    "water": "w", "wet": "w", "soot": "v", "rise_back": True, "rise_left": True, "background": "#141416",
+    "dirt_tint": "#5E4E42", "grass_tint": "#5E7A48", "grass_amount": 0.3,
+    "dry_tint": "#7E7A5A", "dry_amount": 0.35,
+    "layers": {
+        "dry": {"g": 0.35, "s": 0.5},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {"v": 1.0},
+        "gravel": {"t": 1.0, "r": 0.9},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d6"] = {
+    "out": "public/assets/districts/d6/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#121214",
+    "dirt_tint": "#5A5048", "grass_tint": "#5E764A", "grass_amount": 0.3,
+    "dry_tint": "#7A7458", "dry_amount": 0.4,
+    "layers": {
+        "dry": {"g": 0.4, "s": 0.5},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {},
+        "gravel": {"t": 1.0, "r": 0.9},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d8"] = {
+    "out": "public/assets/districts/d8/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#16140f",
+    "dirt_tint": "#7A6046", "grass_tint": "#6A7E4A", "grass_amount": 0.3,
+    "dry_tint": "#9A8A5A", "dry_amount": 0.45,
+    "layers": {
+        "dry": {"g": 0.5, "s": 0.5},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {},
+        "gravel": {"t": 1.0, "r": 1.0},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d9"] = {
+    "out": "public/assets/districts/d9/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#18160e",
+    "dirt_tint": "#7A6040", "grass_tint": "#9AA04A", "grass_amount": 0.35,
+    "dry_tint": "#D8B85A", "dry_amount": 0.6,
+    "dry_saturation": 0.95, "dry_value": 0.9,
+    "layers": {
+        "dry": {"g": 0.6, "s": 0.5},
+        "field": {"c": 1.0},
+        "forest": {"f": 0.8},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {},
+        "gravel": {"t": 1.0, "r": 0.7},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d10"] = {
+    "out": "public/assets/districts/d10/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#141810",
+    "dirt_tint": "#7A6448", "grass_tint": "#7EA048", "grass_amount": 0.45,
+    "dry_tint": "#B8A85A", "dry_amount": 0.3,
+    "layers": {
+        "dry": {"g": 0.25, "s": 0.4},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6, "r": 1.0},
+        "coal": {},
+        "gravel": {"t": 1.0, "r": 0.6},
+        "cobble": {"p": 1.0, "r": 0.85},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
 MAPS["arena_tundra"] = {
     "out": "public/assets/arena_tundra/terrain",
     "water": "wW", "wet": "wW", "soot": "", "rise_back": False, "background": "#10141a",

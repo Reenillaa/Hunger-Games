@@ -42,4 +42,7 @@ export const PROP_KINDS: readonly PropKind[] = [
   'poster_b',
   'fruit_tree',
   'boat',
+  'oak_a',
+  'oak_b',
+  'birch',
 ];

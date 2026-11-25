@@ -45,6 +45,7 @@ function eligible(state: GameState, ev: DistrictEventDef): boolean {
   if (w.minAttention !== undefined && e.attention < w.minAttention) return false;
   if (w.maxMorale !== undefined && e.morale > w.maxMorale) return false;
   if (w.minUnrest !== undefined && state.regime.unrest < w.minUnrest) return false;
+  if (w.districts && !w.districts.includes(state.meta.homeDistrictId)) return false;
   if (w.needsLaureate && !livingCitizens(state.population).some((c) => c.laureate !== undefined))
     return false;
   return true;

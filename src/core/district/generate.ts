@@ -80,7 +80,31 @@ export function generateDistrict(
     });
   };
 
-  for (const l of profile.landmarks) place(l.kind, l.x, l.y);
+  // Civic buildings sit exactly where the plan says; the rest take the nearest free ground.
+  const fits = (kind: StructureKind, x: number, y: number) =>
+    cellsOf(kind, x, y).every(([cx, cy]) => {
+      const code = terrainAt(template, cx, cy);
+      const blocked = code === null || 'wRtpb'.includes(code);
+      return !blocked && (kind !== 'mine_headframe' || code !== 'r') && !occupied.has(key(cx, cy));
+    });
+  for (const l of profile.landmarks) {
+    if (l.kind === 'town_hall' || l.kind === 'stage' || fits(l.kind, l.x, l.y)) {
+      place(l.kind, l.x, l.y);
+      continue;
+    }
+    let done = false;
+    for (let r = 1; r <= 12 && !done; r++) {
+      for (let dy = -r; dy <= r && !done; dy++) {
+        for (let dx = -r; dx <= r && !done; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          if (fits(l.kind, l.x + dx, l.y + dy)) {
+            place(l.kind, l.x + dx, l.y + dy);
+            done = true;
+          }
+        }
+      }
+    }
+  }
 
   // Houses: as close to the plaza as possible, with a one-cell alley around each.
   const { plaza } = template;

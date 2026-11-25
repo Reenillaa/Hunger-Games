@@ -193,6 +193,7 @@ test('settings, chronicle and the world map', async ({ page }) => {
   await expect(page.getByTestId('place-card')).toContainText('todavía no se puede gobernar');
   await page.getByRole('button', { name: 'El Capitolio' }).click();
   await expect(page.getByTestId('place-card')).toContainText('Capital');
+  await expect(page.getByTestId('place-card').getByRole('button')).toHaveCount(0);
   await page.getByRole('button', { name: 'Distrito 12' }).click();
   await page.getByRole('button', { name: 'Nueva partida' }).click();
   await page.getByRole('button', { name: 'Saltar' }).click();
@@ -211,6 +212,7 @@ test('a new game in the coastal district from the map', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Distrito 4' }).click();
   await expect(page.getByTestId('place-card')).toContainText('Jugable');
+  await expect(page.getByTestId('place-trade')).toContainText('Cuota: Comida');
   await page.getByRole('button', { name: 'Nueva partida' }).click();
   await expect(page.getByTestId('cinematic')).toBeVisible();
   await expect(page.getByTestId('cinematic')).toContainText('Distrito 4');

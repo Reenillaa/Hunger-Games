@@ -26,6 +26,8 @@ export interface EventCondition {
   minUnrest?: number;
   needsLaureate?: boolean;
   needsInfirmary?: boolean;
+  /** Only in these home districts (regional dilemmas). */
+  districts?: string[];
 }
 
 export interface DistrictEventDef {
@@ -70,6 +72,7 @@ export const DISTRICT_EVENTS: DistrictEventDef[] = [
   {
     id: 'mine_accident',
     weight: 2,
+    when: { districts: ['d12', 'd5', 'd2'] },
     options: [
       { id: 'rescue', effects: { coal: -40, morale: 4, mood: 3 } },
       { id: 'seal', effects: { morale: -10, death: 'accident', unrest: 4 } },
@@ -145,6 +148,113 @@ export const DISTRICT_EVENTS: DistrictEventDef[] = [
     options: [
       { id: 'pay', effects: { food: -60, attention: -5 } },
       { id: 'short', effects: { food: -20, attention: 8 } },
+    ],
+  },
+  // ---- Regional dilemmas: each district has its own trade, and its own way of losing people.
+  {
+    id: 'storm_at_sea',
+    weight: 3,
+    when: { districts: ['d4'] },
+    options: [
+      { id: 'stay_in', effects: { food: -40, morale: -2 } },
+      {
+        id: 'sail',
+        effects: { chance: { p: 0.6, then: { food: 130 }, else: { death: 'accident', mood: -4 } } },
+      },
+    ],
+  },
+  {
+    id: 'forest_fire',
+    weight: 3,
+    when: { districts: ['d7'] },
+    options: [
+      { id: 'firebreak', effects: { wood: -50, mood: 2 } },
+      { id: 'evacuate', effects: { wood: -160, morale: -4 } },
+    ],
+  },
+  {
+    id: 'blight',
+    weight: 3,
+    when: { districts: ['d11', 'd9'] },
+    options: [
+      { id: 'burn', effects: { food: -80, attention: -3 } },
+      {
+        id: 'hide',
+        effects: { chance: { p: 0.5, then: {}, else: { food: -150, attention: 12 } } },
+      },
+    ],
+  },
+  {
+    id: 'recruiters',
+    weight: 3,
+    when: { districts: ['d2'] },
+    options: [
+      { id: 'volunteer', effects: { credits: 60, attention: -10, morale: -6 } },
+      { id: 'refuse', effects: { attention: 10, morale: 6 } },
+    ],
+  },
+  {
+    id: 'gala_order',
+    weight: 3,
+    when: { districts: ['d1'] },
+    options: [
+      { id: 'deliver', effects: { credits: 120, morale: -4 } },
+      { id: 'stall', effects: { attention: 8, morale: 4 } },
+    ],
+  },
+  {
+    id: 'blackout',
+    weight: 3,
+    when: { districts: ['d5'] },
+    options: [
+      { id: 'ration', effects: { morale: -6, mood: -2 } },
+      { id: 'repair', effects: { credits: -50, morale: 3 } },
+    ],
+  },
+  {
+    id: 'derailment',
+    weight: 3,
+    when: { districts: ['d6'] },
+    options: [
+      { id: 'report', effects: { attention: -6 } },
+      {
+        id: 'salvage',
+        effects: {
+          chance: { p: 0.6, then: { food: 80, credits: 40 }, else: { attention: 15 } },
+        },
+      },
+    ],
+  },
+  {
+    id: 'factory_fire',
+    weight: 3,
+    when: { districts: ['d8'] },
+    options: [
+      { id: 'rescue', effects: { credits: -40, morale: 5, mood: 2 } },
+      { id: 'save_looms', effects: { credits: 40, death: 'accident', morale: -8 } },
+    ],
+  },
+  {
+    id: 'stolen_prototype',
+    weight: 3,
+    when: { districts: ['d3'] },
+    options: [
+      { id: 'hand_over', effects: { attention: -8, morale: -6 } },
+      {
+        id: 'cover',
+        effects: {
+          chance: { p: 0.5, then: { credits: 80 }, else: { attention: 18, death: 'regime' } },
+        },
+      },
+    ],
+  },
+  {
+    id: 'cattle_fever',
+    weight: 3,
+    when: { districts: ['d10'] },
+    options: [
+      { id: 'cull', effects: { food: -90, attention: -4 } },
+      { id: 'treat', effects: { credits: -50, mood: 1 } },
     ],
   },
 ];

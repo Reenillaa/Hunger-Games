@@ -1643,12 +1643,13 @@
 
 .mapCardBars {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 14px;
 }
 
 .inkBar {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: var(--space-2);
   font-size: 12px;
@@ -3211,4 +3212,76 @@
   .objectives {
     display: none;
   }
+}
+
+/* ---------- Glass for cinematics and the arena ---------- */
+.letterboxTop,
+.letterboxBottom {
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.55));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.letterboxBottom {
+  background: linear-gradient(0deg, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.5));
+}
+
+.cinemaTitle {
+  font-family: var(--font-ui);
+  letter-spacing: -0.02em;
+}
+
+.cinemaSpeaker {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.revealCard {
+  border-radius: var(--r-l);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.revealName {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.skip {
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.arenaHead .arenaMeta .resourceMeta {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.giftItem {
+  border-radius: var(--r-s);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.06);
+  text-transform: none;
+  font-weight: 600;
+}
+
+.giftItem small {
+  color: var(--accent);
+}
+
+.giftItem:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.sheet .results,
+.results {
+  gap: 10px;
 }

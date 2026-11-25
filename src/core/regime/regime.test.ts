@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DISTRICT_EVENTS } from '../../content/districtEvents.ts';
+import { HOME_DISTRICTS } from '../../content/homeDistricts.ts';
+import { es } from '../../content/locales/es.ts';
 import {
   TICKS_PER_DAY,
   advanceTicks,
@@ -47,5 +49,29 @@ describe('the regime', () => {
       // A district without credits must always have something it can choose.
       expect(ev.options.some((o) => !(o.effects.credits && o.effects.credits < 0))).toBe(true);
     }
+  });
+
+  it('regional dilemmas only reach their own districts, and every text exists', () => {
+    const keys = es as Record<string, string>;
+    for (const ev of DISTRICT_EVENTS) {
+      expect(keys[`ev.${ev.id}.title`]).toBeTruthy();
+      for (const o of ev.options) expect(keys[`ev.${ev.id}.${o.id}.done`]).toBeTruthy();
+      for (const d of ev.when?.districts ?? []) expect(Object.keys(HOME_DISTRICTS)).toContain(d);
+    }
+    // A fishing district never hears of a mine accident; it gets storms instead.
+    const seen = new Set<string>();
+    for (let i = 0; i < 6; i++) {
+      const s = createNewGame({ seed: `sea-${i}`, homeDistrict: 'd4' });
+      for (let d = 0; d < 120; d++) {
+        advanceTicks(s, TICKS_PER_DAY);
+        if (s.regime.pending) {
+          seen.add(s.regime.pending.eventId);
+          applyCommand(s, { type: 'event/choose', option: 0 });
+        }
+      }
+    }
+    expect(seen.has('mine_accident')).toBe(false);
+    expect(seen.has('forest_fire')).toBe(false);
+    expect(seen.has('storm_at_sea')).toBe(true);
   });
 });

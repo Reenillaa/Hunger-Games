@@ -19,8 +19,18 @@ describe('playable home districts', () => {
       const s = createNewGame({ seed: `home-${profile.id}`, homeDistrict: profile.id });
       expect(s.meta.homeDistrictId).toBe(profile.id);
       expect(s.district.templateId).toBe(profile.templateId);
-      for (const l of profile.landmarks)
-        expect(s.district.structures.some((st) => st.kind === l.kind && st.x === l.x)).toBe(true);
+      // Civic buildings exactly where planned; the rest within reach of their planned spot.
+      for (const l of profile.landmarks) {
+        const exact = l.kind === 'town_hall' || l.kind === 'stage';
+        const found = s.district.structures.some(
+          (st) =>
+            st.kind === l.kind &&
+            (exact
+              ? st.x === l.x && st.y === l.y
+              : Math.abs(st.x - l.x) <= 12 && Math.abs(st.y - l.y) <= 12),
+        );
+        expect(found, `${profile.id} ${l.kind}`).toBe(true);
+      }
       const houses = s.district.structures.filter((st) => st.kind.startsWith('house'));
       expect(houses.length).toBeGreaterThan(15);
       expect(livingCitizens(s.population).length).toBeGreaterThan(60);

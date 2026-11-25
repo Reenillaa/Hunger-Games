@@ -38,7 +38,7 @@ function Bar({ label, value }: { label: string; value: number }) {
 
 /**
  * The start screen: the painted map of La Concordia. Every district and the capital can be
- * inspected; the playable one (District XII) starts or continues the game.
+ * inspected; every district is playable, the Capitol can only be inspected.
  */
 export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
   const { repository } = useServices();
@@ -161,6 +161,15 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
         <p className={styles.mapCardText}>
           {t((district ? `dist.${district.id}` : 'dist.aurea') as LocaleKey)}
         </p>
+        {playable && (
+          <p className={styles.mapCardMeta} data-testid="place-trade">
+            {t('map.trade', {
+              quota: t(`res.${playable.quotaResource}` as LocaleKey),
+              trade: t(`b.${playable.signature}` as LocaleKey),
+              heating: t(`res.${playable.heating}` as LocaleKey).toLowerCase(),
+            })}
+          </p>
+        )}
         {district && (
           <div className={styles.mapCardBars}>
             <Bar label={t('map.wealth')} value={district.wealth} />
