@@ -1,4 +1,4 @@
-/* Design tokens (ART_BIBLE.md §4 and §7). Fonts: Inter (UI) and Oswald (display), both OFL. */
+/* Design tokens (ART_BIBLE.md §4 and §7). Fonts: Inter (UI), Oswald (legacy display), Cinzel (map). */
 :root {
   --c-coal: #16161a;
   --c-soot: #2b2a2e;
@@ -36,6 +36,23 @@
   --panel-bg: linear-gradient(180deg, rgb(34 33 38 / 0.9), rgb(20 20 24 / 0.92));
   --gold-line: linear-gradient(90deg, transparent, rgb(201 164 76 / 0.7), transparent);
   --touch: 44px;
+
+  /* UI v4 "glass": translucent layers over the world, Apple-like restraint. */
+  --glass: rgb(20 20 24 / 0.6);
+  --glass-strong: rgb(16 16 20 / 0.82);
+  --glass-light: rgb(255 255 255 / 0.08);
+  --glass-border: rgb(255 255 255 / 0.14);
+  --glass-hi: inset 0 1px 0 rgb(255 255 255 / 0.14);
+  --glass-blur: blur(24px) saturate(1.6);
+  --glass-shadow: 0 12px 40px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.2);
+  --r-s: 10px;
+  --r-m: 16px;
+  --r-l: 22px;
+  --accent: #ffb547;
+  --accent-ink: #1d1407;
+  --text-2: rgb(235 235 245 / 0.62);
+  --text-3: rgb(235 235 245 / 0.38);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);

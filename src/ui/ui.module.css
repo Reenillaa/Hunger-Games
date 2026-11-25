@@ -2452,3 +2452,512 @@
   border: 1px solid rgb(201 164 76 / 0.35);
   color: #f1dcae;
 }
+
+/* =====================================================================================
+   UI v4 · GLASS — a modern, quiet layer over the world (overrides the ornamented v3 look)
+   ===================================================================================== */
+.panel {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-l);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.panel::before,
+.panel::after,
+.dialogHeader::after,
+.sheetHeader::after {
+  display: none;
+}
+
+.sheetTitle,
+.dialogTitle,
+.arenaClock,
+.mapCardTitle {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--c-ink);
+}
+
+.sheetTitle {
+  font-size: 22px;
+}
+
+.regimeLine {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+
+/* Buttons: pills with a frosted fill; primary is a warm, solid accent. */
+.button {
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-light);
+  box-shadow: var(--glass-hi);
+  font-weight: 600;
+  letter-spacing: 0;
+  transition:
+    background 0.2s var(--ease),
+    transform 0.15s var(--ease),
+    border-color 0.2s var(--ease);
+}
+
+.button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button[aria-pressed='true'] {
+  background: rgb(255 181 71 / 0.18);
+  border-color: rgb(255 181 71 / 0.55);
+  color: #ffd28c;
+}
+
+.primary,
+.primary[aria-pressed] {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--accent-ink);
+  text-shadow: none;
+  box-shadow: 0 6px 20px rgb(255 181 71 / 0.35);
+}
+
+.primary:hover:not(:disabled) {
+  background: #ffc46b;
+  border-color: transparent;
+}
+
+.segmented {
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: rgb(118 118 128 / 0.24);
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmented button {
+  border-radius: 999px;
+  border: 0 !important;
+  min-height: 32px;
+  font-weight: 600;
+  color: var(--text-2);
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.segmented button[aria-pressed='true'] {
+  background: rgb(255 255 255 / 0.9);
+  color: #111;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.25);
+}
+
+/* ---------- HUD: floating glass islands instead of a band ---------- */
+.hudTop::before {
+  display: none;
+}
+
+.crest {
+  gap: 0;
+  padding: 4px 14px 4px 4px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.crestMedal {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  box-shadow: none;
+  color: var(--accent);
+  background: rgb(255 181 71 / 0.16);
+}
+
+.crestMedal svg {
+  width: 24px;
+  height: 24px;
+  filter: none;
+}
+
+.crestRibbon {
+  margin-left: 10px;
+  padding: 0;
+  clip-path: none;
+  background: none;
+  box-shadow: none;
+  text-shadow: none;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--c-ink);
+}
+
+.datePlaque {
+  margin-top: 0;
+  padding: 6px 16px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.clockDial {
+  width: 32px;
+  height: 32px;
+}
+
+.dialDay {
+  fill: rgb(255 255 255 / 0.9);
+  stroke: none;
+}
+
+.dialNight {
+  fill: #2c3a66;
+  stroke: none;
+}
+
+.dialTick {
+  stroke: rgb(0 0 0 / 0.35);
+}
+
+.dialHand {
+  stroke: #ff6b3d;
+}
+
+.dialPin {
+  fill: #111;
+}
+
+.datePlaque .date {
+  font-family: var(--font-ui);
+  font-weight: 650;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
+}
+
+.datePlaque .countdown {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.speedDial,
+.medalRow {
+  padding: 4px;
+  gap: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.medal {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--c-ink);
+  transition:
+    background 0.2s var(--ease),
+    transform 0.15s var(--ease);
+}
+
+.medal:hover {
+  background: rgb(255 255 255 / 0.12);
+  transform: none;
+}
+
+.medal[aria-pressed='true'] {
+  background: rgb(255 255 255 / 0.92);
+  color: #111;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
+}
+
+/* Resources: one glass pill, values in tabular figures, small tinted icons. */
+.resSlots,
+.gauges {
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 4px 8px;
+}
+
+.resSlots .resource {
+  background: transparent;
+  box-shadow: none;
+  min-width: 0;
+  padding: 4px 8px 4px 4px;
+  font-weight: 650;
+}
+
+.resIcon {
+  width: 24px;
+  height: 24px;
+  background: color-mix(in srgb, var(--res-color, #999) 26%, transparent);
+  box-shadow: none;
+}
+
+.resSlots .resource svg {
+  color: var(--res-color, #ddd);
+}
+
+.resCap {
+  display: none;
+}
+
+.ring small {
+  color: var(--text-3);
+}
+
+.buildButton {
+  min-height: 52px;
+  padding: 0 22px 0 16px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  border: 0 !important;
+  box-shadow: 0 10px 30px rgb(255 181 71 / 0.4) !important;
+}
+
+/* Dialogs: a centred sheet with a big radius; on phones, a bottom sheet with a grabber. */
+.backdrop {
+  background: rgb(0 0 0 / 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s var(--ease);
+}
+
+.dialog {
+  border-radius: 28px;
+  background: var(--glass-strong);
+  animation: sheetIn 0.32s var(--ease);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@media (max-width: 600px) {
+  .backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .dialog {
+    width: 100%;
+    max-width: none;
+    border-radius: 28px 28px 0 0;
+    padding-top: 22px;
+  }
+
+  .dialog::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 38px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.3);
+    transform: translateX(-50%);
+  }
+}
+
+/* Cards and lists inside glass: subtle fills, no hard borders. */
+.member,
+.edition,
+.buildItem,
+.contestant {
+  border-radius: var(--r-m);
+  border: 1px solid rgb(255 255 255 / 0.06);
+  background: rgb(255 255 255 / 0.04);
+}
+
+.buildItem:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.09);
+  border-color: rgb(255 255 255 / 0.12);
+}
+
+.costChip,
+.traitChip {
+  background: rgb(255 255 255 / 0.08);
+  border: 0;
+  color: var(--c-ink);
+}
+
+.statBar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: none;
+}
+
+.statBar > span {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff9f43, var(--accent));
+  box-shadow: none;
+}
+
+.statLow > span {
+  background: linear-gradient(90deg, #ff453a, #ff6b5e);
+}
+
+.selectedCard {
+  border-color: rgb(255 181 71 / 0.6);
+  box-shadow: 0 0 0 3px rgb(255 181 71 / 0.18);
+}
+
+.portraitFrame {
+  background: rgb(255 255 255 / 0.12);
+  transform: none;
+  border-radius: 18px;
+  padding: 3px;
+}
+
+.dossierStamp {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--text-2);
+}
+
+.resourceMeta {
+  background: rgb(255 255 255 / 0.08);
+  border: 0;
+}
+
+.arenaAlert {
+  border-left: 0;
+  border-radius: var(--r-m);
+  background: rgb(255 181 71 / 0.14);
+}
+
+/* Toasts float like system notifications. */
+.toast {
+  border-radius: 999px;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Start screen: the parchment stays, the chrome goes glass. */
+.mapHeader,
+.mapCard {
+  border-radius: var(--r-l);
+}
+
+.mapHeader {
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.mapCard {
+  color: var(--c-ink);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.mapCardKicker {
+  font-family: var(--font-ui);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--accent);
+}
+
+.mapCardMeta,
+.mapCardText,
+.inkBar,
+.mapLocked {
+  color: var(--text-2);
+}
+
+.inkTrack {
+  background: rgb(255 255 255 / 0.12);
+  border-radius: 999px;
+}
+
+.inkTrack > span {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff9f43, var(--accent));
+}
+
+.homeTag {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.mapGameTitle {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: #fff;
+}
+
+/* Large reading surfaces need a denser glass to stay legible over the busy world. */
+.buildMenu,
+.arenaBody,
+.arenaHead,
+.capitalHead,
+.capital .contestant,
+.capital .journal,
+.sheet,
+.selection,
+.placeHint {
+  background: var(--glass-strong);
+}
+
+.buildItem .buildDesc,
+.memberInfo small,
+.slotMeta {
+  color: var(--text-2);
+}
