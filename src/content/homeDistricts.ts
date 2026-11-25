@@ -364,18 +364,12 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
   },
 };
 
-/** Profiles whose pre-rendered terrain is still being produced: inspectable, not yet playable. */
-const TERRAIN_PENDING = new Set<number>([8, 10]);
-
-export const PLAYABLE_DISTRICTS = Object.values(HOME_DISTRICTS)
-  .map((d) => d.number)
-  .filter((n) => !TERRAIN_PENDING.has(n));
+export const PLAYABLE_DISTRICTS = Object.values(HOME_DISTRICTS).map((d) => d.number);
 
 export function homeProfile(id: string): HomeDistrictProfile {
   return HOME_DISTRICTS[id as HomeDistrictProfile['id']] ?? HOME_DISTRICTS.d12;
 }
 
 export function profileByNumber(n: number): HomeDistrictProfile | undefined {
-  if (TERRAIN_PENDING.has(n)) return undefined;
   return Object.values(HOME_DISTRICTS).find((d) => d.number === n);
 }

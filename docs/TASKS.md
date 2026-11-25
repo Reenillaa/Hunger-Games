@@ -28,7 +28,7 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F10-04 | Equilibrado de la arena | ✅ | Jugando bien el Distrito 12 gana ≈ 19 % (150 partidas headless); sin órdenes ≈ 1–5 % |
 | F10-05 | Arena: árboles y ruinas en el terreno de la arena con oclusión transparente verificada en iPhone | P2 | Captura en iPhone real |
 | F10-06 | Crónica de ediciones | ✅ | `ChroniclePanel` desde la barra superior; E2E nuevo |
-| F10-08 | Distritos jugables desde el mapa | 🟡 | 10 jugables; el 8 y el 10, a la espera del render de terreno. Los 12, con plano, terreno, arquitectura y dilemas propios; tests por distrito + E2E |
+| F10-08 | Distritos jugables desde el mapa | ✅ | Los 12, con plano, terreno, arquitectura y dilemas propios; tests por distrito + E2E |
 | F10-09 | Sonido procedural (viento, mina, pájaros, grillos, multitud, campana de la Cosecha, cañonazo por cada caído) | ✅ | `src/platform/audio.ts` + `AudioDirector` |
 | F10-10 | Prólogo cinemático de nueva partida | ✅ | `buildPrologue`; el reloj espera a que termine |
 | F10-11 | Retratos v2 y expediente del ciudadano | ✅ | `Portrait.tsx`, `CitizenCard.tsx` |

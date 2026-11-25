@@ -193,6 +193,9 @@ test('settings, chronicle and the world map', async ({ page }) => {
   // All twelve districts are playable; the Capitol can only be inspected.
   await expect(page.getByTestId('place-card')).toContainText('Jugable');
   await expect(page.getByTestId('place-trade')).toContainText('Cuota: Carbón');
+  await page.getByRole('button', { name: 'Distrito 10', exact: true }).click();
+  await expect(page.getByTestId('place-card')).toContainText('Jugable');
+  await expect(page.getByTestId('place-trade')).toContainText('Cuota: Comida');
   await page.getByRole('button', { name: 'El Capitolio' }).click();
   await expect(page.getByTestId('place-card')).toContainText('Capital');
   await expect(page.getByTestId('place-card').getByRole('button')).toHaveCount(0);
