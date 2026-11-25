@@ -1,3 +1,4 @@
+import type { HomeDistrictProfile } from '../content/homeDistricts.ts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../content/i18n.ts';
 import type { GameState } from '../core/index.ts';
@@ -48,7 +49,7 @@ export function App() {
     [repository, notify],
   );
 
-  const newGame = (homeDistrict: 'd12' | 'd11' | 'd4' = 'd12') => {
+  const newGame = (homeDistrict: HomeDistrictProfile['id'] = 'd12') => {
     void requestPersistentStorage();
     start(createNewGame({ seed: randomSeed(), homeDistrict }), true);
   };

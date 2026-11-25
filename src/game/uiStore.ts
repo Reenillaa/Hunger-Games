@@ -10,7 +10,7 @@ export interface UiState {
   /** Citizen whose sheet is open. */
   citizenId: string | null;
   /** Side panel open from the HUD. */
-  panel: 'population' | 'chronicle' | 'settings' | null;
+  panel: 'population' | 'chronicle' | 'settings' | 'laws' | null;
   /** Arena: the contestant of the home team the player is directing. */
   arenaActorId: string | null;
 }

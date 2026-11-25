@@ -1,3 +1,4 @@
+import { lawById } from '../../content/laws.ts';
 import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
 import { HOME_DISTRICTS, homeProfile } from '../../content/homeDistricts.ts';
 import { decreeFactor } from '../regime/regime.ts';
@@ -126,7 +127,8 @@ export function economyHour(state: GameState, date: CalendarDate, ctx: SimContex
   const working = date.hour >= WORK_HOURS[0] && date.hour < WORK_HOURS[1];
   if (!working) return;
   const cap = storageCapacity(state);
-  const moraleFactor = (0.7 + 0.5 * (state.economy.morale / 100)) * decreeFactor(state);
+  const moraleFactor =
+    (0.7 + 0.5 * (state.economy.morale / 100)) * decreeFactor(state) * lawProduction(state);
   for (const s of state.district.structures) {
     if (s.workers === 0) continue;
     if (!s.built) {
@@ -149,7 +151,7 @@ export function economyHour(state: GameState, date: CalendarDate, ctx: SimContex
 
 export function dailyFoodNeed(state: Readonly<GameState>): number {
   const p = state.economy.population;
-  return p.adults * FOOD_PER_ADULT + p.children * FOOD_PER_CHILD;
+  return lawFoodNeed(state) * (p.adults * FOOD_PER_ADULT + p.children * FOOD_PER_CHILD);
 }
 
 /** Daily: eating, morale drift, labour allocation, and the seasonal coal quota. */
@@ -188,6 +190,17 @@ export function economyDay(state: GameState, date: CalendarDate, ctx: SimContext
     if (staffed) comfort += m * s.level;
   }
   if (comfort > 0) e.morale = Math.min(100, e.morale + comfort);
+  // Laws in force: their daily trade-offs.
+  for (const id of state.laws ?? []) {
+    const law = lawById(id);
+    if (!law) continue;
+    if (law.morale) e.morale = Math.max(0, Math.min(100, e.morale + law.morale));
+    if (law.attention) e.attention = Math.max(0, Math.min(100, e.attention + law.attention));
+    if (law.food) e.resources.food += law.food;
+    if (law.credits) e.resources.credits += law.credits;
+    if (law.unrest && state.regime)
+      state.regime.unrest = Math.max(0, Math.min(100, state.regime.unrest + law.unrest));
+  }
   if (date.dayOfSeason === 1 && date.absoluteDay > 0) settleQuota(state, date, ctx);
   allocateLabor(state);
 }
@@ -293,4 +306,14 @@ export function checkPlacement(
 
 export function sellPrice(res: Exclude<ResourceId, 'credits'>): number {
   return PRICES[res].sell;
+}
+
+/** Production multiplier of the laws in force. */
+export function lawProduction(state: Readonly<GameState>): number {
+  return (state.laws ?? []).reduce((f, id) => f * (lawById(id)?.production ?? 1), 1);
+}
+
+/** Food eaten multiplier of the laws in force (rationing). */
+export function lawFoodNeed(state: Readonly<GameState>): number {
+  return (state.laws ?? []).reduce((f, id) => f * (lawById(id)?.foodNeed ?? 1), 1);
 }

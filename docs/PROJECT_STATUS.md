@@ -18,8 +18,10 @@
 | Fase 7 · Arena | ✅ Bosque 40×40 (río con vados, lago, colinas con cuevas, ruinas, Relicario). Rondas de 1 h, IA por utilidad con creencias, alianzas y traiciones, combate con probabilidades transparentes, supervivencia, director (fuego, perímetro, festín), cápsulas de Mecenas, órdenes e interrupciones, niebla de guerra. |
 | Fase 8 · Continuidad | ✅ Resultados por edición, caídos enterrados como ciudadanos reales (duelo familiar), Laureado con recompensa y trauma, ceremonia de regreso. |
 | Fase 9 · Régimen | ✅ 10 dilemas de distrito, atención y malestar, toque de queda (−15 % producción), represalias públicas, guarnición. |
-| Inicio | ✅ Mapa de La Concordia en pergamino: los 12 distritos y el Capitolio consultables; **jugables el 4 (costa), el 11 (campos) y el 12 (minas)**, cada uno con su terreno, cuota y edificios. |
+| Inicio | ✅ Mapa de La Concordia en pergamino: los 12 distritos y el Capitolio consultables; **jugables el 2 (montaña), el 4 (costa), el 7 (bosque), el 11 (campos) y el 12 (minas)**, cada uno con su terreno, cuota y edificios. |
 | Interfaz | ✅ UI v2: fuentes Inter/Oswald, paneles con estilo propio, menú con el distrito de fondo, construcción con miniaturas, arena plegable con pestañas. |
+| Leyes | ✅ 7 leyes del distrito con efectos diarios (máx. 3). |
+| Interfaz | ✅ UI v4 cristal (glassmorphism). |
 | Pulido (Fase 10) | 🟡 Hecho: WebP, ajustes (texto, movimiento, volumen, calidad), sonido procedural, crónica, prólogo, equilibrio de la arena. Pendiente: prueba en iPhone real. |
 | Móvil / PWA | 🟡 Layout adaptado (emulación). **Sin probar en iPhone real.** |
 | Pruebas | Ver `TESTING.md` (registro real de ejecuciones). |

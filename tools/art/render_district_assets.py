@@ -1102,6 +1102,177 @@ def school__d4(m) -> None:
     _schoolhouse(m, M.flat("BoardOchre", "#C9A86A", 0.8), _slate(), M.flat("WhiteTrim", "#EDEAE2", 0.6), M.flat("Brass", "#C9A44C", 0.3, metallic=0.9))
 
 
+# ----------------------------------------------------------------------------- districts 7 and 2
+
+def _logs(W: float, D: float, H: float, mat, z0: float = 0.0) -> None:
+    """Walls of stacked round logs with crossing ends at the corners."""
+    r = 0.07
+    rows = int(H / (2 * r))
+    for i in range(rows):
+        z = z0 + r + i * 2 * r
+        for side in (-1, 1):
+            K.cylinder(r, W + 0.16, (0, side * D / 2, z), mat, rot=(0, 1.5708, 0), verts=10, name="LogX")
+            K.cylinder(r, D + 0.16, (side * W / 2, 0, z + r), mat, rot=(1.5708, 0, 0), verts=10, name="LogY")
+
+
+def _log_mat() -> bpy.types.Material:
+    return M.flat("Log", "#7A5636", roughness=0.85)
+
+
+def _shingles() -> bpy.types.Material:
+    return M.flat("Shingles", "#4A3A2E", roughness=0.9)
+
+
+def _granite() -> bpy.types.Material:
+    return M.flat("Granite", "#8E8C88", roughness=0.85)
+
+
+def house_shack__d7(m) -> None:
+    """District 7: a log cabin with a steep shingle roof, stone chimney and a chopping block."""
+    W, D, H = 1.4, 1.15, 0.8
+    K.box((W - 0.1, D - 0.1, H), (0, 0, H / 2), m["soot"], name="Core")
+    _logs(W, D, H, _log_mat())
+    gable(W, D, H + 0.05, 0.65, _shingles(), ridge=m["beam"])
+    K.box((0.26, 0.26, 1.6), (W / 2 - 0.2, 0.25, 0.8), m["stone"], name="Chimney")
+    K.door(Vector((-0.25, -D / 2 - 0.08, 0.38)), "-y", m)
+    K.window(Vector((0.3, -D / 2 - 0.08, 0.5)), "-y", m, lit=True)
+    K.cylinder(0.14, 0.22, (-W / 2 - 0.2, -D / 2 - 0.25, 0.11), _log_mat(), verts=12, name="Block")
+    K.woodpile((0.3, -D / 2 - 0.32, 0), m, length=0.5, rows=3)
+
+
+def house_terrace__d7(m) -> None:
+    """District 7: a long log house for the logging crews."""
+    W, D, H = 2.5, 1.15, 0.8
+    K.box((W - 0.1, D - 0.1, H), (0, 0, H / 2), m["soot"], name="Core")
+    _logs(W, D, H, _log_mat())
+    gable(W, D, H + 0.05, 0.6, _shingles(), ridge=m["beam"])
+    for i, x in enumerate((-0.8, 0.4)):
+        K.door(Vector((x, -D / 2 - 0.08, 0.38)), "-y", m)
+        K.window(Vector((x + 0.42, -D / 2 - 0.08, 0.5)), "-y", m, lit=i == 1)
+    K.box((0.24, 0.24, 1.5), (-0.9, 0.25, 0.75), m["stone"], name="Chimney")
+    K.woodpile((1.0, -D / 2 - 0.3, 0), m, length=0.6, rows=4)
+
+
+def town_hall__d7(m) -> None:
+    """District 7: a great timber hall with carved gables and a belfry above the plaza."""
+    W, D, H = 2.6, 2.0, 1.2
+    K.box((W + 0.2, D + 0.2, 0.15), (0, 0, 0.075), m["stone"], name="Plinth")
+    K.box((W - 0.1, D - 0.1, H), (0, 0, 0.15 + H / 2), m["soot"], name="Core")
+    _logs(W, D, H, _log_mat(), z0=0.15)
+    gable(W, D, 0.15 + H, 0.9, _shingles(), ridge=m["beam"])
+    gold = M.flat("Gold", "#C9A44C", roughness=0.35, metallic=0.9)
+    for side in (-1, 1):
+        K.box((0.06, 0.05, 1.3), (side * 0.6, -D / 2 - 0.14, 1.75), m["beam"], rot=(0, side * -0.9, 0), name="Bargeboard")
+    K.door(Vector((0, -D / 2 - 0.08, 0.6)), "-y", m, w=0.5, h=0.85)
+    for x in (-0.8, 0.8):
+        K.window(Vector((x, -D / 2 - 0.08, 0.75)), "-y", m, lit=x < 0, w=0.3, h=0.42)
+    # Belfry: a square timber tower with a pyramid roof and the regime's bell.
+    tx, ty = 0.0, 0.3
+    K.box((0.55, 0.55, 1.2), (tx, ty, 2.55), m["planks"], name="Belfry")
+    bpy.ops.mesh.primitive_cone_add(vertices=4, radius1=0.48, radius2=0, depth=0.6, location=(tx, ty, 3.45))
+    roof = bpy.context.active_object
+    roof.rotation_euler = (0, 0, math.radians(45))
+    roof.data.materials.append(_shingles())
+    K.cylinder(0.11, 0.18, (tx, ty - 0.2, 2.7), gold, verts=16, name="Bell")
+    K.box((0.5, 0.02, 0.7), (0.7, -D / 2 - 0.1, 1.0), m["cloth_red"], name="Banner")
+    K.cylinder(0.1, 0.02, (0.7, -D / 2 - 0.12, 1.15), gold, rot=(1.5708, 0, 0), verts=20, name="Emblem")
+
+
+def warehouse__d7(m) -> None:
+    """District 7: the sawmill: an open shed with a big blade, a log ramp and stacked planks."""
+    K.box((2.2, 1.6, 0.06), (0, 0.2, 0.03), m["planks"], name="Floor")
+    for x in (-1.0, 0.0, 1.0):
+        for y in (-0.5, 0.9):
+            K.box((0.1, 0.1, 1.1), (x, y, 0.55), m["beam"], name="Post")
+    gable(2.3, 1.6, 1.1, 0.45, m["roof_rust"], ridge=m["metal_rust"])
+    K.cylinder(0.35, 0.02, (0.3, 0.2, 0.55), M.flat("Blade", "#B8BEC6", 0.3, metallic=1.0), rot=(1.5708, 0, 0), verts=32, name="Saw")
+    K.box((1.2, 0.3, 0.3), (-0.3, 0.2, 0.35), m["beam"], name="Bench")
+    for i in range(5):
+        K.cylinder(0.12, 1.4, (0.0, -1.05 - (i % 2) * 0.2, 0.12 + (i // 2) * 0.22), _log_mat(), rot=(0, 1.5708, 0), verts=12, name="Log")
+    for k in range(4):
+        K.box((1.0, 0.25, 0.05), (1.0, -0.9, 0.05 + k * 0.06), m["planks_pale"], name="Plank")
+
+
+def economato__d7(m) -> None:
+    _logs(1.4, 1.15, 0.8, _log_mat())
+    K.box((1.3, 1.05, 0.8), (0, 0, 0.4), m["soot"], name="Core")
+    gable(1.4, 1.15, 0.85, 0.55, _shingles(), ridge=m["beam"])
+    K.box((1.5, 0.5, 0.05), (0, -0.82, 0.72), _shingles(), rot=(0.25, 0, 0), name="Porch")
+    for x in (-0.6, 0.6):
+        K.box((0.06, 0.06, 0.7), (x, -1.0, 0.35), m["beam"], name="PorchPost")
+    K.door(Vector((-0.25, -0.65, 0.38)), "-y", m)
+    K.window(Vector((0.3, -0.65, 0.5)), "-y", m, lit=True)
+    K.crate((0.5, -1.05, 0), m, s=0.18)
+
+
+def house_shack__d2(m) -> None:
+    """District 2: a granite house with deep windows, a slate roof and a walled yard."""
+    W, D, H = 1.4, 1.2, 0.9
+    K.box((W, D, H), (0, 0, H / 2), m["stone"], bevel=0.02, name="Granite")
+    gable(W, D, H, 0.35, _slate(), ridge=m["iron"])
+    K.door(Vector((-0.3, -D / 2 - 0.02, 0.4)), "-y", m)
+    K.window(Vector((0.25, -D / 2 - 0.02, 0.55)), "-y", m, lit=False, w=0.28, h=0.4)
+    K.window(Vector((W / 2 + 0.02, 0.0, 0.55)), "+x", m, lit=True, w=0.28, h=0.4)
+    for x in (-0.7, 0.7):
+        K.box((0.12, 0.6, 0.35), (x, -D / 2 - 0.3, 0.175), m["stone"], name="YardWall")
+    K.box((0.22, 0.22, 0.5), (0.4, 0.25, H + 0.35), m["stone"], name="Chimney")
+
+
+def house_terrace__d2(m) -> None:
+    """District 2: a stepped row of stone houses climbing the slope."""
+    for k in range(3):
+        x = -0.85 + k * 0.85
+        h = 0.85 + k * 0.18
+        K.box((0.84, 1.2, h), (x, 0, h / 2), m["stone"], bevel=0.02, name="Unit")
+        K.box((0.9, 1.3, 0.08), (x, 0, h + 0.04), _slate(), name="Roof")
+        K.box((0.9, 0.06, 0.12), (x, -0.62, h + 0.1), m["stone"], name="Parapet")
+        K.window(Vector((x + 0.15, -0.62, 0.55)), "-y", m, lit=k == 1, w=0.24, h=0.36)
+        K.door(Vector((x - 0.2, -0.62, 0.36)), "-y", m, w=0.26, h=0.65)
+
+
+def town_hall__d2(m) -> None:
+    """District 2: a granite stronghold of a hall: buttresses, battlements and tall banners."""
+    W, D, H = 2.6, 2.0, 1.7
+    g = m["stone"]
+    K.box((W + 0.3, D + 0.3, 0.2), (0, 0, 0.1), m["stone"], name="Plinth")
+    K.box((W, D, H), (0, 0, 0.2 + H / 2), g, bevel=0.02, name="Walls")
+    for k in range(7):
+        K.box((0.2, 0.2, 0.22), (-W / 2 + 0.1 + k * (W - 0.2) / 6, -D / 2, 0.2 + H + 0.11), g, name="Merlon")
+        K.box((0.2, 0.2, 0.22), (-W / 2 + 0.1 + k * (W - 0.2) / 6, D / 2, 0.2 + H + 0.11), g, name="Merlon")
+    for x in (-1.0, -0.35, 0.35, 1.0):
+        K.box((0.2, 0.35, 1.2), (x, -D / 2 - 0.15, 0.8), g, name="Buttress")
+    for i in range(4):
+        K.box((1.4 - i * 0.12, 0.2, 0.05), (0, -D / 2 - 0.45 + i * 0.09, 0.025 + i * 0.05), m["stone"], name="Step")
+    K.door(Vector((0, -D / 2 - 0.02, 0.65)), "-y", m, w=0.5, h=0.95)
+    for x in (-0.68, 0.68):
+        K.window(Vector((x, -D / 2 - 0.02, 1.2)), "-y", m, lit=x < 0, w=0.18, h=0.7)
+        K.box((0.36, 0.02, 1.2), (x, -D / 2 - 0.36, 1.25), m["cloth_red"], name="Banner")
+    gold = M.flat("Gold", "#C9A44C", roughness=0.35, metallic=0.9)
+    K.cylinder(0.2, 0.03, (0, -D / 2 - 0.04, 1.55), gold, rot=(1.5708, 0, 0), verts=28, name="Emblem")
+    K.box((0.5, 0.5, 0.9), (W / 2 - 0.25, D / 2 - 0.25, 0.2 + H + 0.45), g, name="Turret")
+
+
+def warehouse__d2(m) -> None:
+    """District 2: a stone storehouse with an arched gate and cut blocks ready for the train."""
+    W, D, H = 2.4, 2.0, 1.1
+    K.box((W, D, H), (0, 0, H / 2), m["stone"], bevel=0.02, name="Walls")
+    gable(W, D, H, 0.4, _slate(), ridge=m["iron"])
+    K.cylinder(0.4, 0.06, (0, -D / 2 - 0.02, 0.45), m["soot"], rot=(1.5708, 0, 0), verts=24, name="Arch")
+    K.box((0.8, 0.06, 0.45), (0, -D / 2 - 0.02, 0.22), m["soot"], name="Gate")
+    for i in range(6):
+        K.box((0.32, 0.22, 0.2), (0.85 + (i % 2) * 0.34, -D / 2 - 0.4, 0.1 + (i // 2) * 0.2), m["stone"], name="Block")
+
+
+def economato__d2(m) -> None:
+    W, D, H = 1.5, 1.3, 0.9
+    K.box((W, D, H), (0, 0, H / 2), m["stone"], bevel=0.02, name="Walls")
+    gable(W, D, H, 0.35, _slate(), ridge=m["iron"])
+    K.box((1.4, 0.45, 0.03), (0, -D / 2 - 0.2, 0.75), m["iron"], rot=(0.2, 0, 0), name="IronAwning")
+    K.door(Vector((-0.35, -D / 2 - 0.02, 0.4)), "-y", m)
+    K.window(Vector((0.25, -D / 2 - 0.02, 0.5)), "-y", m, lit=True, w=0.5, h=0.32)
+    K.crate((0.55, -D / 2 - 0.3, 0), m, s=0.18)
+
+
 CATALOGUE = {
     # name: (builder, footprint (w, d), canvas (w, h) px at 2x, kind)
     "house_shack": (house_shack, (2, 2), "building"),
@@ -1167,6 +1338,16 @@ CATALOGUE = {
     "infirmary__d4": (infirmary__d4, (2, 2), "building"),
     "school__d11": (school__d11, (3, 2), "building"),
     "school__d4": (school__d4, (3, 2), "building"),
+    "house_shack__d7": (house_shack__d7, (2, 2), "building"),
+    "house_terrace__d7": (house_terrace__d7, (3, 2), "building"),
+    "town_hall__d7": (town_hall__d7, (3, 3), "building"),
+    "warehouse__d7": (warehouse__d7, (3, 3), "building"),
+    "economato__d7": (economato__d7, (2, 2), "building"),
+    "house_shack__d2": (house_shack__d2, (2, 2), "building"),
+    "house_terrace__d2": (house_terrace__d2, (3, 2), "building"),
+    "town_hall__d2": (town_hall__d2, (3, 3), "building"),
+    "warehouse__d2": (warehouse__d2, (3, 3), "building"),
+    "economato__d2": (economato__d2, (2, 2), "building"),
     "poster_b": (poster_b, (1, 1), "prop"),
 }
 

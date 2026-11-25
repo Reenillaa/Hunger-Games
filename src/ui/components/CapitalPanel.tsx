@@ -80,6 +80,18 @@ export function CapitalPanel({ session }: { session: GameSession }) {
           {t(`cap.day.${day}` as LocaleKey)}
         </h2>
         <p className={styles.sheetBody}>{t(`cap.desc.${day}` as LocaleKey)}</p>
+        <ol className={styles.dayStepper} aria-label={t('cap.week')}>
+          {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+            <li
+              key={d}
+              className={d < day ? styles.stepDone : d === day ? styles.stepNow : undefined}
+              aria-current={d === day ? 'step' : undefined}
+            >
+              <span>{d < day ? '✓' : d}</span>
+              <small>{t(`cap.day.${d}` as LocaleKey)}</small>
+            </li>
+          ))}
+        </ol>
       </header>
       <div className={styles.capitalBody}>
         {mine.map((c) => (
@@ -89,7 +101,14 @@ export function CapitalPanel({ session }: { session: GameSession }) {
             data-testid="contestant"
           >
             <div className={styles.cardHead}>
-              <Portrait genes={c.genes} sex={c.sex} age={c.age} mood={c.morale} size={78} />
+              <Portrait
+                genes={c.genes}
+                sex={c.sex}
+                age={c.age}
+                mood={c.morale}
+                outfit="tribute"
+                size={84}
+              />
               <div className={styles.cardFacts}>
                 <p className={styles.slotName}>{c.name}</p>
                 <p className={styles.slotMeta}>

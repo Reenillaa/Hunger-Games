@@ -1,3 +1,4 @@
+import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
 import { useEffect, useRef, useState } from 'react';
 import { DISTRICTS, HOME_DISTRICT_NUMBER } from '../../content/districts.ts';
 import { PLAYABLE_DISTRICTS, profileByNumber } from '../../content/homeDistricts.ts';
@@ -16,7 +17,7 @@ import { useServices } from '../services.ts';
 import styles from '../ui.module.css';
 
 interface Props {
-  onNewGame(homeDistrict: 'd12' | 'd11' | 'd4'): void;
+  onNewGame(homeDistrict: HomeDistrictProfile['id']): void;
   onContinue(): void;
   onLoad(): void;
 }

@@ -111,6 +111,14 @@ export const MIGRATIONS: readonly Migration[] = [
       };
     },
   },
+  {
+    from: 8,
+    to: 9,
+    description: 'District laws.',
+    migrate(state) {
+      return { ...state, laws: [] };
+    },
+  },
 ];
 
 /** Upgrades a raw state from `fromVersion` to `targetVersion` by chaining migrations. */

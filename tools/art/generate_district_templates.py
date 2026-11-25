@@ -178,6 +178,84 @@ def build_d4() -> dict:
     return pack("d4", terrain, elevation, D4_PLAZA)
 
 
+D7_PLAZA = (21, 22, 26, 27)
+D2_PLAZA = (22, 26, 27, 31)
+
+
+def build_d7() -> dict:
+    """The timber district: a clearing in a dense forest, a log river, sawmills on its banks."""
+    terrain, elevation = blank("f")
+    px, py = (D7_PLAZA[0] + D7_PLAZA[2]) / 2, (D7_PLAZA[1] + D7_PLAZA[3]) / 2
+    for y in range(H):
+        for x in range(W):
+            n = fbm(x, y, 71)
+            # Clearings: the town's and a few logged patches with stumps (grass).
+            d = math.hypot((x - px) * 0.9, y - py)
+            if d < 10 + 3 * n or (n > 0.68 and d < 22):
+                terrain[y][x] = "g"
+            # Hills all around the valley.
+            ridge = (abs(x - 24) - 15) * 0.35 + (n - 0.5) * 2
+            if ridge > 1.4 and y < 30:
+                terrain[y][x] = "R" if ridge > 2.4 else "s"
+                elevation[y][x] = round(min(3.2, 0.6 + ridge * 0.6), 2)
+            elif terrain[y][x] in ("f", "g"):
+                elevation[y][x] = round(0.6 * max(0.0, fbm(x * 0.6, y * 0.6, 73) - 0.3) + max(0.0, (abs(x - 24) - 10) * 0.05), 2)
+    # The log river winds from the north-east to the south-west past the town.
+    for y in range(H):
+        cx = 38 - y * 0.4 + 2.0 * math.sin(y / 4.0)
+        for x in range(W):
+            if abs(x - cx) <= 1.0 and terrain[y][x] != "R":
+                terrain[y][x] = "w"
+                elevation[y][x] = -0.25
+    railway(terrain, elevation, 4)
+    town_core(terrain, D7_PLAZA, 6.5, 19)
+    flatten(elevation, D7_PLAZA)
+    road = make_road(terrain, elevation)
+    road([(26, 24), (34, 24), (43, 24)])       # station
+    road([(21, 24), (12, 20), (4, 12)])        # western logging road
+    road([(23, 27), (22, 38), (18, 46)])       # south through the woods
+    road([(24, 22), (27, 12), (30, 4)])        # north, across the river
+    return pack("d7", terrain, elevation, D7_PLAZA)
+
+
+def build_d2() -> dict:
+    """The quarry district: a stone town on terraces in a high valley, quarries cut in the cliffs."""
+    terrain, elevation = blank("g")
+    for y in range(H):
+        for x in range(W):
+            n = fbm(x, y, 81)
+            # Mountains wrap the valley on three sides; the town sits on a raised shelf.
+            wall = max((14 - x) * 0.4, (x - 36) * 0.4, (12 - y) * 0.45) + (n - 0.5) * 1.6
+            if wall > 1.2:
+                terrain[y][x] = "R"
+                elevation[y][x] = round(min(5.0, 1.8 + wall * 0.9), 2)
+            elif wall > 0.2:
+                terrain[y][x] = "s"
+                elevation[y][x] = round(0.8 + wall * 0.8, 2)
+            else:
+                # Terraces: the valley floor climbs in steps towards the north.
+                step = math.floor(max(0.0, (34 - y)) / 6) * 0.25
+                elevation[y][x] = round(step + 0.2 * n, 2)
+            if terrain[y][x] == "g" and fbm(x * 1.4, y * 1.4, 83) > 0.7:
+                terrain[y][x] = "f"
+    # A mountain stream down the east side.
+    for y in range(12, H):
+        cx = 33 + 1.5 * math.sin(y / 3.5)
+        for x in range(W):
+            if abs(x - cx) <= 0.7 and terrain[y][x] in ("g", "f", "s"):
+                terrain[y][x] = "w"
+                elevation[y][x] = -0.25
+    railway(terrain, elevation, 10)
+    town_core(terrain, D2_PLAZA, 7.0, 23)
+    flatten(elevation, D2_PLAZA, 6, 10)
+    road = make_road(terrain, elevation)
+    road([(27, 28), (36, 28), (43, 28)])       # station
+    road([(22, 27), (16, 20), (15, 12)])       # up to the western quarries
+    road([(27, 25), (28, 16), (26, 11)])       # north to the high quarry
+    road([(24, 31), (23, 40), (24, 46)])       # down the valley
+    return pack("d2", terrain, elevation, D2_PLAZA)
+
+
 def pack(map_id: str, terrain, elevation, plaza) -> dict:
     return {
         "id": map_id,
@@ -191,7 +269,7 @@ def pack(map_id: str, terrain, elevation, plaza) -> dict:
 
 
 def main() -> None:
-    for data in (build_d11(), build_d4()):
+    for data in (build_d11(), build_d4(), build_d7(), build_d2()):
         out = ROOT / f"src/content/maps/{data['id']}.json"
         out.write_text(json.dumps(data, separators=(",", ":")) + "\n", encoding="utf8")
         print(data["id"])

@@ -1,3 +1,4 @@
+import { MAX_ACTIVE_LAWS, lawById } from '../../content/laws.ts';
 import type { DomainEvent, SimContext } from '../events.ts';
 import { collectingContext } from '../events.ts';
 import type { GameState, PhaseKind } from '../state/gameState.ts';
@@ -33,6 +34,7 @@ export type Command =
   | { type: 'arena/conclude' }
   | { type: 'home/return' }
   | { type: 'event/choose'; option: number }
+  | { type: 'law/toggle'; id: string }
   | {
       type: 'capital/choose';
       contestantId: string;
@@ -375,6 +377,21 @@ const HANDLERS: HandlerMap = {
       if (state.arena) while (!state.arena.finished) advanceArena(state, 24 * 30);
       recordResults(state);
       enterPhase(state, { kind: 'aftermath', edition: state.phase.edition }, 'arenaConcluded', ctx);
+    },
+  },
+  'law/toggle': {
+    validate(state, cmd) {
+      const err = inDistrict(state);
+      if (err) return err;
+      if (!lawById(cmd.id)) return invalid('Unknown law');
+      if (!state.laws.includes(cmd.id) && state.laws.length >= MAX_ACTIVE_LAWS)
+        return { code: 'invalid', message: 'Too many laws' };
+      return null;
+    },
+    apply(state, cmd) {
+      state.laws = state.laws.includes(cmd.id)
+        ? state.laws.filter((l) => l !== cmd.id)
+        : [...state.laws, cmd.id];
     },
   },
   'event/choose': {

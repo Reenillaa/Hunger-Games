@@ -60,6 +60,7 @@ export function createNewGame(options: NewGameOptions): GameState {
     games: null,
     arena: null,
     regime: createRegime(),
+    laws: [],
     rng,
     ids: { next: 1 },
     chronicle: [],

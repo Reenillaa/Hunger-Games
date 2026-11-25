@@ -84,4 +84,5 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-24 | 10 | Arquitectura regional, biomas con relieve y 6 estructuras nuevas: `vitest` **113/113** (nuevos: catálogo sprite/huella/miniatura, taberna sube la moral), `playwright` 18/18 | Capturas `docs/images/regional-districts.jpg`, `new-structures.jpg`; terrenos d11 688 s y d4 ≈ 700 s |
 | 2026-11-24 | 10 | Planos propios d11/d4 + economato, escuela y enfermería regionales: `vitest` 113/113, `playwright` 18/18 | `docs/images/district-plans.jpg`; renders d11 671 s, d4 ≈ 700 s |
 | 2026-11-25 | 10 | UI v4 cristal: `playwright` 18/18; capturas escritorio/móvil (`docs/images/ui-v4-glass.jpg`) | Corregido: cristal demasiado transparente en paneles grandes (texto ilegible sobre el mapa) |
+| 2026-11-25 | 10 | Distritos 7 y 2, leyes y Capitolio: `vitest` **117/117** (nuevos: leyes, generación conectada del 7 y del 2), `playwright` **20/20** (nuevo: leyes) | `docs/images/districts-7-2-capitol.jpg`; terrenos d7 997 s, d2 ≈ 1000 s. Corregido: granito del 2 renderizado como estuco blanco (se usa la textura de sillería) |
 

@@ -509,7 +509,8 @@ export const es = {
   'map.wealth': 'Riqueza',
   'map.academies': 'Academias',
   'map.industry': 'Industria: {industry}',
-  'map.locked': 'Este distrito todavía no se puede gobernar. Prueba el 4, el 11 o el 12.',
+  'map.locked':
+    'Este distrito todavía no se puede gobernar. Prueba el 2, el 4, el 7, el 11 o el 12.',
   'map.playable': 'Jugable',
   'map.soon': 'Próximamente',
   'map.play': 'Nueva partida',
@@ -585,6 +586,33 @@ export const es = {
   'bd.market': 'Trueque y puestos: algunos créditos cada día.',
   'b.well': 'Pozo',
   'bd.well': 'Agua limpia y un sitio donde hablar. Un poco de moral.',
+  'pro.3.d7':
+    'Tú gobiernas el Distrito 7: pinos hasta donde alcanza la vista, el río lleno de troncos y hachas que nunca descansan.',
+  'pro.3.d2':
+    'Tú gobiernas el Distrito 2: piedra, terrazas y canteras. El Capitolio confía en vosotros… y os vigila igual.',
+  'law.open': 'Leyes',
+  'law.title': 'Leyes del distrito',
+  'law.intro': '{n} de {max} leyes en vigor. Cada una se nota cada día.',
+  'law.fx.production': 'Producción',
+  'law.fx.foodNeed': 'Consumo de comida',
+  'law.fx.day': 'día',
+  'law.fx.unrest': 'Malestar',
+  'law.long_shifts': 'Jornada larga',
+  'law.long_shifts.desc': 'Dos horas más en cada turno. Sale más de todo… y se nota en las caras.',
+  'law.rationing': 'Racionamiento',
+  'law.rationing.desc': 'Porciones más pequeñas para que la despensa dure.',
+  'law.grain_vouchers': 'Vales de grano',
+  'law.grain_vouchers.desc':
+    'El Capitolio entrega grano extra a cambio de más papeletas de los jóvenes en la Cosecha. El pan se paga con miedo.',
+  'law.black_market': 'Tolerar el mercado negro',
+  'law.black_market.desc': 'Los Custodios miran hacia otro lado… mientras no les mires tú a ellos.',
+  'law.assemblies': 'Asambleas vecinales',
+  'law.assemblies.desc': 'Reuniones en la plaza para repartir el trabajo y las quejas.',
+  'law.own_curfew': 'Toque de queda propio',
+  'law.own_curfew.desc': 'Mejor imponerlo nosotros que esperar a que lo imponga el Capitolio.',
+  'law.schooling': 'Escuela obligatoria',
+  'law.schooling.desc': 'Los niños aprenden en vez de cargar sacos.',
+  'cap.week': 'La semana en el Capitolio',
 } as const;
 
 export type LocaleKey = keyof typeof es;

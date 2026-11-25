@@ -222,3 +222,17 @@ test('a new game in the coastal district from the map', async ({ page }) => {
   await expect(page.getByRole('menuitem', { name: /Lonja/ })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('district laws are switches with visible trade-offs', async ({ page }) => {
+  const errors = trackErrors(page);
+  await startNewGame(page);
+  await page.getByRole('button', { name: 'Pausa' }).click();
+  await page.getByRole('button', { name: 'Leyes' }).click();
+  const laws = page.getByTestId('laws');
+  const shifts = laws.getByRole('switch', { name: 'Jornada larga' });
+  await expect(shifts).toHaveAttribute('aria-checked', 'false');
+  await shifts.click();
+  await expect(shifts).toHaveAttribute('aria-checked', 'true');
+  await expect(laws).toContainText('Producción +15 %');
+  expect(errors).toEqual([]);
+});

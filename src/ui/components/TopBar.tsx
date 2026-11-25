@@ -3,6 +3,7 @@ import { t } from '../../content/i18n.ts';
 import type { GameSession, GameSpeed } from '../../game/session.ts';
 import {
   ChronicleIcon,
+  LawIcon,
   FastIcon,
   GearIcon,
   FastestIcon,
@@ -120,6 +121,7 @@ export function TopBar({ session, onSave, onMenu }: Props) {
               icon: <ChronicleIcon />,
               on: () => session.ui.togglePanel('chronicle'),
             },
+            { label: t('law.open'), icon: <LawIcon />, on: () => session.ui.togglePanel('laws') },
             { label: t('hud.save'), icon: <LedgerIcon />, on: onSave },
             {
               label: t('set.open'),

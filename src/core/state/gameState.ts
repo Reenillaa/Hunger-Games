@@ -8,7 +8,7 @@ import type { RegimeState } from '../regime/regime.ts';
 import type { RngState, RngStreamId } from '../rng/rng.ts';
 
 /** Bumped whenever the shape of GameState changes; saves migrate across versions. */
-export const STATE_SCHEMA_VERSION = 8;
+export const STATE_SCHEMA_VERSION = 9;
 
 export const PHASE_KINDS = ['district', 'selection', 'capital', 'arena', 'aftermath'] as const;
 export type PhaseKind = (typeof PHASE_KINDS)[number];
@@ -63,6 +63,8 @@ export interface GameState {
   arena: ArenaState | null;
   /** The regime's grip: dilemmas, decrees, reprisals and unrest (v8). */
   regime: RegimeState;
+  /** District laws in force (v9). */
+  laws: string[];
   rng: Record<RngStreamId, RngState>;
   ids: { next: number };
   chronicle: ChronicleEntry[];

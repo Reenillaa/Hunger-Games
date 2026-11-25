@@ -89,6 +89,36 @@ MAPS["d4"] = {
         "rock": {"R": 1.0, "s": 0.55},
     },
 }
+MAPS["d7"] = {
+    "out": "public/assets/districts/d7/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#0f150e",
+    "dirt_tint": "#5E4A36", "grass_tint": "#4E7A36", "grass_amount": 0.35,
+    "dry_tint": "#7A6A3A", "dry_amount": 0.3,
+    "layers": {
+        "dry": {"g": 0.25, "s": 0.4},
+        "forest": {"f": 1.0},
+        "dirt": {"d": 0.8, "w": 0.9, "b": 0.9, "p": 0.6},
+        "coal": {},
+        "gravel": {"t": 1.0},
+        "cobble": {"p": 1.0},
+        "rock": {"R": 1.0, "s": 0.55},
+    },
+}
+MAPS["d2"] = {
+    "out": "public/assets/districts/d2/terrain",
+    "water": "w", "wet": "w", "soot": "", "rise_back": True, "rise_left": True, "background": "#14161a",
+    "dirt_tint": "#7A7468", "grass_tint": "#6E8A4E", "grass_amount": 0.3,
+    "dry_tint": "#8E8A6A", "dry_amount": 0.35,
+    "layers": {
+        "dry": {"g": 0.45, "s": 0.5},
+        "forest": {"f": 0.8},
+        "dirt": {"d": 0.5, "w": 0.8, "b": 0.9, "p": 0.6},
+        "coal": {},
+        "gravel": {"t": 1.0, "d": 0.45},
+        "cobble": {"p": 1.0},
+        "rock": {"R": 1.0, "s": 0.75},
+    },
+}
 CFG = MAPS[MAP]
 TEMPLATE = json.loads((ROOT / f"src/content/maps/{MAP}.json").read_text(encoding="utf8"))
 W, H = TEMPLATE["width"], TEMPLATE["height"]

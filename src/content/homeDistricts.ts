@@ -5,7 +5,7 @@ import type { PropKind, ResourceId, StructureKind } from '../core/district/templ
  * starting stock and dressing; everything else (plaza, town hall, Cosecha, games) is shared.
  */
 export interface HomeDistrictProfile {
-  id: 'd12' | 'd11' | 'd4';
+  id: 'd12' | 'd11' | 'd4' | 'd7' | 'd2';
   number: number;
   templateId: string;
   /** Where the pre-rendered terrain lives (chunks, manifest, heights). */
@@ -128,6 +128,64 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     ],
     showcase: { x: 12, y: 20 },
     station: { x: 42, y: 20 },
+  },
+  d7: {
+    id: 'd7',
+    number: 7,
+    templateId: 'd7',
+    terrainBase: 'assets/districts/d7/terrain',
+    quotaResource: 'wood',
+    baseQuota: 230,
+    signature: 'lumber_camp',
+    heating: 'wood',
+    landmarks: [
+      ...civic({ x0: 21, y0: 22 }),
+      { kind: 'warehouse', x: 30, y: 26 },
+      { kind: 'economato', x: 17, y: 25 },
+      { kind: 'lumber_camp', x: 14, y: 13 },
+      { kind: 'lumber_camp', x: 33, y: 33 },
+      { kind: 'garden', x: 12, y: 24 },
+      { kind: 'quarry', x: 4, y: 20 },
+    ],
+    houses: { house_terrace: 8, house_shack: 14 },
+    startResources: { food: 170, wood: 220, stone: 40, coal: 10, credits: 90 },
+    trees: ['pine_a', 'pine_b', 'pine_c', 'pine_a'],
+    clutter: [
+      ['supplies', 29, 30],
+      ['supplies', 16, 15],
+      ['supplies', 35, 31],
+    ],
+    showcase: { x: 30, y: 30 },
+    station: { x: 42, y: 24 },
+  },
+  d2: {
+    id: 'd2',
+    number: 2,
+    templateId: 'd2',
+    terrainBase: 'assets/districts/d2/terrain',
+    quotaResource: 'stone',
+    baseQuota: 200,
+    signature: 'quarry',
+    heating: 'coal',
+    landmarks: [
+      ...civic({ x0: 22, y0: 26 }),
+      { kind: 'warehouse', x: 29, y: 30 },
+      { kind: 'economato', x: 17, y: 28 },
+      { kind: 'quarry', x: 13, y: 14 },
+      { kind: 'quarry', x: 30, y: 13 },
+      { kind: 'garden', x: 17, y: 38 },
+      { kind: 'lumber_camp', x: 16, y: 34 },
+    ],
+    houses: { house_terrace: 10, house_shack: 11 },
+    startResources: { food: 170, wood: 100, stone: 140, coal: 40, credits: 130 },
+    trees: ['pine_b', 'pine_c'],
+    clutter: [
+      ['supplies', 15, 17],
+      ['supplies', 28, 34],
+      ['supplies', 32, 16],
+    ],
+    showcase: { x: 14, y: 15 },
+    station: { x: 42, y: 28 },
   },
 };
 
