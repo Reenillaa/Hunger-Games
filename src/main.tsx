@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import type { MountRenderer } from './game/renderer.ts';
 import { SaveRepository } from './persistence/saveRepository.ts';
 import { App } from './ui/App.tsx';
-import { installAudioUnlock, setVolume } from './platform/audio.ts';
+import { installAudioUnlock, setMusicEnabled, setVolume } from './platform/audio.ts';
 import { applySettingsToDocument, getSettings, onSettingsChange } from './platform/settings.ts';
 import type { AppServices } from './ui/services.ts';
 import { ServicesContext } from './ui/services.ts';
@@ -26,7 +26,11 @@ async function boot(): Promise<void> {
   installAudioUnlock();
   const settings = getSettings();
   setVolume(settings.volume, settings.muted);
-  onSettingsChange((s) => setVolume(s.volume, s.muted));
+  setMusicEnabled(settings.music);
+  onSettingsChange((s) => {
+    setVolume(s.volume, s.muted);
+    setMusicEnabled(s.music);
+  });
   const repository = await SaveRepository.open().catch((error: unknown) => {
     console.warn('Saving disabled:', error);
     return null;

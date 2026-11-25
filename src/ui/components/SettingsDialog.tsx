@@ -65,6 +65,21 @@ export function SettingsDialog({ onClose }: { onClose(): void }) {
           </div>
         </div>
         <div className={styles.settingRow}>
+          <span>{t('set.music')}</span>
+          <div className={styles.segmented}>
+            {[true, false].map((v) => (
+              <button
+                key={String(v)}
+                type="button"
+                aria-pressed={s.music === v}
+                onClick={() => updateSettings({ music: v })}
+              >
+                {t(v ? 'set.music.on' : 'set.music.off')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className={styles.settingRow}>
           <span>
             {t('set.volume')} · {s.muted ? t('set.muted') : `${Math.round(s.volume * 100)} %`}
           </span>

@@ -8,6 +8,7 @@ export interface Settings {
   reducedMotion: boolean;
   volume: number;
   muted: boolean;
+  music: boolean;
 }
 
 const KEY = 'diezmo.settings';
@@ -28,6 +29,7 @@ const DEFAULTS = (): Settings => ({
   reducedMotion: osReducedMotion(),
   volume: 0.6,
   muted: false,
+  music: true,
 });
 
 let cache: Settings | null = null;

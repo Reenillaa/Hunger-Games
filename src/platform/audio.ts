@@ -214,3 +214,154 @@ export function cue(kind: 'click' | 'bell' | 'boom'): void {
     src.stop(t + 2.3);
   }
 }
+
+// ------------------------------------------------------------------------------- music
+
+export type Score = 'menu' | 'district' | 'capital' | 'arena' | 'none';
+
+interface ScoreDef {
+  /** Scale degrees (semitones from the root) the melody walks on. */
+  scale: number[];
+  root: number;
+  /** Chord roots (degrees of the scale) cycled every bar. */
+  chords: number[];
+  bpm: number;
+  pad: OscillatorType;
+  lead: OscillatorType;
+  pulse: boolean;
+  bright: number;
+}
+
+const SCORES: Record<Exclude<Score, 'none'>, ScoreDef> = {
+  menu: {
+    scale: [0, 3, 5, 7, 10],
+    root: 45,
+    chords: [0, 3, 2, 4],
+    bpm: 54,
+    pad: 'triangle',
+    lead: 'sine',
+    pulse: false,
+    bright: 900,
+  },
+  district: {
+    scale: [0, 2, 3, 7, 8],
+    root: 48,
+    chords: [0, 4, 3, 2],
+    bpm: 66,
+    pad: 'triangle',
+    lead: 'triangle',
+    pulse: false,
+    bright: 1200,
+  },
+  capital: {
+    scale: [0, 2, 4, 7, 9],
+    root: 50,
+    chords: [0, 3, 4, 0],
+    bpm: 88,
+    pad: 'sawtooth',
+    lead: 'square',
+    pulse: true,
+    bright: 2200,
+  },
+  arena: {
+    scale: [0, 1, 3, 6, 7],
+    root: 41,
+    chords: [0, 0, 1, 3],
+    bpm: 96,
+    pad: 'sawtooth',
+    lead: 'sine',
+    pulse: true,
+    bright: 700,
+  },
+};
+
+let musicGain: GainNode | null = null;
+let musicTimer: ReturnType<typeof setInterval> | null = null;
+let musicOn = true;
+let currentScore: Score = 'none';
+
+const freq = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
+
+function note(
+  c: AudioContext,
+  out: AudioNode,
+  midi: number,
+  t: number,
+  dur: number,
+  type: OscillatorType,
+  gain: number,
+  cutoff: number,
+): void {
+  const osc = c.createOscillator();
+  const g = c.createGain();
+  const f = c.createBiquadFilter();
+  osc.type = type;
+  osc.frequency.value = freq(midi);
+  f.type = 'lowpass';
+  f.frequency.value = cutoff;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(gain, t + Math.min(0.4, dur * 0.3));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(f).connect(g).connect(out);
+  osc.start(t);
+  osc.stop(t + dur + 0.05);
+}
+
+/** Generative score: a slow pad on the chord of the bar, a sparse melody, an optional pulse. */
+export function setScore(score: Score): void {
+  if (score === currentScore) return;
+  currentScore = score;
+  if (musicTimer) clearInterval(musicTimer);
+  musicTimer = null;
+  const c = context();
+  if (!c || !master) return;
+  if (!musicGain) {
+    musicGain = c.createGain();
+    musicGain.gain.value = musicOn ? 0.35 : 0;
+    musicGain.connect(master);
+  }
+  if (score === 'none') return;
+  const def = SCORES[score];
+  const beat = 60 / def.bpm;
+  let step = 0;
+  let melody = 2;
+  let next = c.currentTime + 0.3;
+  const tick = () => {
+    if (!musicGain || c.state !== 'running') return;
+    while (next < c.currentTime + 1.2) {
+      const bar = Math.floor(step / 8);
+      const chordDeg = def.chords[bar % def.chords.length]!;
+      const chordRoot = def.root + def.scale[chordDeg % def.scale.length]!;
+      if (step % 8 === 0) {
+        for (const iv of [0, 7, 12, def.scale[2]! + 12])
+          note(c, musicGain, chordRoot + iv - 12, next, beat * 8.5, def.pad, 0.05, def.bright);
+      }
+      // Sparse melody: a random walk on the scale, resting often.
+      if (Math.random() < (score === 'arena' ? 0.35 : 0.45) && step % 2 === 0) {
+        melody = Math.max(0, Math.min(9, melody + Math.floor(Math.random() * 3) - 1));
+        const octave = Math.floor(melody / def.scale.length);
+        const midi = def.root + 12 + octave * 12 + def.scale[melody % def.scale.length]!;
+        note(
+          c,
+          musicGain,
+          midi,
+          next,
+          beat * (1.5 + Math.random() * 2),
+          def.lead,
+          0.045,
+          def.bright * 1.5,
+        );
+      }
+      if (def.pulse && step % 2 === 0)
+        note(c, musicGain, def.root - 12, next, beat * 0.4, 'sine', 0.08, 300);
+      step += 1;
+      next += beat / 2;
+    }
+  };
+  musicTimer = setInterval(tick, 250);
+}
+
+export function setMusicEnabled(on: boolean): void {
+  musicOn = on;
+  if (musicGain && ctx) musicGain.gain.setTargetAtTime(on ? 0.35 : 0, ctx.currentTime, 0.4);
+}

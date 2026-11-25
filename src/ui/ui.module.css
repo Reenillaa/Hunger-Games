@@ -3121,3 +3121,94 @@
     display: none;
   }
 }
+
+/* ---------- Objectives ---------- */
+.objectives {
+  align-self: flex-start;
+  width: min(280px, calc(100vw - 32px));
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.objHead {
+  all: unset;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.objCount {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+}
+
+.objList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.objList li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+  animation: fadeIn 0.3s var(--ease);
+}
+
+.objCheck {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid rgb(255 255 255 / 0.35);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.objDone .objCheck {
+  background: #34c759;
+  border-color: #34c759;
+  color: #fff;
+}
+
+.objDone .objText {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+
+.objText {
+  display: grid;
+  gap: 4px;
+}
+
+.objBar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  overflow: hidden;
+}
+
+.objBar > i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.5s var(--ease);
+}
+
+@media (max-width: 700px), (max-height: 500px) {
+  .objectives {
+    display: none;
+  }
+}

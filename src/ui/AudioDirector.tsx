@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { arenaHour, dateFromTick } from '../core/index.ts';
 import type { GameSession } from '../game/session.ts';
 import type { Ambience } from '../platform/audio.ts';
-import { cue, setAmbience } from '../platform/audio.ts';
+import { cue, setAmbience, setScore } from '../platform/audio.ts';
 import { useSession } from './useSession.ts';
 
 const night = (h: number) => h < 6 || h >= 20;
@@ -21,7 +21,15 @@ export function AudioDirector({ session }: { session: GameSession }) {
     bed = night(arenaHour(state.arena.round)) ? 'arena-night' : 'arena-day';
 
   useEffect(() => setAmbience(bed), [bed]);
-  useEffect(() => () => setAmbience('none'), []);
+  const score = phase === 'capital' ? 'capital' : phase === 'arena' ? 'arena' : 'district';
+  useEffect(() => setScore(score), [score]);
+  useEffect(
+    () => () => {
+      setAmbience('none');
+      setScore('none');
+    },
+    [],
+  );
   useEffect(
     () => session.events.on('phase/changed', (e) => e.to === 'selection' && cue('bell')),
     [session],

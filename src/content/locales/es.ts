@@ -613,6 +613,15 @@ export const es = {
   'law.schooling': 'Escuela obligatoria',
   'law.schooling.desc': 'Los niños aprenden en vez de cargar sacos.',
   'cap.week': 'La semana en el Capitolio',
+  'set.music': 'Música',
+  'set.music.on': 'Activada',
+  'set.music.off': 'Desactivada',
+  'obj.title': 'Objetivos',
+  'obj.quota': 'Reúne {n} de {res} para la cuota',
+  'obj.food': 'Ten comida para 7 días',
+  'obj.morale': 'Sube la moral por encima de 55',
+  'obj.build': 'Construye algo nuevo para el distrito',
+  'obj.laws': 'Aprueba tu primera ley',
 } as const;
 
 export type LocaleKey = keyof typeof es;

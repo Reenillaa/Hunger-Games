@@ -13,6 +13,7 @@ import { ArenaPanel } from '../components/ArenaPanel.tsx';
 import { EventDialog } from '../components/EventDialog.tsx';
 import { ChroniclePanel } from '../components/ChroniclePanel.tsx';
 import { LawsPanel } from '../components/LawsPanel.tsx';
+import { ObjectivesCard } from '../components/ObjectivesCard.tsx';
 import { SettingsDialog } from '../components/SettingsDialog.tsx';
 import { AudioDirector } from '../AudioDirector.tsx';
 import { useUi } from '../useUi.ts';
@@ -75,6 +76,7 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
       <div className={styles.overlay}>
         <TopBar session={session} onSave={() => setSaveOpen(true)} onMenu={onExit} />
         <ResourceBar session={session} />
+        <ObjectivesCard session={session} />
         <BuildMenu session={session} />
         <SelectionPanel session={session} />
         <PhaseSheet session={session} />
