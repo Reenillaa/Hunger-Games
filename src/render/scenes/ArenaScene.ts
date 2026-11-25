@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import type { ArenaActor, ArenaLog, ArenaState, GameState } from '../../core/index.ts';
 import {
   ARENA_SIZE,
+  setArenaMap,
   arenaCodeAt,
   arenaHour,
   visibleActors,
@@ -25,7 +26,9 @@ import { PALETTE } from '../palette.ts';
 import { getSettings } from '../../platform/settings.ts';
 
 export const ARENA_SCENE = 'arena';
-const ARENA_BASE = 'assets/arena';
+/** Terrain folder of each arena (the forest predates the others). */
+const arenaBase = (mapId: string) =>
+  mapId === 'arena_forest' ? 'assets/arena' : `assets/${mapId}`;
 const DIRS = ['s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se'];
 const SHEETS = ['contestant', 'contestant_f'];
 const PROPS = [
@@ -81,6 +84,7 @@ export class ArenaScene extends Phaser.Scene {
   private readonly session: GameSession;
   private controller?: CameraController;
   private terrainScale: '1x' | '0.5x' = '1x';
+  private mapId = 'arena_forest';
   private heights: number[][] = [];
   private readonly tinted: Phaser.GameObjects.Image[] = [];
   private readonly shadows: Phaser.GameObjects.Image[] = [];
@@ -105,24 +109,30 @@ export class ArenaScene extends Phaser.Scene {
 
   preload(): void {
     this.terrainScale = pickTerrainScale();
-    this.load.json('arenaTerrain', `${ARENA_BASE}/terrain/${this.terrainScale}/manifest.json`);
-    this.load.json('arenaHeights', `${ARENA_BASE}/terrain/heights.json`);
+    this.mapId = this.session.getState().arena?.mapId ?? 'arena_forest';
+    setArenaMap(this.mapId);
+    const ARENA_BASE = arenaBase(this.mapId);
+    this.load.json(
+      `arenaTerrain_${this.mapId}`,
+      `${ARENA_BASE}/terrain/${this.terrainScale}/manifest.json`,
+    );
+    this.load.json(`arenaHeights_${this.mapId}`, `${ARENA_BASE}/terrain/heights.json`);
     this.load.json('spriteManifest', `${ART_BASE}/sprites/manifest.json`);
     this.load.json('characterManifest', `${ART_BASE}/characters/manifest.json`);
   }
 
   create(): void {
     this.cameras.main.setBackgroundColor(PALETTE.forestDeep);
-    const terrain = this.cache.json.get('arenaTerrain') as TerrainManifest;
+    const terrain = this.cache.json.get(`arenaTerrain_${this.mapId}`) as TerrainManifest;
     const sprites = this.cache.json.get('spriteManifest') as SpriteManifest;
     const characters = (
       this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
     ).characters;
-    this.heights = (this.cache.json.get('arenaHeights') as HeightMap).heights;
-    const base = `${ARENA_BASE}/terrain/${this.terrainScale}`;
+    this.heights = (this.cache.json.get(`arenaHeights_${this.mapId}`) as HeightMap).heights;
+    const base = `${arenaBase(this.mapId)}/terrain/${this.terrainScale}`;
     for (let r = 0; r < terrain.rows; r++)
       for (let c = 0; c < terrain.cols; c++)
-        this.load.image(`arena_${r}_${c}`, `${base}/t_${r}_${c}.jpg`);
+        this.load.image(`${this.mapId}_${r}_${c}`, `${base}/t_${r}_${c}.jpg`);
     for (const kind of PROPS) {
       const asset = sprites.assets[kind];
       if (!asset || this.textures.exists(kind)) continue;
@@ -153,7 +163,11 @@ export class ArenaScene extends Phaser.Scene {
       for (let c = 0; c < terrain.cols; c++) {
         this.tinted.push(
           this.add
-            .image((c * terrain.tile - ax) / s, (r * terrain.tile - ay) / s, `arena_${r}_${c}`)
+            .image(
+              (c * terrain.tile - ax) / s,
+              (r * terrain.tile - ay) / s,
+              `${this.mapId}_${r}_${c}`,
+            )
             .setOrigin(0, 0)
             .setScale(1 / s)
             .setDepth(-10000),
@@ -265,9 +279,19 @@ export class ArenaScene extends Phaser.Scene {
         const jy = y + (hash(x, y, 3) - 0.5) * 0.5;
         let key: string | null = null;
         if (code === 'F' && r < 0.42)
-          key = pickOf(['oak_a', 'oak_b', 'birch', 'pine_a', 'oak_a'], hash(x, y, 5));
+          key = pickOf(
+            this.mapId === 'arena_tundra'
+              ? ['pine_a', 'pine_b', 'pine_c', 'dead_tree', 'pine_a']
+              : ['oak_a', 'oak_b', 'birch', 'pine_a', 'oak_a'],
+            hash(x, y, 5),
+          );
         else if (code === 'D' && r < 0.7)
-          key = pickOf(['pine_a', 'pine_c', 'oak_b', 'pine_b', 'oak_a'], hash(x, y, 5));
+          key = pickOf(
+            this.mapId === 'arena_tundra'
+              ? ['pine_a', 'pine_c', 'pine_b', 'pine_c', 'pine_a']
+              : ['pine_a', 'pine_c', 'oak_b', 'pine_b', 'oak_a'],
+            hash(x, y, 5),
+          );
         else if (code === 'b' && r < 0.3) key = 'bush_big';
         else if (code === 'c' && r < 0.03)
           key = pickOf(['bush_big', 'rock_b', 'dead_tree'], hash(x, y, 5));

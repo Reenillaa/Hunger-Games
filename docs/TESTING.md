@@ -86,4 +86,5 @@ En este contenedor, `@playwright/test` 1.63.0 coincide con el Playwright preinst
 | 2026-11-25 | 10 | UI v4 cristal: `playwright` 18/18; capturas escritorio/móvil (`docs/images/ui-v4-glass.jpg`) | Corregido: cristal demasiado transparente en paneles grandes (texto ilegible sobre el mapa) |
 | 2026-11-25 | 10 | Distritos 7 y 2, leyes y Capitolio: `vitest` **117/117** (nuevos: leyes, generación conectada del 7 y del 2), `playwright` **20/20** (nuevo: leyes) | `docs/images/districts-7-2-capitol.jpg`; terrenos d7 997 s, d2 ≈ 1000 s. Corregido: granito del 2 renderizado como estuco blanco (se usa la textura de sillería) |
 | 2026-11-25 | 10 | Música generativa + objetivos: `vitest` 117/117, `playwright` 20/20 | Corregido: el objetivo «construye algo nuevo» salía cumplido al empezar (contaba los huertos iniciales) |
+| 2026-11-25 | 10 | Arena Tundra: `vitest` **118/118** (nuevo: ediciones pares en la Tundra, frío y final de partida), `playwright` 20/20 | Render 608 s ×2; corregido: suelo del bosque verde en vez de nevado, juncos alrededor del lago helado (`docs/images/arena-tundra.jpg`) |
 

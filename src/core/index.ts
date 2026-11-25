@@ -23,7 +23,9 @@ export * from './regime/regime.ts';
 export * from './arena/arena.ts';
 export {
   ARENA,
+  ARENAS,
   ARENA_SIZE,
+  setArenaMap,
   codeAt as arenaCodeAt,
   lineOfSight,
   distance as arenaDistance,

@@ -5,7 +5,18 @@ import type { PathGrid } from '../path/astar.ts';
 import type { RngState } from '../rng/rng.ts';
 import { nextFloat, nextInt, pick } from '../rng/rng.ts';
 import type { GameState } from '../state/gameState.ts';
-import { ARENA_SIZE, COVER, arenaGrid, codeAt, distance, isWater, lineOfSight } from './map.ts';
+import {
+  ARENA,
+  ARENA_SIZE,
+  COVER,
+  arenaForEdition,
+  arenaGrid,
+  codeAt,
+  distance,
+  isWater,
+  lineOfSight,
+  setArenaMap,
+} from './map.ts';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 export const ROUNDS_PER_DAY = 24;
@@ -63,6 +74,8 @@ export interface ArenaLog {
 }
 
 export interface ArenaState {
+  /** Which arena the games are fought in (v10). */
+  mapId: string;
   round: number;
   actors: Record<string, ArenaActor>;
   /** Loot on the ground by cell index. */
@@ -85,10 +98,14 @@ export interface ArenaState {
 }
 
 const idx = (x: number, y: number) => y * ARENA_SIZE + x;
-let GRID: PathGrid | null = null;
+const GRIDS = new Map<string, PathGrid>();
 function grid(): PathGrid {
-  GRID ??= arenaGrid();
-  return GRID;
+  let g = GRIDS.get(ARENA.id);
+  if (!g) {
+    g = arenaGrid();
+    GRIDS.set(ARENA.id, g);
+  }
+  return g;
 }
 
 export function arenaHour(round: number): number {
@@ -109,6 +126,8 @@ export const isNight = (round: number) => {
 /** Contestants start on a ring of pedestals around the Relicario. */
 export function createArena(state: GameState): ArenaState {
   const games = state.games!;
+  const mapId = arenaForEdition(games.edition);
+  setArenaMap(mapId);
   const rng = state.rng.arena;
   const actors: Record<string, ArenaActor> = {};
   const n = games.order.length;
@@ -165,6 +184,7 @@ export function createArena(state: GameState): ArenaState {
     (ground[idx(x, y)] ??= []).push(item);
   }
   return {
+    mapId,
     round: 0,
     actors,
     ground,
@@ -881,7 +901,14 @@ function director(state: GameState, arena: ArenaState, rng: RngState): void {
 function upkeep(state: GameState, arena: ArenaState, a: ArenaActor): void {
   a.hunger = clamp(a.hunger - 1.6, 0, 100);
   a.thirst = clamp(a.thirst - 2.4, 0, 100);
-  a.energy = clamp(a.energy - (isNight(arena.round) ? 1.5 : 0.8), 0, 100);
+  // The tundra's cold: nights drain far more energy; snow means water is never far.
+  const cold = ARENA.id === 'arena_tundra';
+  a.energy = clamp(
+    a.energy - (isNight(arena.round) ? (cold ? 2.6 : 1.5) : cold ? 1.1 : 0.8),
+    0,
+    100,
+  );
+  if (cold) a.thirst = clamp(a.thirst + 0.8, 0, 100);
   if (a.bleeding > 0) a.hp -= a.bleeding * 3;
   if (a.thirst <= 0) a.hp -= 4;
   if (a.hunger <= 0) a.hp -= 2;
@@ -905,6 +932,7 @@ function upkeep(state: GameState, arena: ArenaState, a: ArenaActor): void {
 /** One arena hour: perception, decisions, upkeep, the director, capsules, victory. */
 export function resolveRound(state: GameState): void {
   const arena = state.arena!;
+  setArenaMap(arena.mapId);
   if (arena.finished) return;
   const rng = state.rng.arena;
   arena.round += 1;
@@ -1033,6 +1061,7 @@ export const ARENA_IDX = idx;
 /** Cells the player's team sees right now (for the fog of war). */
 export function visibleCells(state: GameState): Set<number> {
   const arena = state.arena!;
+  setArenaMap(arena.mapId);
   const seen = new Set<number>();
   for (const a of teamOf(arena)) {
     const r = visionRadius(state, a, arena.round);
@@ -1049,6 +1078,7 @@ export function visibleCells(state: GameState): Set<number> {
 /** Enemies the team can see now (hidden ones included only if spotted). */
 export function visibleActors(state: GameState): Set<string> {
   const arena = state.arena!;
+  setArenaMap(arena.mapId);
   const out = new Set<string>();
   const team = teamOf(arena);
   for (const b of Object.values(arena.actors)) {

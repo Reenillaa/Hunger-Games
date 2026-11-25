@@ -15,7 +15,7 @@
 | Fase 4 · Población | ✅ Ciudadanos reales con familias, rasgos, habilidades, ánimo, parejas, nacimientos y muertes (LOD). |
 | Fase 5 · La Criba | ✅ Motor de reglas (datos), papeletas, Jubileo, ceremonia cinemática con reacciones de la familia. |
 | Fase 6 · Áurea | ✅ 7 días de decisiones (postura, vestuario, entrenamiento, evaluación, entrevista, plan) y 22 rivales generados. |
-| Fase 7 · Arena | ✅ Bosque 40×40 (río con vados, lago, colinas con cuevas, ruinas, Relicario). Rondas de 1 h, IA por utilidad con creencias, alianzas y traiciones, combate con probabilidades transparentes, supervivencia, director (fuego, perímetro, festín), cápsulas de Mecenas, órdenes e interrupciones, niebla de guerra. |
+| Fase 7 · Arena | ✅ Dos arenas (Bosque y Tundra helada, alternas por edición). Bosque 40×40 (río con vados, lago, colinas con cuevas, ruinas, Relicario). Rondas de 1 h, IA por utilidad con creencias, alianzas y traiciones, combate con probabilidades transparentes, supervivencia, director (fuego, perímetro, festín), cápsulas de Mecenas, órdenes e interrupciones, niebla de guerra. |
 | Fase 8 · Continuidad | ✅ Resultados por edición, caídos enterrados como ciudadanos reales (duelo familiar), Laureado con recompensa y trauma, ceremonia de regreso. |
 | Fase 9 · Régimen | ✅ 10 dilemas de distrito, atención y malestar, toque de queda (−15 % producción), represalias públicas, guarnición. |
 | Inicio | ✅ Mapa de La Concordia en pergamino: los 12 distritos y el Capitolio consultables; **jugables el 2 (montaña), el 4 (costa), el 7 (bosque), el 11 (campos) y el 12 (minas)**, cada uno con su terreno, cuota y edificios. |

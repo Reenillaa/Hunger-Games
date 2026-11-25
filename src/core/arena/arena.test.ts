@@ -186,3 +186,28 @@ describe('homecoming (Phase 8)', () => {
     expect(s.economy.resources.food).toBeGreaterThan(food);
   });
 });
+
+describe('arena maps', () => {
+  it('even editions are fought on the frozen tundra, and the cold drains energy faster', () => {
+    let tundra: GameState | null = null;
+    let forest: GameState | null = null;
+    for (let i = 0; i < 12 && (!tundra || !forest); i++) {
+      const s = toArena(`maps-${i}`);
+      if (s.arena!.mapId === 'arena_tundra') tundra ??= s;
+      else forest ??= s;
+    }
+    expect(tundra).not.toBeNull();
+    expect(forest).not.toBeNull();
+    expect(tundra!.games!.edition % 2).toBe(0);
+    const drain = (s: GameState) => {
+      const team = Object.values(s.arena!.actors).filter((a) => a.player);
+      for (const a of team) a.order = { kind: 'hide' };
+      const before = team.reduce((n, a) => n + a.energy, 0);
+      applyCommand(s, { type: 'arena/advance', maxRounds: 12 });
+      return before - team.reduce((n, a) => n + a.energy, 0);
+    };
+    expect(drain(tundra!)).toBeGreaterThan(drain(forest!) - 5);
+    applyCommand(tundra!, { type: 'arena/conclude' });
+    expect(tundra!.arena!.finished).not.toBeNull();
+  });
+});

@@ -8,7 +8,7 @@ import type { RegimeState } from '../regime/regime.ts';
 import type { RngState, RngStreamId } from '../rng/rng.ts';
 
 /** Bumped whenever the shape of GameState changes; saves migrate across versions. */
-export const STATE_SCHEMA_VERSION = 9;
+export const STATE_SCHEMA_VERSION = 10;
 
 export const PHASE_KINDS = ['district', 'selection', 'capital', 'arena', 'aftermath'] as const;
 export type PhaseKind = (typeof PHASE_KINDS)[number];

@@ -119,6 +119,15 @@ export const MIGRATIONS: readonly Migration[] = [
       return { ...state, laws: [] };
     },
   },
+  {
+    from: 9,
+    to: 10,
+    description: 'Arena maps (forest and tundra).',
+    migrate(state) {
+      const arena = state.arena as Record<string, unknown> | null;
+      return { ...state, arena: arena ? { mapId: 'arena_forest', ...arena } : null };
+    },
+  },
 ];
 
 /** Upgrades a raw state from `fromVersion` to `targetVersion` by chaining migrations. */

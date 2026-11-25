@@ -119,6 +119,21 @@ MAPS["d2"] = {
         "rock": {"R": 1.0, "s": 0.75},
     },
 }
+MAPS["arena_tundra"] = {
+    "out": "public/assets/arena_tundra/terrain",
+    "water": "wW", "wet": "wW", "soot": "", "rise_back": False, "background": "#10141a",
+    "grass_tint": "#EEF2F6", "grass_amount": 0.9, "dry_tint": "#DDE4EA", "dry_amount": 0.85,
+    "dry_saturation": 0.2, "dry_value": 1.25, "dirt_tint": "#B8C2CC", "vegetation": 0.12,
+    "layers": {
+        "dry": {"c": 0.95, "b": 0.85, "F": 0.85, "D": 0.75, "X": 0.3, "v": 0.5},
+        "forest": {"F": 0.15, "D": 0.3},
+        "dirt": {"u": 0.4, "w": 0.8, "X": 0.2},
+        "coal": {},
+        "gravel": {"X": 0.3, "r": 0.3},
+        "cobble": {"u": 0.7, "X": 0.8},
+        "rock": {"R": 1.0, "r": 0.75},
+    },
+}
 CFG = MAPS[MAP]
 TEMPLATE = json.loads((ROOT / f"src/content/maps/{MAP}.json").read_text(encoding="utf8"))
 W, H = TEMPLATE["width"], TEMPLATE["height"]
@@ -611,7 +626,10 @@ def scatter(terrain: bpy.types.Object) -> None:
                           _random_colour_material("Wheat", ["#D8B04E", "#C89A3A", "#E6C46A", "#B8903A"]), 11),
          140000 if "field" in LAYERS else 0, 1.0, 11),
     ]
+    veg = CFG.get("vegetation", 1.0)
     for name, obj, count, size, seed in sources:
+        if name in ("grass", "lush", "flower", "fern", "tall", "leaf", "bush", "reed"):
+            count = int(count * veg)
         if count == 0:
             continue
         mod = terrain.modifiers.new(name, "PARTICLE_SYSTEM")

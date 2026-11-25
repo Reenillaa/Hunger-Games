@@ -1,4 +1,5 @@
-import arena from '../../content/maps/arena_forest.json' with { type: 'json' };
+import forest from '../../content/maps/arena_forest.json' with { type: 'json' };
+import tundra from '../../content/maps/arena_tundra.json' with { type: 'json' };
 import type { PathGrid } from '../path/astar.ts';
 
 export type ArenaCode = 'c' | 'F' | 'D' | 'b' | 'r' | 'R' | 'w' | 'W' | 'v' | 'u' | 'X';
@@ -11,8 +12,24 @@ export interface ArenaTemplate {
   elevation: number[][];
 }
 
-export const ARENA: ArenaTemplate = arena as ArenaTemplate;
+/** Every arena of the games; all share the same 40×40 grid and codes. */
+export const ARENAS: Record<string, ArenaTemplate> = {
+  arena_forest: forest as ArenaTemplate,
+  arena_tundra: tundra as ArenaTemplate,
+};
+
+/** The arena the rules currently read (set from ArenaState.mapId before any query). */
+export let ARENA: ArenaTemplate = ARENAS.arena_forest!;
 export const ARENA_SIZE = ARENA.width;
+
+export function setArenaMap(id: string): void {
+  ARENA = ARENAS[id] ?? ARENAS.arena_forest!;
+}
+
+/** Odd editions are fought in the forest, even ones on the ice. */
+export function arenaForEdition(edition: number): string {
+  return edition % 2 === 0 ? 'arena_tundra' : 'arena_forest';
+}
 
 export function codeAt(x: number, y: number): ArenaCode | null {
   if (x < 0 || y < 0 || x >= ARENA.width || y >= ARENA.height) return null;
