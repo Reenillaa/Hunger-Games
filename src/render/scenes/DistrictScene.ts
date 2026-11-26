@@ -517,12 +517,17 @@ export class DistrictScene extends Phaser.Scene {
     const view = this.session.cinematic?.get();
     if (!view || view.done) return;
     this.ceremony?.setFocus(view.focus);
+    // Walks: the step being played animates; earlier ones (skipped ahead) land at once.
+    for (const id of view.walked) {
+      const live = view.step?.kind === 'walk' && view.step.citizenId === id;
+      this.ceremony?.walkToStage(id, live ? (view.step?.ms ?? 0) * 0.9 : 0);
+    }
     const cam = this.cameras.main;
     const focus = this.ceremony?.focusPoint(view.focus);
     const target =
       focus ?? (view.camera ? cellToWorld(view.camera.cell.x, view.camera.cell.y) : null);
     if (target) {
-      const k = 0.045;
+      const k = view.camera?.glide ?? 0.045;
       cam.centerOn(
         cam.midPoint.x + (target.x - cam.midPoint.x) * k,
         cam.midPoint.y + (target.y - cam.midPoint.y) * k,

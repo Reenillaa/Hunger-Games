@@ -1,6 +1,6 @@
 import { lawById } from '../../content/laws.ts';
 import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
-import { HOME_DISTRICTS, homeProfile } from '../../content/homeDistricts.ts';
+import { HOME_DISTRICTS, canBuildIn, homeProfile } from '../../content/homeDistricts.ts';
 import { decreeFactor } from '../regime/regime.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { BuildingDef } from '../../content/buildings.ts';
@@ -242,7 +242,7 @@ function settleQuota(state: GameState, date: CalendarDate, ctx: SimContext): voi
 // ------------------------------------------------------------------ placement
 
 export type PlacementError =
-  'out-of-map' | 'blocked' | 'occupied' | 'requirement' | 'cost' | 'not-buildable';
+  'out-of-map' | 'blocked' | 'occupied' | 'requirement' | 'cost' | 'not-buildable' | 'not-here';
 
 function footprintCells(kind: StructureKind, x: number, y: number): [number, number][] {
   const { w, d } = STRUCTURE_FOOTPRINTS[kind];
@@ -282,6 +282,7 @@ export function checkPlacement(
 ): PlacementError | null {
   const d = def(kind);
   if (!d.buildable) return 'not-buildable';
+  if (!canBuildIn(state.meta.homeDistrictId, kind)) return 'not-here';
   const t = TEMPLATES[state.district.templateId];
   if (!t) return 'out-of-map';
   const cells = footprintCells(kind, x, y);

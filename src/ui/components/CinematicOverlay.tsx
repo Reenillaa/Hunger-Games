@@ -4,6 +4,7 @@ import { t } from '../../content/i18n.ts';
 import type { CinematicPlayer, CineView } from '../../game/cinematic.ts';
 import type { GameSession } from '../../game/session.ts';
 import { useSession } from '../useSession.ts';
+import { CineShot } from './CineShot.tsx';
 import { Portrait } from './Portrait.tsx';
 import styles from '../ui.module.css';
 
@@ -13,6 +14,7 @@ const IDLE: CineView = {
   black: false,
   camera: null,
   focus: null,
+  walked: [],
   done: true,
 };
 const noop = () => () => {};
@@ -32,13 +34,16 @@ export function CinematicOverlay({ session }: { session: GameSession }) {
   const revealed = step?.kind === 'reveal' ? state.population.citizens[step.citizenId] : null;
   return (
     <div className={styles.cinema} data-testid="cinematic" aria-live="polite">
+      {step?.kind === 'shot' && (
+        <CineShot key={view.index} shot={step.shot} state={state} ms={step.ms} />
+      )}
       <div className={`${styles.cinemaBlack} ${view.black ? styles.cinemaBlackOn : ''}`} />
       <div className={styles.letterboxTop} />
       <div className={styles.letterboxBottom}>
-        {step?.kind === 'line' && (
+        {(step?.kind === 'line' || (step?.kind === 'shot' && step.line)) && (
           <p className={styles.cinemaLine} key={view.index}>
             {step.speaker && <span className={styles.cinemaSpeaker}>{step.speaker}</span>}
-            {step.text}
+            {step.kind === 'line' ? step.text : step.line}
           </p>
         )}
       </div>

@@ -1,0 +1,110 @@
+/* Paper notices: each kind of message has its own object (a telegram for damage reports). */
+
+.telegram {
+  position: fixed;
+  z-index: 25;
+  top: calc(84px + var(--safe-top, 0px));
+  left: 50%;
+  width: min(380px, calc(100vw - 32px));
+  translate: -50% 0;
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px 16px;
+  text-align: left;
+  color: #2b2118;
+  font-family: var(--font-mono, monospace);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 23px, rgb(120 90 50 / 0.12) 23px 24px),
+    linear-gradient(170deg, #f6ecd0, #e6d4a8);
+  border: 0;
+  border-radius: 3px;
+  box-shadow:
+    0 18px 40px rgb(0 0 0 / 0.45),
+    inset 0 0 30px rgb(120 80 30 / 0.25);
+  rotate: -1.2deg;
+  cursor: pointer;
+  animation: drop 520ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.telegram::before {
+  /* Strip of tape holding the telegram. */
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 90px;
+  height: 22px;
+  translate: -50% 0;
+  rotate: 3deg;
+  background: rgb(255 250 230 / 0.6);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    translate: -50% -40px;
+    rotate: 4deg;
+  }
+}
+
+.stamp {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  padding: 3px 8px;
+  border: 2px solid #b3261e;
+  border-radius: 4px;
+  color: #b3261e;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  rotate: 8deg;
+  opacity: 0.85;
+  animation: stamp 420ms 360ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes stamp {
+  from {
+    scale: 2.2;
+    opacity: 0;
+  }
+}
+
+.telegramTitle {
+  padding-right: 110px;
+  font-family: var(--font-ui, sans-serif);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.telegramBody {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.losses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.loss {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgb(179 38 30 / 0.12);
+  color: #8e1c16;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.loss svg {
+  width: 16px;
+  height: 16px;
+}

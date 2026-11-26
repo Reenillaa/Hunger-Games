@@ -13,7 +13,8 @@ import {
   PeopleIcon,
   PlayIcon,
 } from '../icons/Icons.tsx';
-import { dateFromTick } from '../../core/index.ts';
+import { dateFromTick, nextSelectionTick } from '../../core/index.ts';
+import { useRef } from 'react';
 import { formatCountdown, formatDate, formatHour } from '../format.ts';
 import { EmblemIcon, SeasonIcon } from '../icons/Icons.tsx';
 import { useSession } from '../useSession.ts';
@@ -43,6 +44,17 @@ export function TopBar({ session, onSave, onMenu }: Props) {
   const date = dateFromTick(state.clock.tick);
   const hourAngle = ((date.hour % 12) / 12) * 360;
   const isNight = date.hour < 6 || date.hour >= 20;
+  // Hidden shortcut for playtesting: three quick taps on the clock jump to the Reaping day.
+  const taps = useRef<number[]>([]);
+  const onClockTap = () => {
+    const now = performance.now();
+    taps.current = [...taps.current.filter((t0) => now - t0 < 900), now];
+    if (taps.current.length < 3 || !inDistrict) return;
+    taps.current = [];
+    session.advance(
+      nextSelectionTick(state.clock.tick, state.competition.lastSelectionYear) - state.clock.tick,
+    );
+  };
   return (
     <header className={styles.hudTop} data-testid="top-bar">
       <div className={styles.crest}>
@@ -55,7 +67,13 @@ export function TopBar({ session, onSave, onMenu }: Props) {
       </div>
 
       <div className={styles.datePlaque}>
-        <svg className={styles.clockDial} viewBox="0 0 40 40" aria-hidden="true">
+        <svg
+          className={styles.clockDial}
+          viewBox="0 0 40 40"
+          aria-hidden="true"
+          data-testid="clock-dial"
+          onClick={onClockTap}
+        >
           <circle cx="20" cy="20" r="18" className={isNight ? styles.dialNight : styles.dialDay} />
           {Array.from({ length: 12 }, (_, i) => (
             <line

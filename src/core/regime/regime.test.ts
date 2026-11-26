@@ -9,7 +9,9 @@ import {
   collectingContext,
   createNewGame,
 } from '../index.ts';
-import { decreeFactor, regimeDay } from './regime.ts';
+import { decreeFactor, mishapDay, regimeDay } from './regime.ts';
+import { storageCapacity } from '../economy/economy.ts';
+import { CALAMITIES } from '../../content/calamities.ts';
 import { dateFromTick } from '../time/calendar.ts';
 
 describe('the regime', () => {
@@ -73,5 +75,46 @@ describe('the regime', () => {
     expect(seen.has('mine_accident')).toBe(false);
     expect(seen.has('forest_fire')).toBe(false);
     expect(seen.has('storm_at_sea')).toBe(true);
+  });
+});
+
+describe('mishaps and spoilage', () => {
+  it('full stores spoil and attract mishaps; stocks never go negative', () => {
+    let mishaps = 0;
+    const kinds = new Set<string>();
+    for (let g = 0; g < 4; g++) {
+      const s = createNewGame({ seed: `mishap-${g}`, homeDistrict: 'd9' });
+      const cap = storageCapacity(s);
+      s.economy.resources.food = cap;
+      s.economy.resources.wood = cap;
+      const ctx = {
+        autopilot: true,
+        emit: (e: { type: string; id?: string }) => {
+          if (e.type === 'regime/calamity') {
+            mishaps += 1;
+            kinds.add(e.id!);
+          }
+        },
+      };
+      const start = { ...s.economy.resources };
+      for (let day = 0; day < 40; day++)
+        mishapDay(s, dateFromTick(day * TICKS_PER_DAY), ctx as never);
+      // Spoilage alone brings full stores down towards the threshold.
+      expect(s.economy.resources.food).toBeLessThan(start.food);
+      expect(s.economy.resources.wood).toBeLessThan(start.wood);
+      for (const v of Object.values(s.economy.resources)) expect(v).toBeGreaterThanOrEqual(0);
+    }
+    expect(mishaps).toBeGreaterThan(4);
+    expect(kinds.size).toBeGreaterThan(2);
+    // Regional mishaps stay in their districts: no fishing nets rot in the grain district.
+    expect(kinds.has('rot_nets')).toBe(false);
+  });
+});
+
+describe('mishap texts', () => {
+  it('every mishap has its title, body and chronicle line', () => {
+    const keys = es as Record<string, string>;
+    for (const c of CALAMITIES)
+      for (const part of ['title', 'body', 'log']) expect(keys[`cal.${c.id}.${part}`]).toBeTruthy();
   });
 });

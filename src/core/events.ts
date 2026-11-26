@@ -1,3 +1,4 @@
+import type { ResourceId } from './district/template.ts';
 import type { CalendarDate } from './time/calendar.ts';
 import type { PhaseKind } from './state/gameState.ts';
 
@@ -20,6 +21,8 @@ export type DomainEvent =
   | { type: 'regime/event'; eventId: string }
   | { type: 'regime/event-resolved'; eventId: string; option: string }
   | { type: 'regime/decree'; id: string }
+  /** A mishap took part of the stores (amounts actually lost). */
+  | { type: 'regime/calamity'; id: string; lost: Partial<Record<ResourceId, number>> }
   | { type: 'games/homecoming'; edition: number; laureate: string | null; fallen: string[] };
 
 export type DomainEventType = DomainEvent['type'];

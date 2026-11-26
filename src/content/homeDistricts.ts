@@ -15,6 +15,8 @@ export interface HomeDistrictProfile {
   baseQuota: number;
   /** The district's trade: the building whose count makes the quota grow. */
   signature: StructureKind;
+  /** Production buildings of the district's trade (housing and services are common to all). */
+  trades: StructureKind[];
   /** What homes burn in winter. */
   heating: 'coal' | 'wood';
   landmarks: { kind: StructureKind; x: number; y: number }[];
@@ -46,6 +48,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'coal',
     baseQuota: 120,
     signature: 'mine_headframe',
+    trades: ['mine_headframe', 'lumber_camp'],
     heating: 'coal',
     landmarks: [
       ...civic({ x0: 24, y0: 20 }),
@@ -76,6 +79,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'food',
     baseQuota: 260,
     signature: 'farm',
+    trades: ['farm', 'windmill', 'bakery'],
     heating: 'wood',
     landmarks: [
       ...civic({ x0: 9, y0: 31 }),
@@ -105,6 +109,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'food',
     baseQuota: 240,
     signature: 'fishery',
+    trades: ['fishery', 'smokehouse', 'market'],
     heating: 'wood',
     landmarks: [
       ...civic({ x0: 19, y0: 18 }),
@@ -137,6 +142,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'wood',
     baseQuota: 230,
     signature: 'lumber_camp',
+    trades: ['lumber_camp', 'market'],
     heating: 'wood',
     landmarks: [
       ...civic({ x0: 21, y0: 22 }),
@@ -166,6 +172,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'stone',
     baseQuota: 200,
     signature: 'quarry',
+    trades: ['quarry', 'lumber_camp'],
     heating: 'coal',
     landmarks: [
       ...civic({ x0: 22, y0: 26 }),
@@ -195,6 +202,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'credits',
     baseQuota: 260,
     signature: 'market',
+    trades: ['market', 'bakery'],
     heating: 'wood',
     landmarks: [
       ...civic({ x0: 21, y0: 14 }),
@@ -220,6 +228,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'credits',
     baseQuota: 240,
     signature: 'market',
+    trades: ['market', 'quarry'],
     heating: 'coal',
     landmarks: [
       ...civic({ x0: 24, y0: 28 }),
@@ -245,6 +254,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'coal',
     baseQuota: 140,
     signature: 'mine_headframe',
+    trades: ['mine_headframe', 'quarry'],
     heating: 'coal',
     landmarks: [
       ...civic({ x0: 12, y0: 22 }),
@@ -270,6 +280,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'wood',
     baseQuota: 220,
     signature: 'lumber_camp',
+    trades: ['lumber_camp', 'quarry', 'market'],
     heating: 'coal',
     landmarks: [
       ...civic({ x0: 22, y0: 20 }),
@@ -295,6 +306,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'credits',
     baseQuota: 240,
     signature: 'market',
+    trades: ['farm', 'market'],
     heating: 'coal',
     landmarks: [
       ...civic({ x0: 18, y0: 24 }),
@@ -320,6 +332,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'food',
     baseQuota: 280,
     signature: 'farm',
+    trades: ['farm', 'windmill', 'bakery'],
     heating: 'wood',
     landmarks: [
       ...civic({ x0: 30, y0: 10 }),
@@ -345,6 +358,7 @@ export const HOME_DISTRICTS: Record<HomeDistrictProfile['id'], HomeDistrictProfi
     quotaResource: 'food',
     baseQuota: 250,
     signature: 'farm',
+    trades: ['farm', 'smokehouse', 'market'],
     heating: 'wood',
     landmarks: [
       ...civic({ x0: 14, y0: 14 }),
@@ -372,4 +386,21 @@ export function homeProfile(id: string): HomeDistrictProfile {
 
 export function profileByNumber(n: number): HomeDistrictProfile | undefined {
   return Object.values(HOME_DISTRICTS).find((d) => d.number === n);
+}
+
+/** Housing, storage and services every district may build; production depends on the trade. */
+export const COMMON_BUILDINGS: readonly StructureKind[] = [
+  'house_shack',
+  'house_terrace',
+  'warehouse',
+  'infirmary',
+  'school',
+  'tavern',
+  'well',
+  'garden',
+];
+
+/** True when this district's trade allows the structure (the Capitol assigns each one its work). */
+export function canBuildIn(homeDistrictId: string, kind: StructureKind): boolean {
+  return COMMON_BUILDINGS.includes(kind) || homeProfile(homeDistrictId).trades.includes(kind);
 }

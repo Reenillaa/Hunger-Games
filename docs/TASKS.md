@@ -34,6 +34,13 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F10-11 | Retratos v2 y expediente del ciudadano | ✅ | `Portrait.tsx`, `CitizenCard.tsx` |
 | F10-12 | Dilemas regionales por distrito | ✅ | `EventCondition.districts`; test: el 4 nunca ve el derrumbe de mina y sí temporales |
 | F10-07 | Prueba en iPhone real + PWA instalada (C-3) | P0 | Checklist de `TESTING.md` §3 |
+| F11-01 | Cosecha como película por planos + atajo oculto | ✅ | Test del guion (`ceremonies.test.ts`) + E2E de los tres toques |
+| F11-02 | Oficios por distrito en el menú y en el núcleo | ✅ | Test: el 4 no puede poner minas, el 12 no puede poner pesquerías |
+| F11-03 | Desgracias, deterioro y aviso-telegrama | ✅ | Test: almacén lleno se estropea y atrae desgracias regionales correctas |
+| F11-04 | Leyes como decretos firmados | ✅ | E2E con firma a mano (ratón y toque real) |
+| F11-05 | Cambio visual a estilo cartoon (suelo en tiempo real, sin rejilla visible, caminos automáticos, mapa más grande, menos casas al empezar, mejoras visibles en las casas, árbol del ayuntamiento) | P0 | — |
+| F11-06 | Cinemáticas del resto de fases (llegada al Capitolio, desfile, entrevista, entrada en la arena) | P1 | — |
+| F11-07 | Variedad de UI por pantalla (cada panel con su objeto propio) | P1 | Hecho para leyes y desgracias |
 
 ## Investigación (cuando exista la Reverse Engineering Skill)
 

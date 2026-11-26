@@ -11,6 +11,7 @@ import { SelectionPanel } from '../components/SelectionPanel.tsx';
 import { PhaseSheet } from '../components/PhaseSheet.tsx';
 import { ArenaPanel } from '../components/ArenaPanel.tsx';
 import { EventDialog } from '../components/EventDialog.tsx';
+import { MishapNotice } from '../components/MishapNotice.tsx';
 import { ChroniclePanel } from '../components/ChroniclePanel.tsx';
 import { LawsPanel } from '../components/LawsPanel.tsx';
 import { ObjectivesCard } from '../components/ObjectivesCard.tsx';
@@ -83,6 +84,7 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
         <CapitalPanel session={session} />
         <ArenaPanel session={session} />
         <EventDialog session={session} />
+        <MishapNotice session={session} />
         {debug && <DebugPanel session={session} />}
       </div>
       <CinematicOverlay session={session} />

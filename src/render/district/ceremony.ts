@@ -4,8 +4,11 @@ import type { GameState } from '../../core/index.ts';
 import { ageOf, livingCitizens } from '../../core/index.ts';
 import { cellToWorld, depthOf } from '../iso/projection.ts';
 import type { CharacterSheet, Role } from './townsfolk.ts';
+import { directionIndex } from './townsfolk.ts';
 
 const FACING_STAGE = 5; // 'ne': from the plaza towards the stage
+const FACING_CROWD = 1; // 'sw': from the stage towards the plaza
+const DIRS = ['s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se'];
 const SLOTS = [
   [-0.25, -0.25],
   [0.25, -0.25],
@@ -20,6 +23,12 @@ const SLOTS = [
 export class CeremonyStage {
   private readonly objects: Phaser.GameObjects.GameObject[] = [];
   private readonly byCitizen = new Map<string, Phaser.GameObjects.Sprite>();
+  private readonly roleOf = new Map<string, Role>();
+  private readonly walked = new Set<string>();
+  private readonly escorts: Phaser.GameObjects.Sprite[] = [];
+  private readonly origin: { X: number; Y: number };
+  private readonly cellOf = new Map<string, { x: number; y: number }>();
+  private readonly sheets: Record<string, CharacterSheet>;
   private spotlight?: Phaser.GameObjects.Image;
   private readonly scene: Phaser.Scene;
 
@@ -29,9 +38,11 @@ export class CeremonyStage {
     sheets: Record<string, CharacterSheet>,
   ) {
     this.scene = scene;
+    this.sheets = sheets;
     const plaza = TEMPLATES[state.district.templateId]?.plaza ?? { x0: 24, y0: 20 };
     const X = plaza.x0 - 24;
     const Y = plaza.y0 - 20;
+    this.origin = { X, Y };
     const current = state.competition.current;
     const day = Math.floor(state.clock.tick / 24);
     const youths = Object.keys(current?.entries ?? {})
@@ -53,10 +64,10 @@ export class CeremonyStage {
       const x = (c!.sex === 'F' ? 24 : 27) + col + X;
       const y = 23 + (row % 2) + Y;
       const [ox, oy] = SLOTS[(k % 2) + (row >= 2 ? 2 : 0)]!;
-      this.byCitizen.set(
-        c!.id,
-        this.person(sheets, roleOf(ageOf(c!, day), c!.sex), x + ox, y + oy),
-      );
+      const role = roleOf(ageOf(c!, day), c!.sex);
+      this.roleOf.set(c!.id, role);
+      this.cellOf.set(c!.id, { x: x + ox, y: y + oy });
+      this.byCitizen.set(c!.id, this.person(sheets, role, x + ox, y + oy));
     }
     // Adults behind and around.
     adults.forEach((c, i) => {
@@ -78,6 +89,15 @@ export class CeremonyStage {
     // Wardens guarding the town hall's doors behind the stage.
     this.person(sheets, 'warden', 24.3 + X, 20.2 + Y, 1);
     this.person(sheets, 'warden', 28.6 + X, 20.2 + Y, 1);
+    // A cordon of wardens closing the plaza on both flanks, and two escorts waiting below the stage.
+    for (let i = 0; i < 5; i++) {
+      this.person(sheets, 'warden', 22.4 + X, 21.6 + i * 1.1 + Y, 6);
+      this.person(sheets, 'warden', 30.6 + X, 21.6 + i * 1.1 + Y, 2);
+    }
+    this.escorts.push(
+      this.person(sheets, 'warden', 25.2 + X, 21.9 + Y, FACING_CROWD),
+      this.person(sheets, 'warden', 27.8 + X, 21.9 + Y, FACING_CROWD),
+    );
     this.spotlight = scene.add
       .image(0, 0, 'glow')
       .setBlendMode(Phaser.BlendModes.ADD)
@@ -119,6 +139,64 @@ export class CeremonyStage {
           .setAlpha(0.85);
       else this.spotlight.setAlpha(0);
     }
+  }
+
+  /**
+   * The chosen youth walks out of the rows, down the aisle and up onto the stage, with the two
+   * escorts closing in beside them. `ms` 0 places them there at once (skipped cinematic).
+   */
+  walkToStage(citizenId: string, ms: number): void {
+    const sprite = this.byCitizen.get(citizenId);
+    const role = this.roleOf.get(citizenId);
+    const from = this.cellOf.get(citizenId);
+    if (!sprite || !role || !from || this.walked.has(citizenId)) return;
+    const { X, Y } = this.origin;
+    const slot = this.walked.size;
+    this.walked.add(citizenId);
+    const path = [
+      { x: 26.5 + X, y: 22.7 + Y, z: 0 },
+      { x: 26.5 + X, y: 21.8 + Y, z: 0 },
+      { x: (slot === 0 ? 25.9 : 27.1) + X, y: 20.9 + Y, z: 0.3 },
+    ];
+    const end = path.at(-1)!;
+    const finish = () => {
+      const p = cellToWorld(end.x, end.y, end.z);
+      sprite.anims.stop();
+      sprite
+        .setPosition(p.x, p.y)
+        .setDepth(depthOf(end.x, end.y) + 8.6)
+        .setFrame(FACING_CROWD * (this.sheets[role]!.walkFrames + 1));
+    };
+    const escortsTo = (duration: number) =>
+      this.escorts.forEach((e, i) => {
+        const p = cellToWorld((i === 0 ? 25.9 : 27.1) + X, 21.7 + Y, 0);
+        if (duration <= 0) e.setPosition(p.x, p.y);
+        else
+          this.scene.tweens.add({ targets: e, x: p.x, y: p.y, duration, ease: 'Sine.easeInOut' });
+      });
+    if (ms <= 0) {
+      escortsTo(0);
+      finish();
+      return;
+    }
+    const leg = ms / path.length;
+    let prev = from;
+    const tweens = path.map((to) => {
+      const dir = directionIndex(to.x - prev.x, to.y - prev.y);
+      const p = cellToWorld(to.x, to.y, to.z);
+      prev = to;
+      return {
+        x: p.x,
+        y: p.y,
+        duration: leg,
+        onStart: () => {
+          sprite.play(`${role}_walk_${DIRS[dir]}`, true);
+          sprite.setDepth(depthOf(to.x, to.y) + 8.6);
+        },
+      };
+    });
+    this.scene.tweens.chain({ targets: sprite, tweens, onComplete: finish });
+    escortsTo(ms * 0.6);
   }
 
   focusPoint(citizenId: string | null): { x: number; y: number } | null {

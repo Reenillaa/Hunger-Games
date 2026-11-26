@@ -247,16 +247,62 @@ test('a new game in the grain district (generated plan and regional architecture
   expect(errors).toEqual([]);
 });
 
-test('district laws are switches with visible trade-offs', async ({ page }) => {
+test('district laws are decrees: open the scroll, sign it and send it', async ({
+  page,
+  isMobile,
+}) => {
   const errors = trackErrors(page);
   await startNewGame(page);
   await page.getByRole('button', { name: 'Pausa' }).click();
   await page.getByRole('button', { name: 'Leyes' }).click();
   const laws = page.getByTestId('laws');
-  const shifts = laws.getByRole('switch', { name: 'Jornada larga' });
-  await expect(shifts).toHaveAttribute('aria-checked', 'false');
+  const shifts = laws.getByRole('button', { name: /Jornada larga/ });
+  await expect(shifts).toHaveAttribute('aria-pressed', 'false');
   await shifts.click();
-  await expect(shifts).toHaveAttribute('aria-checked', 'true');
-  await expect(laws).toContainText('Producción +15 %');
+  const decree = page.getByTestId('decree');
+  await expect(decree).toContainText('Producción +15 %');
+  const send = decree.getByRole('button', { name: 'Sellar y enviar' });
+  await expect(send).toBeDisabled();
+  // Sign by hand on the pad: a scribble is enough ink.
+  const pad = page.getByTestId('signature-pad');
+  await pad.scrollIntoViewIfNeeded();
+  const box = (await pad.boundingBox())!;
+  const pts = Array.from({ length: 13 }, (_, i) => ({
+    x: box.x + 20 + i * (box.width / 15),
+    y: box.y + box.height * (i % 2 ? 0.3 : 0.7),
+  }));
+  if (isMobile) {
+    // A finger on the glass: real touch events.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [pts[0]!] });
+    for (const pt of pts.slice(1))
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [pt] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } else {
+    await page.mouse.move(pts[0]!.x, pts[0]!.y);
+    await page.mouse.down();
+    for (const pt of pts.slice(1)) await page.mouse.move(pt.x, pt.y);
+    await page.mouse.up();
+  }
+  await expect(send).toBeEnabled();
+  await send.click();
+  await expect(laws.getByRole('button', { name: /Jornada larga/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  expect(errors).toEqual([]);
+});
+
+test('three taps on the clock jump to the Reaping, filmed shot by shot', async ({ page }) => {
+  const errors = trackErrors(page);
+  await startNewGame(page);
+  await page.getByTestId('clock-dial').click({ clickCount: 3 });
+  await expect(page.getByTestId('cinematic')).toBeVisible();
+  // The guards close the plaza, then the herald from the Capitol speaks.
+  await expect(page.locator('[data-shot="guard"]')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('[data-shot="herald"]')).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Saltar' }).click();
+  await expect(page.getByTestId('cinematic')).toHaveCount(0);
+  await expect(page.getByTestId('phase-sheet')).toContainText('La Cosecha');
   expect(errors).toEqual([]);
 });

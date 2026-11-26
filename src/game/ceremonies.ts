@@ -19,10 +19,20 @@ function relative(state: Readonly<GameState>, id: string | null): Citizen | null
   return c?.alive ? c : null;
 }
 
+interface Reaction {
+  text: string;
+  /** Who reacts (for a close-up), or null for the crowd. */
+  by: string | null;
+}
+
 /** Family and friends react according to who they are (real names, real ties). */
 export function reactionLines(state: Readonly<GameState>, c: Citizen): string[] {
+  return reactions(state, c).map((r) => r.text);
+}
+
+function reactions(state: Readonly<GameState>, c: Citizen): Reaction[] {
   const day = Math.floor(state.clock.tick / 24);
-  const lines: string[] = [];
+  const lines: Reaction[] = [];
   const mother = relative(state, c.motherId);
   const father = relative(state, c.fatherId);
   const partner = relative(state, c.partnerId);
@@ -34,48 +44,90 @@ export function reactionLines(state: Readonly<GameState>, c: Citizen): string[] 
       (a, b) => Math.abs(ageOf(a, day) - ageOf(c, day)) - Math.abs(ageOf(b, day) - ageOf(c, day)),
     );
   if (mother)
-    lines.push(
-      t(mother.traits.includes('resilient') ? 'cri.mother.strong' : 'cri.mother', {
+    lines.push({
+      by: mother.id,
+      text: t(mother.traits.includes('resilient') ? 'cri.mother.strong' : 'cri.mother', {
         name: mother.firstName,
       }),
-    );
+    });
   if (father)
-    lines.push(
-      t(
+    lines.push({
+      by: father.id,
+      text: t(
         father.traits.includes('rebel') || father.traits.includes('aggressive')
           ? 'cri.father.angry'
           : 'cri.father',
         { name: father.firstName },
       ),
-    );
+    });
   const sib = siblings[0];
   if (sib)
-    lines.push(
-      t(ageOf(sib, day) < 12 ? 'cri.sibling.small' : 'cri.sibling', { name: sib.firstName }),
-    );
-  if (partner) lines.push(t('cri.partner', { name: partner.firstName }));
+    lines.push({
+      by: sib.id,
+      text: t(ageOf(sib, day) < 12 ? 'cri.sibling.small' : 'cri.sibling', { name: sib.firstName }),
+    });
+  if (partner) lines.push({ by: partner.id, text: t('cri.partner', { name: partner.firstName }) });
   const friend = Object.entries(c.relations)
     .filter(([, r]) => r.opinion > 50)
     .map(([id]) => relative(state, id))
     .find((f) => f && f.id !== mother?.id && f.id !== father?.id);
   if (friend)
-    lines.push(
-      t(friend.traits.includes('brave') ? 'cri.friend.brave' : 'cri.friend', {
+    lines.push({
+      by: friend.id,
+      text: t(friend.traits.includes('brave') ? 'cri.friend.brave' : 'cri.friend', {
         name: friend.firstName,
       }),
-    );
-  if (lines.length === 0) lines.push(t('cri.alone'));
+    });
+  if (lines.length === 0) lines.push({ by: null, text: t('cri.alone') });
   return lines.slice(0, 3);
 }
 
-/** The Criba, built from the real draw: who, how many slips, and who cries for them. */
+/** Who comes to say goodbye in the town hall, closest first (at most two). */
+function visitors(state: Readonly<GameState>, c: Citizen): string[] {
+  return reactions(state, c)
+    .map((r) => r.by)
+    .filter((id): id is string => !!id)
+    .slice(0, 2);
+}
+
+function farewellLine(state: Readonly<GameState>, c: Citizen, visitorId: string): string {
+  const v = state.population.citizens[visitorId]!;
+  const day = Math.floor(state.clock.tick / 24);
+  const vars = { name: v.firstName, tribute: c.firstName };
+  if (visitorId === c.motherId) return t('fw.mother', vars);
+  if (visitorId === c.fatherId) return t('fw.father', vars);
+  if (visitorId === c.partnerId) return t('fw.partner', vars);
+  if (v.motherId && v.motherId === c.motherId)
+    return t(ageOf(v, day) < 12 ? 'fw.sibling.small' : 'fw.sibling', vars);
+  return t('fw.friend', vars);
+}
+
+/**
+ * The Reaping as a film, built from the real draw: guards close the plaza, nervous faces, the
+ * herald, the urn, the chosen face, family reactions, the walk to the stage, the farewell room
+ * in the town hall and the train pulling away from the district.
+ */
 export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
   const { PLAZA, STAGE } = marks(state);
   const current = state.competition.current;
   if (!current) return [];
+  const profile = homeProfile(state.meta.homeDistrictId);
+  const n = String(profile.number);
   const day = Math.floor(state.clock.tick / 24);
+  const herald = t('cri.herald');
+  const totals = { F: 0, M: 0 };
+  for (const [id, k] of Object.entries(current.entries)) {
+    const c = state.population.citizens[id];
+    if (c) totals[c.sex] += k;
+  }
+  // The three youths with most slips (the ones who have most to fear), never the chosen ones.
+  const nervous = Object.entries(current.entries)
+    .filter(([id]) => !current.participants.includes(id) && state.population.citizens[id]?.alive)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 3)
+    .map(([id]) => id);
   const steps: CineStep[] = [
-    { kind: 'camera', cell: PLAZA, zoom: 0.8, ms: 0 },
+    { kind: 'camera', cell: { x: PLAZA.x + 3, y: PLAZA.y + 3 }, zoom: 0.55, ms: 0 },
     {
       kind: 'title',
       title: t('cri.title'),
@@ -83,55 +135,136 @@ export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
       ms: 3800,
     },
     { kind: 'fade', to: 'clear', ms: 600 },
+    { kind: 'camera', cell: PLAZA, zoom: 0.8, glide: 0.02, ms: 0 },
     { kind: 'line', text: t('cri.gather'), ms: 4200 },
-    { kind: 'camera', cell: STAGE, zoom: 1.15, ms: 0 },
-    { kind: 'line', speaker: t('cri.herald'), text: t('cri.motto'), ms: 3800 },
+    { kind: 'shot', shot: { type: 'guard' }, line: t('cri.guards'), ms: 3400 },
   ];
-  const totals = { F: 0, M: 0 };
-  for (const [id, n] of Object.entries(current.entries)) {
-    const c = state.population.citizens[id];
-    if (c) totals[c.sex] += n;
-  }
+  if (nervous.length > 0)
+    steps.push({
+      kind: 'shot',
+      shot: { type: 'faces', citizenIds: nervous },
+      line: t('cri.nerves'),
+      ms: 3600,
+    });
+  steps.push(
+    { kind: 'camera', cell: STAGE, zoom: 1.15, ms: 0 },
+    {
+      kind: 'shot',
+      shot: { type: 'herald', mood: 95 },
+      speaker: herald,
+      line: t('cri.hello', { n }),
+      ms: 4200,
+    },
+    {
+      kind: 'shot',
+      shot: { type: 'herald', mood: 70 },
+      speaker: herald,
+      line: t('cri.motto'),
+      ms: 3600,
+    },
+  );
   for (const id of current.participants) {
     const c = state.population.citizens[id];
     if (!c) continue;
     const slips = current.entries[id] ?? 1;
     steps.push(
       {
-        kind: 'line',
-        speaker: t('cri.herald'),
-        text: t(c.sex === 'F' ? 'cri.girls' : 'cri.boys'),
-        ms: 3000,
+        kind: 'shot',
+        shot: { type: 'herald', mood: 85 },
+        speaker: herald,
+        line: t(c.sex === 'F' ? 'cri.girls' : 'cri.boys'),
+        ms: 2800,
       },
-      { kind: 'line', text: t('cri.urn'), ms: 2200 },
+      { kind: 'shot', shot: { type: 'urn', citizenId: c.id }, line: t('cri.urn'), ms: 4200 },
+      {
+        kind: 'shot',
+        shot: {
+          type: 'face',
+          citizenId: c.id,
+          mood: 6,
+          caption: t('cri.slips', { age: ageOf(c, day), slips, total: totals[c.sex] }),
+        },
+        speaker: herald,
+        line: fullName(c),
+        ms: 4400,
+      },
+    );
+    for (const r of reactions(state, c)) {
+      if (r.by)
+        steps.push({
+          kind: 'shot',
+          shot: { type: 'face', citizenId: r.by, mood: 4 },
+          line: r.text,
+          ms: 3400,
+        });
+      else steps.push({ kind: 'line', text: r.text, ms: 3400 });
+    }
+    steps.push(
       { kind: 'focus', citizenId: c.id, ms: 0 },
       { kind: 'camera', cell: PLAZA, zoom: 1.35, ms: 0 },
-      {
-        kind: 'reveal',
-        citizenId: c.id,
-        caption: t('cri.slips', { age: ageOf(c, day), slips, total: totals[c.sex] }),
-        ms: 4600,
-      },
-    );
-    for (const line of reactionLines(state, c)) steps.push({ kind: 'line', text: line, ms: 3400 });
-    steps.push(
+      { kind: 'walk', citizenId: c.id, ms: 5200 },
+      { kind: 'line', text: t('cri.walk', { name: c.firstName }), ms: 1800 },
       { kind: 'focus', citizenId: null, ms: 0 },
-      { kind: 'camera', cell: STAGE, zoom: 1.15, ms: 0 },
     );
   }
+  const chosen = current.participants.filter((id) => state.population.citizens[id]);
   const morale = state.economy.morale;
   steps.push(
+    { kind: 'camera', cell: STAGE, zoom: 1.25, ms: 0 },
+    {
+      kind: 'shot',
+      shot: { type: 'pair', citizenIds: chosen },
+      speaker: herald,
+      line: t('cri.hands', { n }),
+      ms: 4200,
+    },
+    { kind: 'camera', cell: PLAZA, zoom: 0.85, glide: 0.02, ms: 0 },
     { kind: 'line', text: t(morale < 40 ? 'cri.silence' : 'cri.helmets'), ms: 4000 },
     {
       kind: 'title',
-      title: t('cri.offerings'),
-      subtitle: current.participants
-        .map((id) =>
-          state.population.citizens[id] ? fullName(state.population.citizens[id]!) : '',
-        )
-        .join(' · '),
+      title: t('cri.offerings', { n }),
+      subtitle: chosen.map((id) => fullName(state.population.citizens[id]!)).join(' · '),
+      ms: 4000,
+    },
+    { kind: 'fade', to: 'black', ms: 700 },
+    { kind: 'title', title: t('fw.title'), subtitle: t('fw.subtitle'), ms: 2800 },
+    { kind: 'fade', to: 'clear', ms: 400 },
+  );
+  for (const id of chosen) {
+    const c = state.population.citizens[id]!;
+    const who = visitors(state, c);
+    if (who.length === 0)
+      steps.push({
+        kind: 'shot',
+        shot: { type: 'farewell', citizenId: id, visitorId: null },
+        line: t('fw.none', { tribute: c.firstName }),
+        ms: 3800,
+      });
+    for (const v of who)
+      steps.push({
+        kind: 'shot',
+        shot: { type: 'farewell', citizenId: id, visitorId: v },
+        line: farewellLine(state, c, v),
+        ms: 4000,
+      });
+  }
+  // The train: the district recedes through the window (the real one, the camera pulls away).
+  steps.push(
+    { kind: 'camera', cell: profile.station, zoom: 1.1, glide: 1, ms: 0 },
+    {
+      kind: 'shot',
+      shot: { type: 'train', citizenIds: chosen },
+      line: t('cri.train'),
       ms: 4200,
     },
+    { kind: 'camera', cell: PLAZA, zoom: 0.32, glide: 0.006, ms: 0 },
+    {
+      kind: 'shot',
+      shot: { type: 'train', citizenIds: chosen },
+      line: t('cri.train.away', { n }),
+      ms: 5600,
+    },
+    { kind: 'fade', to: 'black', ms: 900 },
   );
   return steps;
 }

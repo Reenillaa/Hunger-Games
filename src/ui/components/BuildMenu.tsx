@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ResourceId, StructureKind } from '../../core/index.ts';
 import { canAfford } from '../../core/index.ts';
 import { BUILDINGS } from '../../content/buildings.ts';
+import { COMMON_BUILDINGS, homeProfile } from '../../content/homeDistricts.ts';
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
 import type { GameSession } from '../../game/session.ts';
@@ -46,13 +47,18 @@ export function costText(cost: Partial<Record<ResourceId, number>>): string {
     .join(' · ');
 }
 
-const BUILDABLE = (Object.keys(BUILDINGS) as StructureKind[]).filter((k) => BUILDINGS[k].buildable);
-
 export function BuildMenu({ session }: { session: GameSession }) {
   const { state } = useSession(session);
   const ui = useUi(session);
   const [open, setOpen] = useState(false);
   if (state.phase.kind !== 'district') return null;
+  const trades = homeProfile(state.meta.homeDistrictId).trades.filter(
+    (k) => BUILDINGS[k].buildable,
+  );
+  const sections: { title: string; kinds: StructureKind[] }[] = [
+    { title: t('build.trade'), kinds: trades },
+    { title: t('build.common'), kinds: COMMON_BUILDINGS.filter((k) => BUILDINGS[k].buildable) },
+  ];
   if (ui.mode === 'place' && ui.placeKind) {
     return (
       <div className={`${styles.panel} ${styles.placeHint}`} data-testid="place-hint">
@@ -70,35 +76,40 @@ export function BuildMenu({ session }: { session: GameSession }) {
     <div className={styles.buildArea}>
       {open && (
         <div className={`${styles.panel} ${styles.buildMenu}`} role="menu" data-testid="build-menu">
-          {BUILDABLE.map((kind) => {
-            const def = BUILDINGS[kind];
-            const affordable = canAfford(state, kind);
-            return (
-              <button
-                key={kind}
-                type="button"
-                role="menuitem"
-                className={styles.buildItem}
-                disabled={!affordable}
-                onClick={() => {
-                  setOpen(false);
-                  session.ui.startPlacing(kind);
-                }}
-              >
-                <img
-                  className={styles.buildThumb}
-                  src={`assets/ui/thumbs/${kind}.webp`}
-                  alt=""
-                  loading="lazy"
-                />
-                <span className={styles.buildText}>
-                  <span className={styles.slotName}>{t(`b.${kind}` as LocaleKey)}</span>
-                  <CostChips cost={def.cost} />
-                  <span className={styles.buildDesc}>{t(`bd.${kind}` as LocaleKey)}</span>
-                </span>
-              </button>
-            );
-          })}
+          {sections.map(({ title, kinds }) => (
+            <div key={title} className={styles.buildSection} role="group" aria-label={title}>
+              <p className={styles.cardSection}>{title}</p>
+              {kinds.map((kind) => {
+                const def = BUILDINGS[kind];
+                const affordable = canAfford(state, kind);
+                return (
+                  <button
+                    key={kind}
+                    type="button"
+                    role="menuitem"
+                    className={styles.buildItem}
+                    disabled={!affordable}
+                    onClick={() => {
+                      setOpen(false);
+                      session.ui.startPlacing(kind);
+                    }}
+                  >
+                    <img
+                      className={styles.buildThumb}
+                      src={`assets/ui/thumbs/${kind}.webp`}
+                      alt=""
+                      loading="lazy"
+                    />
+                    <span className={styles.buildText}>
+                      <span className={styles.slotName}>{t(`b.${kind}` as LocaleKey)}</span>
+                      <CostChips cost={def.cost} />
+                      <span className={styles.buildDesc}>{t(`bd.${kind}` as LocaleKey)}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
       <button

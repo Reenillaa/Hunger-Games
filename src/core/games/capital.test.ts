@@ -44,6 +44,7 @@ describe('the capital', () => {
       }).ok,
     ).toBe(true);
     nextDay(s);
+    s.economy.resources.credits = 500; // the year's mishaps vary; the outfit budget is tested here
     const credits = s.economy.resources.credits;
     expect(
       applyCommand(s, {

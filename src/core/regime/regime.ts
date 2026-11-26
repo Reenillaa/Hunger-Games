@@ -1,5 +1,15 @@
 import type { DistrictEventDef, EventEffects } from '../../content/districtEvents.ts';
 import { DISTRICT_EVENTS } from '../../content/districtEvents.ts';
+import {
+  CALAMITIES,
+  CALAMITY_BASE_CHANCE,
+  CALAMITY_FULLNESS_CHANCE,
+  SPOIL_RATE,
+  SPOIL_THRESHOLD,
+} from '../../content/calamities.ts';
+import { homeProfile } from '../../content/homeDistricts.ts';
+import type { ResourceId } from '../district/template.ts';
+import { storageCapacity } from '../economy/economy.ts';
 import type { SimContext } from '../events.ts';
 import type { Citizen } from '../population/types.ts';
 import { ageOf, livingCitizens } from '../population/types.ts';
@@ -105,6 +115,47 @@ export function resolveEvent(state: GameState, optionIndex: number, ctx: SimCont
 }
 
 /**
+ * Daily wear on the stores: food and wood spoil above 60 % of the capacity, and now and then a
+ * mishap (rats, thieves, fire, the Capitol's requisition...) takes a share of what is kept.
+ */
+export function mishapDay(state: GameState, date: CalendarDate, ctx: SimContext): void {
+  const e = state.economy;
+  const r = e.resources;
+  const cap = storageCapacity(state);
+  for (const res of ['food', 'wood'] as const) {
+    const excess = r[res] - cap * SPOIL_THRESHOLD;
+    if (excess > 0) r[res] = Math.max(0, r[res] - Math.ceil(excess * SPOIL_RATE[res]));
+  }
+  // Mishaps only strike while the district is being governed (not during the Games' journey).
+  if (state.phase.kind !== 'district') return;
+  const rng = state.rng.regime;
+  const fill = Math.max(...(['food', 'wood', 'stone', 'coal'] as const).map((k) => r[k] / cap));
+  if (nextFloat(rng) >= CALAMITY_BASE_CHANCE + CALAMITY_FULLNESS_CHANCE * Math.min(1, fill)) return;
+  const home = state.meta.homeDistrictId;
+  const pool = CALAMITIES.filter(
+    (c) =>
+      (!c.seasons || c.seasons.includes(date.season)) &&
+      (!c.districts || c.districts.includes(home)),
+  );
+  const total = pool.reduce((n, c) => n + c.weight, 0);
+  let roll = nextFloat(rng) * total;
+  const def = pool.find((c) => (roll -= c.weight) < 0) ?? pool[0];
+  if (!def) return;
+  const lost: Partial<Record<ResourceId, number>> = {};
+  for (const [key, share] of Object.entries(def.losses)) {
+    const res: ResourceId = key === 'heating' ? homeProfile(home).heating : (key as ResourceId);
+    const n = Math.floor(r[res] * share);
+    if (n <= 0) continue;
+    r[res] -= n;
+    lost[res] = (lost[res] ?? 0) + n;
+  }
+  if (Object.keys(lost).length === 0) return;
+  if (def.morale) e.morale = clamp(e.morale + def.morale, 0, 100);
+  log(state, `cal.${def.id}.log`);
+  ctx.emit({ type: 'regime/calamity', id: def.id, lost });
+}
+
+/**
  * Daily: decrees expire, the regime reacts to attention (curfews, reprisals), unrest builds up
  * with hunger and fear, and now and then a new dilemma reaches the district.
  */
@@ -114,6 +165,7 @@ export function regimeDay(state: GameState, date: CalendarDate, ctx: SimContext)
   const rng = state.rng.regime;
   const day = date.absoluteDay;
   g.decrees = g.decrees.filter((d) => d.untilDay > day);
+  mishapDay(state, date, ctx);
   // Unanswered dilemmas resolve themselves the cautious way after two days (or at once unattended).
   if (g.pending && (ctx.autopilot || day - g.pending.day >= 2)) resolveEvent(state, 0, ctx);
 
