@@ -201,12 +201,22 @@ describe('arena maps', () => {
     expect(tundra!.games!.edition % 2).toBe(0);
     const drain = (s: GameState) => {
       const team = Object.values(s.arena!.actors).filter((a) => a.player);
-      for (const a of team) a.order = { kind: 'hide' };
+      // Same needs at the start in both arenas: only the map makes the difference.
+      for (const a of team) {
+        a.order = { kind: 'hide' };
+        a.energy = 50;
+        a.hunger = 20;
+        a.thirst = 20;
+        a.hp = 100;
+      }
       const before = team.reduce((n, a) => n + a.energy, 0);
+      const round = s.arena!.round;
       applyCommand(s, { type: 'arena/advance', maxRounds: 12 });
-      return before - team.reduce((n, a) => n + a.energy, 0);
+      // Per round: an interrupt (a rival in sight) may stop one arena earlier than the other.
+      const rounds = Math.max(1, s.arena!.round - round);
+      return (before - team.reduce((n, a) => n + a.energy, 0)) / rounds;
     };
-    expect(drain(tundra!)).toBeGreaterThan(drain(forest!) - 5);
+    expect(drain(tundra!)).toBeGreaterThan(drain(forest!));
     applyCommand(tundra!, { type: 'arena/conclude' });
     expect(tundra!.arena!.finished).not.toBeNull();
   });

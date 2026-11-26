@@ -173,11 +173,11 @@ test('population list and citizen sheet with family links', async ({ page }) => 
   await page.getByRole('button', { name: 'Población' }).click();
   const list = page.getByTestId('population-list');
   await expect(list.getByRole('button').first()).toBeVisible();
-  expect(await list.getByRole('button').count()).toBeGreaterThan(80);
+  expect(await list.getByRole('button').count()).toBeGreaterThan(40);
   await page.getByRole('button', { name: 'Todos' }).click();
   const eligible = await list.getByRole('button').count();
   expect(eligible).toBeGreaterThan(5);
-  expect(eligible).toBeLessThan(60);
+  expect(eligible).toBeLessThan(40);
   await list.getByRole('button').first().click();
   await expect(page.getByTestId('citizen-card')).toBeVisible();
   await expect(page.getByText('Personalidad').or(page.getByText('Atributos'))).toBeVisible();
@@ -264,6 +264,14 @@ test('district laws are decrees: open the scroll, sign it and send it', async ({
   const send = decree.getByRole('button', { name: 'Sellar y enviar' });
   await expect(send).toBeDisabled();
   // Sign by hand on the pad: a scribble is enough ink.
+  // Wait until the scroll has finished unrolling before signing on it.
+  await expect
+    .poll(() =>
+      decree
+        .locator('article')
+        .evaluate((el) => el.getAnimations().every((a) => a.playState === 'finished')),
+    )
+    .toBe(true);
   const pad = page.getByTestId('signature-pad');
   await pad.scrollIntoViewIfNeeded();
   const box = (await pad.boundingBox())!;

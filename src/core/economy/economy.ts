@@ -289,6 +289,7 @@ export function checkPlacement(
   const occupied = new Set<string>();
   for (const s of state.district.structures)
     for (const [cx, cy] of footprintCells(s.kind, s.x, s.y)) occupied.add(`${cx},${cy}`);
+  for (const k of state.district.roads) occupied.add(`${k % t.width},${Math.floor(k / t.width)}`);
   for (const [cx, cy] of cells) {
     const code = terrainAt(t, cx, cy);
     if (code === null) return 'out-of-map';

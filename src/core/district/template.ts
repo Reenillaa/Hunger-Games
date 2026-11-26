@@ -53,7 +53,8 @@ export type PropKind =
   | 'boat'
   | 'oak_a'
   | 'oak_b'
-  | 'birch';
+  | 'birch'
+  | 'hanging_tree';
 
 /** Cells where the player may build (Phase 3 rules start from this). */
 export const BUILDABLE: ReadonlySet<TerrainCode> = new Set(['g', 'd', 'c']);

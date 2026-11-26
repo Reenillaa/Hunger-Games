@@ -9,6 +9,8 @@ import { PRICES } from '../../content/buildings.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { ResourceId, StructureKind } from '../district/template.ts';
 import { allocateLabor, checkPlacement, def, storageCapacity } from '../economy/economy.ts';
+import { layRoadTo } from '../district/roads.ts';
+import { TEMPLATES } from '../../content/maps/index.ts';
 import { nextId } from '../state/gameState.ts';
 import { createGames, resolveCapitalDay } from '../games/capital.ts';
 import { applyHomecoming, recordResults } from '../games/aftermath.ts';
@@ -207,6 +209,9 @@ const HANDLERS: HandlerMap = {
       state.district.props = state.district.props.filter(
         (p) => p.x < cmd.x || p.y < cmd.y || p.x >= cmd.x + w || p.y >= cmd.y + d,
       );
+      // The town lays a path from the new door to the nearest road by itself.
+      const template = TEMPLATES[state.district.templateId];
+      if (template) layRoadTo(template, state.district, STRUCTURE_FOOTPRINTS, id);
       allocateLabor(state);
       ctx.emit({ type: 'building/placed', id, kind: cmd.kind });
     },

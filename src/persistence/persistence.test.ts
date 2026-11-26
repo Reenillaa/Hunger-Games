@@ -1,3 +1,4 @@
+import { HOME_DISTRICTS } from '../content/homeDistricts.ts';
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
 import {
@@ -73,9 +74,12 @@ describe('production migration v1 → v2', () => {
     const json = JSON.stringify({ format: 'diezmo-save', saveVersion: 1, state: v1 });
     const { state } = await decodeSave(new TextEncoder().encode(json));
     expect(state.schemaVersion).toBe(STATE_SCHEMA_VERSION);
-    expect(Object.keys(state.population.citizens).length).toBeGreaterThan(100);
+    expect(Object.keys(state.population.citizens).length).toBeGreaterThan(40);
     expect(state.economy.resources.food).toBeGreaterThan(0);
-    expect(state.district.structures.length).toBeGreaterThan(20);
+    expect(state.district.structures.length).toBeGreaterThan(15);
+    // Generated on today's (bigger) map, it is not shifted again by the v11 migration.
+    const hall = state.district.structures.find((st) => st.kind === 'town_hall')!;
+    expect(hall.x).toBe(HOME_DISTRICTS.d12.landmarks[0]!.x);
     expect(state.clock).toEqual(v1.clock);
   });
 });

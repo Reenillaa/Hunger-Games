@@ -75,7 +75,7 @@ export class Ambience {
         .setDepth(190000)
         .setAlpha(0.16)
         .setScale(3 + (i % 3), 2 + (i % 2));
-      const p = cellToWorld(i * 13, (i * 29) % 48);
+      const p = cellToWorld(i * 13, (i * 29) % 64);
       cloud.setPosition(p.x - 1500 + i * 900, p.y);
       this.clouds.push(cloud);
     }

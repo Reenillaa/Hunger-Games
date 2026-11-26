@@ -14,8 +14,8 @@ function exposeForTests(session: GameSession): void {
   (window as unknown as { __diezmo?: unknown }).__diezmo = {
     session,
     findSpot(kind: StructureKind) {
-      for (let y = 0; y < 48; y++)
-        for (let x = 0; x < 48; x++)
+      for (let y = 0; y < 64; y++)
+        for (let x = 0; x < 64; x++)
           if (checkPlacement(session.getState(), kind, x, y) === null) return { x, y };
       return null;
     },

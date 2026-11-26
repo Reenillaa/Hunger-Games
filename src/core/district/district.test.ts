@@ -11,10 +11,10 @@ const gen = (seed: string) =>
   generateDistrict(template, STRUCTURE_FOOTPRINTS, seedFromString(seed));
 
 describe('d12 template', () => {
-  it('is a 48x48 grid with a valid code in every cell', () => {
-    expect(template.terrain).toHaveLength(48);
+  it('is a 64x64 grid with a valid code in every cell', () => {
+    expect(template.terrain).toHaveLength(64);
     for (const row of template.terrain) {
-      expect(row).toHaveLength(48);
+      expect(row).toHaveLength(64);
       for (const ch of row) expect(Object.keys(template.legend)).toContain(ch);
     }
   });
@@ -39,8 +39,8 @@ describe('generateDistrict', () => {
     for (const k of ['town_hall', 'stage', 'mine_headframe', 'warehouse', 'economato'] as const) {
       expect(kinds).toContain(k);
     }
-    expect(kinds.filter((k) => k === 'house_terrace')).toHaveLength(9);
-    expect(kinds.filter((k) => k === 'house_shack')).toHaveLength(13);
+    expect(kinds.filter((k) => k === 'house_terrace')).toHaveLength(4);
+    expect(kinds.filter((k) => k === 'house_shack')).toHaveLength(6);
   });
 
   it('never overlaps structures and keeps houses on buildable land', () => {
@@ -76,7 +76,8 @@ describe('generateDistrict', () => {
   it('is part of every new game', () => {
     const s = createNewGame({ seed: 'district' });
     expect(s.district.templateId).toBe('d12');
-    expect(s.district.structures.length).toBe(31);
+    // The landmarks, ten houses and two gardens: a small start with room to grow.
+    expect(s.district.structures.length).toBe(19);
   });
 });
 

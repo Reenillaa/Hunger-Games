@@ -1,4 +1,3 @@
-import { homeProfile } from '../../content/homeDistricts.ts';
 import * as Phaser from 'phaser';
 import type { DistrictState, PlacedProp, PlacedStructure } from '../../core/index.ts';
 import { buildWalkGrid } from '../../core/index.ts';
@@ -7,24 +6,19 @@ import { Ambience } from '../district/ambience.ts';
 import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts';
 import { Townsfolk } from '../district/townsfolk.ts';
 import { CeremonyStage } from '../district/ceremony.ts';
+import { GroundPainter } from '../district/ground.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { GameSession } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
-import type {
-  HeightMap,
-  SpriteAsset,
-  SpriteManifest,
-  TerrainManifest,
-} from '../district/assets.ts';
+import type { SpriteAsset, SpriteManifest } from '../district/assets.ts';
 import { ART_BASE, SMOKE_POINTS, pickTerrainScale } from '../district/assets.ts';
 import { daylightAt } from '../district/daylight.ts';
 import { BUILDINGS } from '../../content/buildings.ts';
 import { ageOf, checkPlacement, livingCitizens } from '../../core/index.ts';
-import { TILE_H, TILE_W, cellToWorld, depthOf, mapBounds, pickCell } from '../iso/projection.ts';
+import { TILE_W, cellToWorld, depthOf, mapBounds, pickCell } from '../iso/projection.ts';
 import { PALETTE } from '../palette.ts';
 
 export const DISTRICT_SCENE = 'district';
-const MAP_SIZE = 48;
 
 interface Glow {
   image: Phaser.GameObjects.Image;
@@ -42,7 +36,6 @@ export class DistrictScene extends Phaser.Scene {
   private controller?: CameraController;
   private hover?: Phaser.GameObjects.Graphics;
   private terrainScale: '1x' | '0.5x' = '1x';
-  private heights: number[][] = [];
   private readonly shadows: Phaser.GameObjects.Image[] = [];
   private readonly emissive: Phaser.GameObjects.Image[] = [];
   private readonly glows: Glow[] = [];
@@ -65,6 +58,8 @@ export class DistrictScene extends Phaser.Scene {
   private marker?: Phaser.GameObjects.Graphics;
   private ambience?: Ambience;
   private built = false;
+  private ground?: GroundPainter;
+  private roadsSig = '';
 
   constructor(session: GameSession) {
     super(DISTRICT_SCENE);
@@ -73,26 +68,16 @@ export class DistrictScene extends Phaser.Scene {
 
   preload(): void {
     this.terrainScale = pickTerrainScale();
-    const terrainBase = homeProfile(this.session.getState().meta.homeDistrictId).terrainBase;
-    this.load.json('terrainManifest', `${terrainBase}/${this.terrainScale}/manifest.json`);
     this.load.json('spriteManifest', `${ART_BASE}/sprites/manifest.json`);
-    this.load.json('heights', `${terrainBase}/heights.json`);
     this.load.json('characterManifest', `${ART_BASE}/characters/manifest.json`);
   }
 
   create(): void {
     this.cameras.main.setBackgroundColor(PALETTE.coal);
-    const terrain = this.cache.json.get('terrainManifest') as TerrainManifest;
     const sprites = this.cache.json.get('spriteManifest') as SpriteManifest;
-    this.heights = (this.cache.json.get('heights') as HeightMap).heights;
     const district = this.session.getState().district;
 
     // Second loading pass: only the art this district actually uses.
-    const base = `${homeProfile(this.session.getState().meta.homeDistrictId).terrainBase}/${this.terrainScale}`;
-    for (let r = 0; r < terrain.rows; r++) {
-      for (let c = 0; c < terrain.cols; c++)
-        this.load.image(`terrain_${r}_${c}`, `${base}/t_${r}_${c}.jpg`);
-    }
     const characters = (
       this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
     ).characters;
@@ -106,7 +91,9 @@ export class DistrictScene extends Phaser.Scene {
       ...Object.entries(sprites.assets)
         .filter(([, a]) => a.kind === 'building')
         // Only this district's regional architecture (plus the shared models).
-        .filter(([k]) => !k.includes('__') || k.endsWith(`__${district.templateId}`))
+        .filter(
+          ([k]) => !k.includes('__') || new RegExp(`__${district.templateId}(_l[23])?$`).test(k),
+        )
         .map(([k]) => k),
       ...district.props.map((p) => p.kind),
     ]);
@@ -128,28 +115,17 @@ export class DistrictScene extends Phaser.Scene {
     });
     this.load.once('complete', () => {
       bar.destroy();
-      this.build(terrain, sprites, district);
+      this.build(sprites, district);
     });
     this.load.start();
   }
 
-  private build(terrain: TerrainManifest, sprites: SpriteManifest, district: DistrictState): void {
+  private build(sprites: SpriteManifest, district: DistrictState): void {
     this.makeSmokeTexture();
     this.makeGlowTexture();
 
-    // Terrain chunks, positioned so the manifest anchor lands on cell (0, 0).
-    const s = terrain.scale;
-    const [ax, ay] = terrain.originAnchor;
-    for (let r = 0; r < terrain.rows; r++) {
-      for (let c = 0; c < terrain.cols; c++) {
-        const chunk = this.add
-          .image((c * terrain.tile - ax) / s, (r * terrain.tile - ay) / s, `terrain_${r}_${c}`)
-          .setOrigin(0, 0)
-          .setScale(1 / s)
-          .setDepth(-10000);
-        this.tinted.push(chunk);
-      }
-    }
+    // Stylised ground painted at runtime from the template and the roads laid in play.
+    this.paintGround();
 
     this.sprites = sprites;
     this.syncWorld();
@@ -179,9 +155,10 @@ export class DistrictScene extends Phaser.Scene {
     }
 
     this.hover = this.add.graphics().setDepth(100000);
-    const bounds = mapBounds(MAP_SIZE, MAP_SIZE);
+    const size = template?.width ?? 64;
+    const bounds = mapBounds(size, size);
     this.controller = new CameraController(this, {
-      minZoom: 0.4,
+      minZoom: 0.3,
       maxZoom: 1.6,
       // Inset so the dark corners beyond the playable diamond stay off screen.
       bounds: {
@@ -202,18 +179,33 @@ export class DistrictScene extends Phaser.Scene {
     this.built = true;
   }
 
-  private heightAt(x: number, y: number): number {
-    return (
-      this.heights[Math.max(0, Math.min(MAP_SIZE - 1, Math.round(y)))]?.[
-        Math.max(0, Math.min(MAP_SIZE - 1, Math.round(x)))
-      ] ?? 0
-    );
+  /** The painted ground is flat, like a board game table: everything stands at height 0. */
+  private heightAt(_x: number, _y: number): number {
+    return 0;
+  }
+
+  private paintGround(): void {
+    const template = TEMPLATES[this.session.getState().district.templateId];
+    if (!template) return;
+    this.ground ??= new GroundPainter(this, this.terrainScale === '1x' ? 0.75 : 0.5);
+    const roads = new Set<number>(this.session.getState().district.roads);
+    this.roadsSig = [...roads].join(',');
+    const fresh = this.ground.paint({ template, roads });
+    const alive = (o: { active: boolean }) => o.active;
+    this.tinted.splice(0, this.tinted.length, ...this.tinted.filter(alive), ...fresh);
+    this.lastAmbient = -1; // re-tint the new ground at the current hour
   }
 
   /** Visual variant (same footprint, other materials) chosen from the position: stable per save. */
   private spriteKey(s: PlacedStructure, sprites: SpriteManifest): string {
     // Regional architecture first (e.g. house_shack__d11): every district builds its own way.
     const regional = `${s.kind}__${this.session.getState().meta.homeDistrictId}`;
+    // Upgraded homes look better off (annex, flower boxes, a fenced yard at level 3).
+    if (s.level >= 2) {
+      const base = sprites.assets[regional] ? regional : s.kind;
+      const levelled = `${base}_l${s.level}`;
+      if (sprites.assets[levelled]) return levelled;
+    }
     if (sprites.assets[regional]) return regional;
     const variants = Object.keys(sprites.assets).filter(
       (k) => k === s.kind || (k.startsWith(`${s.kind}_`) && k.length === s.kind.length + 2),
@@ -243,6 +235,8 @@ export class DistrictScene extends Phaser.Scene {
     const sprites = this.sprites;
     if (!sprites) return;
     const district = this.session.getState().district;
+    // New paths were laid: repaint the ground.
+    if (district.roads.join(',') !== this.roadsSig) this.paintGround();
     const seen = new Set<string>();
     for (const s of district.structures) {
       seen.add(s.id);
@@ -555,28 +549,35 @@ export class DistrictScene extends Phaser.Scene {
       const asset = this.sprites?.assets[kind];
       if (asset) {
         const pos = cellToWorld(x + (w - 1) / 2, y + (d - 1) / 2, 0);
-        if (!this.ghost) this.ghost = this.add.image(0, 0, kind).setDepth(99999);
+        const regional = `${kind}__${this.session.getState().meta.homeDistrictId}`;
+        const tex = this.textures.exists(regional) ? regional : kind;
+        const a = this.sprites?.assets[tex] ?? asset;
+        if (!this.ghost) this.ghost = this.add.image(pos.x, pos.y, tex).setDepth(99999);
+        // The ghost glides after the finger instead of jumping from cell to cell.
+        const gx = this.ghost.visible ? this.ghost.x + (pos.x - this.ghost.x) * 0.35 : pos.x;
+        const gy = this.ghost.visible ? this.ghost.y + (pos.y - this.ghost.y) * 0.35 : pos.y;
         this.ghost
-          .setTexture(kind)
+          .setTexture(tex)
           .setVisible(true)
-          .setPosition(pos.x, pos.y)
-          .setOrigin(asset.anchor[0] / asset.size[0], asset.anchor[1] / asset.size[1])
-          .setScale(1 / asset.scale)
-          .setAlpha(0.7)
+          .setPosition(gx, gy)
+          .setOrigin(a.anchor[0] / a.size[0], a.anchor[1] / a.size[1])
+          .setScale(1 / a.scale)
+          .setAlpha(0.75)
           .setTint(problem ? 0xff6a5a : 0x9be08a);
       }
-      this.outline(marker, x, y, w, d, problem ? 0xe0533f : 0x9be08a);
+      this.softFootprint(marker, x, y, w, d, problem ? 0xe0533f : 0x9be08a);
     }
     const selected = ui.selectedId
       ? this.session.getState().district.structures.find((s) => s.id === ui.selectedId)
       : null;
     if (selected) {
       const { w, d } = STRUCTURE_FOOTPRINTS[selected.kind];
-      this.outline(marker, selected.x, selected.y, w, d, PALETTE.lampOchre);
+      this.softFootprint(marker, selected.x, selected.y, w, d, PALETTE.lampOchre);
     }
   }
 
-  private outline(
+  /** A soft glow on the ground under a building: no grid lines, just a pool of light. */
+  private softFootprint(
     g: Phaser.GameObjects.Graphics,
     x: number,
     y: number,
@@ -584,28 +585,15 @@ export class DistrictScene extends Phaser.Scene {
     d: number,
     color: number,
   ): void {
-    const a = cellToWorld(x - 0.5, y - 0.5);
-    const b = cellToWorld(x + w - 0.5, y - 0.5);
-    const c = cellToWorld(x + w - 0.5, y + d - 0.5);
-    const e = cellToWorld(x - 0.5, y + d - 0.5);
-    g.lineStyle(3, color, 0.95).strokePoints(
-      [
-        new Phaser.Math.Vector2(a.x, a.y),
-        new Phaser.Math.Vector2(b.x, b.y),
-        new Phaser.Math.Vector2(c.x, c.y),
-        new Phaser.Math.Vector2(e.x, e.y),
-      ],
-      true,
-    );
-    g.fillStyle(color, 0.12).fillPoints(
-      [
-        new Phaser.Math.Vector2(a.x, a.y),
-        new Phaser.Math.Vector2(b.x, b.y),
-        new Phaser.Math.Vector2(c.x, c.y),
-        new Phaser.Math.Vector2(e.x, e.y),
-      ],
-      true,
-    );
+    const c = cellToWorld(x + (w - 1) / 2, y + (d - 1) / 2);
+    const rx = ((w + d) / 2) * (TILE_W / 2) * 1.05;
+    const ry = rx / 2;
+    for (let i = 3; i >= 1; i--) {
+      g.fillStyle(color, 0.08 * i);
+      g.fillEllipse(c.x, c.y, rx * 2 * (0.7 + i * 0.12), ry * 2 * (0.7 + i * 0.12));
+    }
+    g.lineStyle(3, color, 0.7);
+    g.strokeEllipse(c.x, c.y, rx * 2, ry * 2);
   }
 
   /** A tap (not a drag) places the building in placement mode, or selects one in view mode. */
@@ -631,22 +619,8 @@ export class DistrictScene extends Phaser.Scene {
     this.session.ui.select(hit?.id ?? null);
   }
 
-  private drawHover(pointer: Phaser.Input.Pointer): void {
-    if (!this.hover) return;
-    this.hover.clear();
-    const world = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-    const { cx, cy } = pickCell(world.x, world.y);
-    if (cx < 0 || cy < 0 || cx >= MAP_SIZE || cy >= MAP_SIZE) return;
-    const { x, y } = cellToWorld(cx, cy, this.heightAt(cx, cy));
-    this.hover.lineStyle(2, PALETTE.lampOchre, 0.9);
-    this.hover.strokePoints(
-      [
-        new Phaser.Math.Vector2(x, y - TILE_H / 2),
-        new Phaser.Math.Vector2(x + TILE_W / 2, y),
-        new Phaser.Math.Vector2(x, y + TILE_H / 2),
-        new Phaser.Math.Vector2(x - TILE_W / 2, y),
-      ],
-      true,
-    );
+  /** No grid on screen: hovering the ground shows nothing (buildings react on tap). */
+  private drawHover(_pointer: Phaser.Input.Pointer): void {
+    this.hover?.clear();
   }
 }

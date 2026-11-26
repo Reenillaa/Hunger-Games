@@ -31,6 +31,7 @@ export function buildWalkGrid(
       cost[y * width + x] = TERRAIN_COST[terrainAt(template, x, y) ?? 'R'];
     }
   }
+  for (const k of district.roads ?? []) cost[k] = Math.min(cost[k]!, 1);
   for (const s of district.structures) {
     const { w, d } = footprints[s.kind];
     for (let dy = 0; dy < d; dy++)

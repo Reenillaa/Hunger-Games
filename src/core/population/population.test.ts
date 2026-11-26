@@ -51,13 +51,13 @@ describe('initial population', () => {
   const s = createNewGame({ seed: 'people' });
   const living = livingCitizens(s.population);
 
-  it('fills the houses with about 120 people in families', () => {
-    expect(living.length).toBeGreaterThan(90);
-    expect(living.length).toBeLessThan(150);
+  it('fills the (few) starting houses with about 60 people in families', () => {
+    expect(living.length).toBeGreaterThan(40);
+    expect(living.length).toBeLessThan(90);
     for (const c of living) expect(c.homeId).not.toBeNull();
     const couples = living.filter((c) => c.partnerId).length / 2;
-    expect(couples).toBeGreaterThan(20);
-    expect(living.filter((c) => ageOf(c, 0) >= 12 && ageOf(c, 0) <= 18).length).toBeGreaterThan(10);
+    expect(couples).toBeGreaterThan(10);
+    expect(living.filter((c) => ageOf(c, 0) >= 12 && ageOf(c, 0) <= 18).length).toBeGreaterThan(5);
   });
 
   it('remembers deceased grandparents and links siblings across homes', () => {

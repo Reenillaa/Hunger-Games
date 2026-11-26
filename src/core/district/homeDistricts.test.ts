@@ -33,8 +33,9 @@ describe('playable home districts', () => {
         expect(found, `${profile.id} ${l.kind}`).toBe(true);
       }
       const houses = s.district.structures.filter((st) => st.kind.startsWith('house'));
-      expect(houses.length).toBeGreaterThan(15);
-      expect(livingCitizens(s.population).length).toBeGreaterThan(60);
+      // A small start (fewer houses, room to grow): the plan asks for ten or eleven.
+      expect(houses.length).toBe(profile.houses.house_terrace + profile.houses.house_shack);
+      expect(livingCitizens(s.population).length).toBeGreaterThan(30);
       expect(s.economy.quota.required).toBe(profile.baseQuota);
       // Every workplace can be reached on foot from the town hall.
       const template = TEMPLATES[profile.templateId]!;
@@ -68,7 +69,7 @@ describe('playable home districts', () => {
     const s = createNewGame({ seed: 'rules', homeDistrict: 'd4' });
     s.economy.resources.wood = 999;
     s.economy.resources.stone = 999;
-    expect(checkPlacement(s, 'fishery', 36, 34)).toBe('requirement');
+    expect(checkPlacement(s, 'fishery', 44, 42)).toBe('requirement');
     const land = createNewGame({ seed: 'rules', homeDistrict: 'd11' });
     land.economy.resources.wood = 999;
     land.economy.resources.stone = 999;

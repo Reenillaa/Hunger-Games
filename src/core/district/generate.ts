@@ -37,6 +37,8 @@ export interface DistrictState {
   templateId: string;
   structures: PlacedStructure[];
   props: PlacedProp[];
+  /** Cells (y · width + x) of the paths laid during play, on top of the template's roads (v11). */
+  roads: number[];
 }
 
 export type FootprintTable = Record<StructureKind, { w: number; d: number }>;
@@ -106,8 +108,34 @@ export function generateDistrict(
     }
   }
 
-  // Houses: as close to the plaza as possible, with a one-cell alley around each.
+  // The old hanging tree stands just west of the town hall (2×2 cells kept clear).
   const { plaza } = template;
+  let treeSpot: { x: number; y: number } | null = null;
+  const treeFits = (x: number, y: number) =>
+    [0, 1].every((dy) =>
+      [0, 1].every((dx) => {
+        const code = terrainAt(template, x + dx, y + dy);
+        return (code === 'g' || code === 'd') && !occupied.has(key(x + dx, y + dy));
+      }),
+    );
+  for (let r = 0; r <= 6 && !treeSpot; r++)
+    for (let dy = -r; dy <= r && !treeSpot; dy++)
+      for (let dx = -r; dx <= r && !treeSpot; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = plaza.x0 - 2 + dx;
+        const y = plaza.y0 - 2 + dy;
+        if (treeFits(x, y)) treeSpot = { x, y };
+      }
+  if (treeSpot)
+    for (const [dx, dy] of [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+    ] as const)
+      occupied.add(key(treeSpot.x + dx, treeSpot.y + dy));
+
+  // Houses: as close to the plaza as possible, with a one-cell alley around each.
   const px = (plaza.x0 + plaza.x1) / 2;
   const py = (plaza.y0 + plaza.y1) / 2;
   const canHouse = (kind: StructureKind, x: number, y: number) => {
@@ -135,7 +163,7 @@ export function generateDistrict(
   candidates.sort((a, b) => a.score - b.score || a.y - b.y || a.x - b.x);
   // A house must never cut the town in two (e.g. by blocking the bridge): flood-fill check.
   const stillConnected = (): boolean => {
-    const district = { templateId: template.id, structures, props: [] };
+    const district = { templateId: template.id, structures, props: [], roads: [] };
     const grid = buildWalkGrid(template, district, footprints);
     const start = template.plaza.y1 * grid.width + template.plaza.x0;
     const seen = new Uint8Array(grid.width * grid.height);
@@ -202,6 +230,8 @@ export function generateDistrict(
     occupied.add(key(x, y));
     props.push({ kind, x, y, ox: jitter ? offset() : 0, oy: jitter ? offset() : 0 });
   };
+  if (treeSpot)
+    props.push({ kind: 'hanging_tree', x: treeSpot.x, y: treeSpot.y, ox: 0.5, oy: 0.5 });
   const pines: PropKind[] = profile.trees;
   const rocks: PropKind[] = ['rock_a', 'rock_b', 'rock_c'];
   for (let y = 0; y < template.height; y++) {
@@ -243,7 +273,7 @@ export function generateDistrict(
   }
 
   props.sort((a, b) => a.y - b.y || a.x - b.x);
-  return { templateId: template.id, structures, props };
+  return { templateId: template.id, structures, props, roads: [] };
 }
 
 function hasNeighbour(

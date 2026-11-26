@@ -38,7 +38,8 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F11-02 | Oficios por distrito en el menú y en el núcleo | ✅ | Test: el 4 no puede poner minas, el 12 no puede poner pesquerías |
 | F11-03 | Desgracias, deterioro y aviso-telegrama | ✅ | Test: almacén lleno se estropea y atrae desgracias regionales correctas |
 | F11-04 | Leyes como decretos firmados | ✅ | E2E con firma a mano (ratón y toque real) |
-| F11-05 | Cambio visual a estilo cartoon (suelo en tiempo real, sin rejilla visible, caminos automáticos, mapa más grande, menos casas al empezar, mejoras visibles en las casas, árbol del ayuntamiento) | P0 | — |
+| F11-05 | Cambio visual a estilo cartoon (suelo en tiempo real, sin rejilla visible, caminos automáticos, mapa más grande, menos casas al empezar, mejoras visibles en las casas, árbol del ayuntamiento) | ✅ | Test de caminos automáticos; tests de generación adaptados a 64×64 |
+| F11-08 | Colocación libre de verdad (sin casillas en la lógica) y edificios con estilo cartoon renderizados de nuevo | P2 | Hoy la rejilla sigue en la lógica, aunque ya no se ve |
 | F11-06 | Cinemáticas del resto de fases (llegada al Capitolio, desfile, entrevista, entrada en la arena) | P1 | — |
 | F11-07 | Variedad de UI por pantalla (cada panel con su objeto propio) | P1 | Hecho para leyes y desgracias |
 

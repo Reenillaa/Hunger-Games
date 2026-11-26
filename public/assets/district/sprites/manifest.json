@@ -2460,6 +2460,1132 @@
         "normal",
         "emission"
       ]
+    },
+    "hanging_tree": {
+      "name": "hanging_tree",
+      "kind": "tree",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        613,
+        472
+      ],
+      "anchor": [
+        306.5,
+        413.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "house_shack__d9_l2": {
+      "name": "house_shack__d9_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        573,
+        473
+      ],
+      "anchor": [
+        286.5,
+        373.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d9_l3": {
+      "name": "house_shack__d9_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        573,
+        571
+      ],
+      "anchor": [
+        286.5,
+        431.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack_l3": {
+      "name": "house_shack_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        594,
+        638
+      ],
+      "anchor": [
+        297.0,
+        486.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack_l2": {
+      "name": "house_shack_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        568,
+        563
+      ],
+      "anchor": [
+        284.0,
+        429.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace_l2": {
+      "name": "house_terrace_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        702,
+        613
+      ],
+      "anchor": [
+        351.0,
+        450.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace_l3": {
+      "name": "house_terrace_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        716,
+        694
+      ],
+      "anchor": [
+        358.0,
+        508.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d1_l2": {
+      "name": "house_shack__d1_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        550,
+        478
+      ],
+      "anchor": [
+        275.0,
+        378.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d1_l3": {
+      "name": "house_shack__d1_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        550,
+        570
+      ],
+      "anchor": [
+        275.0,
+        436.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d1_l2": {
+      "name": "house_terrace__d1_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        703,
+        569
+      ],
+      "anchor": [
+        351.5,
+        435.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d1_l3": {
+      "name": "house_terrace__d1_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        703,
+        655
+      ],
+      "anchor": [
+        351.5,
+        493.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d2_l2": {
+      "name": "house_shack__d2_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        535,
+        481
+      ],
+      "anchor": [
+        267.5,
+        343.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d2_l3": {
+      "name": "house_shack__d2_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        572,
+        542
+      ],
+      "anchor": [
+        286.0,
+        401.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d2_l2": {
+      "name": "house_terrace__d2_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        681,
+        497
+      ],
+      "anchor": [
+        340.5,
+        366.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d2_l3": {
+      "name": "house_terrace__d2_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        681,
+        587
+      ],
+      "anchor": [
+        340.5,
+        425.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d3_l2": {
+      "name": "house_shack__d3_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        550,
+        442
+      ],
+      "anchor": [
+        275.0,
+        342.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d3_l3": {
+      "name": "house_shack__d3_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        550,
+        534
+      ],
+      "anchor": [
+        275.0,
+        400.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d3_l2": {
+      "name": "house_terrace__d3_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        703,
+        532
+      ],
+      "anchor": [
+        351.5,
+        399.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d3_l3": {
+      "name": "house_terrace__d3_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        703,
+        619
+      ],
+      "anchor": [
+        351.5,
+        457.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d4_l2": {
+      "name": "house_shack__d4_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        560,
+        483
+      ],
+      "anchor": [
+        280.0,
+        356.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d4_l3": {
+      "name": "house_shack__d4_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        560,
+        561
+      ],
+      "anchor": [
+        280.0,
+        414.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d4_l2": {
+      "name": "house_terrace__d4_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        707,
+        563
+      ],
+      "anchor": [
+        353.5,
+        433.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d4_l3": {
+      "name": "house_terrace__d4_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        707,
+        656
+      ],
+      "anchor": [
+        353.5,
+        491.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d5_l2": {
+      "name": "house_shack__d5_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        468
+      ],
+      "anchor": [
+        271.0,
+        368.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d5_l3": {
+      "name": "house_shack__d5_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        555
+      ],
+      "anchor": [
+        271.0,
+        425.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d5_l2": {
+      "name": "house_terrace__d5_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        551
+      ],
+      "anchor": [
+        344.5,
+        417.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d5_l3": {
+      "name": "house_terrace__d5_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        640
+      ],
+      "anchor": [
+        344.5,
+        475.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d6_l2": {
+      "name": "house_shack__d6_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        468
+      ],
+      "anchor": [
+        271.0,
+        368.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d6_l3": {
+      "name": "house_shack__d6_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        555
+      ],
+      "anchor": [
+        271.0,
+        425.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d6_l2": {
+      "name": "house_terrace__d6_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        551
+      ],
+      "anchor": [
+        344.5,
+        417.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d6_l3": {
+      "name": "house_terrace__d6_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        640
+      ],
+      "anchor": [
+        344.5,
+        475.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d7_l2": {
+      "name": "house_shack__d7_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        558,
+        495
+      ],
+      "anchor": [
+        279.0,
+        374.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d7_l3": {
+      "name": "house_shack__d7_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        617,
+        570
+      ],
+      "anchor": [
+        308.5,
+        432.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d7_l2": {
+      "name": "house_terrace__d7_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        665,
+        548
+      ],
+      "anchor": [
+        332.5,
+        380.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d7_l3": {
+      "name": "house_terrace__d7_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        710,
+        613
+      ],
+      "anchor": [
+        355.0,
+        437.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d8_l2": {
+      "name": "house_shack__d8_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        505,
+        423
+      ],
+      "anchor": [
+        252.5,
+        323.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d8_l3": {
+      "name": "house_shack__d8_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        505,
+        510
+      ],
+      "anchor": [
+        252.5,
+        381.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d8_l2": {
+      "name": "house_terrace__d8_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        653,
+        502
+      ],
+      "anchor": [
+        326.5,
+        368.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d8_l3": {
+      "name": "house_terrace__d8_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        653,
+        590
+      ],
+      "anchor": [
+        326.5,
+        426.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d9_l2": {
+      "name": "house_terrace__d9_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        720,
+        556
+      ],
+      "anchor": [
+        360.0,
+        422.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d9_l3": {
+      "name": "house_terrace__d9_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        720,
+        648
+      ],
+      "anchor": [
+        360.0,
+        480.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d10_l2": {
+      "name": "house_shack__d10_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        477
+      ],
+      "anchor": [
+        271.0,
+        358.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d10_l3": {
+      "name": "house_shack__d10_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        542,
+        548
+      ],
+      "anchor": [
+        271.0,
+        416.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d10_l2": {
+      "name": "house_terrace__d10_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        560
+      ],
+      "anchor": [
+        344.5,
+        408.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d10_l3": {
+      "name": "house_terrace__d10_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        689,
+        631
+      ],
+      "anchor": [
+        344.5,
+        466.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d11_l2": {
+      "name": "house_shack__d11_l2",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        536,
+        459
+      ],
+      "anchor": [
+        268.0,
+        327.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_shack__d11_l3": {
+      "name": "house_shack__d11_l3",
+      "kind": "building",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        562,
+        532
+      ],
+      "anchor": [
+        281.0,
+        385.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d11_l2": {
+      "name": "house_terrace__d11_l2",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        676,
+        532
+      ],
+      "anchor": [
+        338.0,
+        387.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "house_terrace__d11_l3": {
+      "name": "house_terrace__d11_l3",
+      "kind": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "size": [
+        676,
+        612
+      ],
+      "anchor": [
+        338.0,
+        445.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
     }
   }
 }

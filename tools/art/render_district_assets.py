@@ -472,6 +472,46 @@ def dead_tree(m) -> None:
         b.rotation_quaternion = vec.to_track_quat("Z", "Y")
 
 
+def _limb(mat, r0: float, r1: float, start: Vector, vec: Vector, name: str):
+    """A tapering, slightly bent limb (two cone segments)."""
+    mid = start + vec * 0.5 + Vector((0, 0, 0.06 * vec.length))
+    for (p0, p1, ra, rb) in ((start, mid, r0, (r0 + r1) / 2), (mid, start + vec, (r0 + r1) / 2, r1)):
+        d = p1 - p0
+        bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=ra, radius2=rb, depth=d.length, location=p0 + d / 2)
+        o = bpy.context.active_object
+        o.name = name
+        o.rotation_mode = "QUATERNION"
+        o.rotation_quaternion = d.to_track_quat("Z", "Y")
+        o.data.materials.append(mat)
+        bpy.ops.object.shade_smooth()
+
+
+def hanging_tree(m) -> None:
+    """The old tree beside the town hall: a huge, leafless, twisted oak with one long bough
+    and two frayed ropes swaying from it. A warning, never a scene: no figures."""
+    bark = M.flat("OldBark", "#4A3A30", 0.85)
+    _limb(bark, 0.32, 0.16, Vector((0, 0, 0)), Vector((0.08, 0.05, 1.55)), "Trunk")
+    for k in range(4):
+        a = k * 1.6 + 0.3
+        _limb(bark, 0.12, 0.03, Vector((0, 0, 0.18)), Vector((math.cos(a) * 0.55, math.sin(a) * 0.55, -0.16)), "Root")
+    # The long bough reaching towards the plaza.
+    _limb(bark, 0.13, 0.05, Vector((0.05, 0.03, 1.3)), Vector((1.3, 0.12, 0.28)), "Bough")
+    for k in range(6):
+        a = k * 1.05 + 1.4
+        start = Vector((0.06, 0.04, 1.4 + 0.07 * k))
+        vec = Vector((math.cos(a) * 0.6, math.sin(a) * 0.6, 0.55 + 0.1 * (k % 3)))
+        _limb(bark, 0.07, 0.015, start, vec, "Branch")
+        tw = Vector((math.cos(a + 0.9) * 0.3, math.sin(a + 0.9) * 0.3, 0.25))
+        _limb(bark, 0.02, 0.006, start + vec * 0.75, tw, "Twig")
+    rope = M.flat("Rope", "#C4AE84", 0.9)
+    for x, length in ((0.72, 0.5), (1.08, 0.36)):
+        z_top = 1.3 + 0.28 * (x / 1.3)
+        K.cylinder(0.014, length, (x, 0.07 * x, z_top - length / 2), rope, verts=6, name="Rope")
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.06, minor_radius=0.012, location=(x, 0.07 * x, z_top - length - 0.05), rotation=(math.radians(90), 0, 0))
+        loop = bpy.context.active_object
+        loop.data.materials.append(rope)
+
+
 def rock(m, salt: int, size: float) -> None:
     for k in range(3 if size > 0.4 else 1):
         bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=size * (1 - 0.3 * k),
@@ -1483,6 +1523,7 @@ CATALOGUE = {
     "pine_b": (pine_b, (1, 1), "tree"),
     "pine_c": (pine_c, (1, 1), "tree"),
     "dead_tree": (dead_tree, (1, 1), "tree"),
+    "hanging_tree": (hanging_tree, (2, 2), "tree"),
     "rock_a": (rock_a, (1, 1), "rock"),
     "rock_b": (rock_b, (1, 1), "rock"),
     "rock_c": (rock_c, (1, 1), "rock"),
@@ -1537,12 +1578,85 @@ CATALOGUE = {
     "poster_b": (poster_b, (1, 1), "prop"),
 }
 
+def _mesh_bounds():
+    bpy.context.view_layer.update()
+    xs, ys, zs = [], [], []
+    for o in bpy.context.scene.objects:
+        if o.type != "MESH":
+            continue
+        for c in o.bound_box:
+            v = o.matrix_world @ Vector(c)
+            xs.append(v.x)
+            ys.append(v.y)
+            zs.append(v.z)
+    return min(xs), max(xs), min(ys), max(ys), max(zs)
+
+
+def upgraded(base, footprint, level: int):
+    """Same house, visibly better off (DECISIONS I-57). Level 2: a lean-to annex, flower boxes
+    under the front windows and a radio aerial. Level 3: also a fenced front yard with shrubs,
+    a gate lamp and a little pennant. Works around any regional builder via the mesh bounds."""
+    def build(m) -> None:
+        base(m)
+        x0, x1, y0, y1, z1 = _mesh_bounds()
+        fw, fd = footprint[0] / 2, footprint[1] / 2
+        cx = (x0 + x1) / 2
+        annex_wall = M.flat("AnnexWall", "#C9B08A", 0.85)
+        annex_roof = M.flat("AnnexRoof", "#7A4E3A", 0.8)
+        room = fw - x1 - 0.03
+        if room > 0.22:
+            aw = min(0.5, room)
+            ad = (y1 - y0) * 0.55
+            ay = (y0 + y1) / 2 + (y1 - y0) * 0.15
+            K.box((aw, ad, 0.55), (x1 + aw / 2, ay, 0.275), annex_wall, bevel=0.01, name="Annex")
+            roof = K.box((aw + 0.08, ad + 0.1, 0.05), (x1 + aw / 2, ay, 0.6), annex_roof, name="AnnexRoof")
+            roof.rotation_euler = (0, math.radians(-14), 0)
+            K.window(Vector((x1 + aw / 2, ay - ad / 2 - 0.02, 0.32)), "-y", m, lit=True, w=0.18, h=0.2)
+        planter = M.flat("Planter", "#6B4A2E", 0.8)
+        petals = [M.flat("PetalRed", "#E0483E", 0.6), M.flat("PetalYellow", "#F2C94C", 0.6),
+                  M.flat("PetalPink", "#F28DB2", 0.6)]
+        for i, x in enumerate((cx - (x1 - x0) * 0.3, cx + (x1 - x0) * 0.3)):
+            K.box((0.3, 0.1, 0.08), (x, y0 - 0.06, 0.42), planter, name="Planter")
+            for j in range(4):
+                bpy.ops.mesh.primitive_uv_sphere_add(radius=0.045, location=(x - 0.11 + j * 0.075, y0 - 0.07, 0.49), segments=8, ring_count=6)
+                bpy.context.active_object.data.materials.append(petals[(i + j) % 3])
+        metal = M.flat("Aerial", "#9AA0A6", 0.4, metallic=0.8)
+        K.cylinder(0.012, 0.5, (x0 + 0.2, (y0 + y1) / 2, z1 + 0.2), metal, verts=6, name="Aerial")
+        K.box((0.3, 0.012, 0.012), (x0 + 0.2, (y0 + y1) / 2, z1 + 0.38), metal, name="AerialBar")
+        if level >= 3:
+            post = M.flat("Picket", "#F1ECE0", 0.7)
+            fy = max(y0 - 0.38, -fd + 0.06)
+            n = int((x1 - x0 + 0.2) / 0.12)
+            for i in range(n + 1):
+                x = x0 - 0.1 + i * 0.12
+                if abs(x - cx) < 0.14:
+                    continue  # the gate
+                K.box((0.035, 0.035, 0.22), (x, fy, 0.11), post, name="Picket")
+            for side in (x0 - 0.1, x1 + 0.1):
+                K.box((0.035, abs(y0 - fy), 0.035), (side, (y0 + fy) / 2, 0.16), post, name="Rail")
+            K.box((x1 - x0 + 0.2, 0.025, 0.03), (cx, fy, 0.16), post, name="Rail")
+            leaf = M.flat("Shrub", "#4F9A3A", 0.9)
+            for x in (x0 + 0.12, x1 - 0.12):
+                bpy.ops.mesh.primitive_ico_sphere_add(radius=0.13, subdivisions=2, location=(x, (y0 + fy) / 2, 0.12))
+                bpy.context.active_object.data.materials.append(leaf)
+            K.lamppost((x1 - 0.02, fy + 0.02, 0), m)
+            flag = M.flat("Pennant", "#E9A23B", 0.7)
+            K.cylinder(0.01, 0.4, (x0 + 0.2, (y0 + y1) / 2, z1 + 0.62), metal, verts=6, name="Mast")
+            K.box((0.18, 0.01, 0.1), (x0 + 0.29, (y0 + y1) / 2, z1 + 0.76), flag, name="Pennant")
+    return build
+
+
 for _k in ("d1", "d3", "d5", "d6", "d8", "d9", "d10"):
     CATALOGUE[f"house_shack__{_k}"] = (style_house(_k, False), (2, 2), "building")
     CATALOGUE[f"house_terrace__{_k}"] = (style_house(_k, True), (3, 2), "building")
     CATALOGUE[f"town_hall__{_k}"] = (style_town_hall(_k), (3, 3), "building")
     CATALOGUE[f"warehouse__{_k}"] = (style_warehouse(_k), (3, 3), "building")
     CATALOGUE[f"economato__{_k}"] = (style_shop(_k), (2, 2), "building")
+
+for _name in [k for k in list(CATALOGUE) if k in ("house_shack", "house_terrace") or k.startswith(("house_shack__", "house_terrace__"))]:
+    _b, _fp, _kind = CATALOGUE[_name]
+    for _lvl in (2, 3):
+        CATALOGUE[f"{_name}_l{_lvl}"] = (upgraded(_b, _fp, _lvl), _fp, _kind)
 
 
 def frame_for(objects) -> tuple[int, int, float]:

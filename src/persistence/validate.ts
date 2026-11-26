@@ -45,7 +45,8 @@ export function validateGameState(value: unknown): string[] {
   if (
     !isRecord(district) ||
     !Array.isArray(district.structures) ||
-    !Array.isArray(district.props)
+    !Array.isArray(district.props) ||
+    !Array.isArray(district.roads)
   ) {
     problems.push('district');
   }

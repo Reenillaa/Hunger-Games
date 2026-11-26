@@ -86,11 +86,11 @@ describe('construction', () => {
 
   it('rejects water, occupied cells, missing requirements and missing resources', () => {
     const s = fresh();
-    expect(checkPlacement(s, 'house_shack', 14, 20)).toBe('blocked'); // river
+    expect(checkPlacement(s, 'house_shack', 22, 28)).toBe('blocked'); // river
     const hall = s.district.structures.find((st) => st.kind === 'town_hall')!;
     expect(checkPlacement(s, 'house_shack', hall.x, hall.y)).toBe('occupied');
-    expect(checkPlacement(s, 'mine_headframe', 33, 33)).toBe('requirement');
-    expect(checkPlacement(s, 'lumber_camp', 40, 30)).toBe('requirement');
+    expect(checkPlacement(s, 'mine_headframe', 41, 41)).toBe('requirement');
+    expect(checkPlacement(s, 'lumber_camp', 48, 38)).toBe('requirement');
     const spot = findSpot(s, 'house_shack');
     s.economy.resources.wood = 0;
     expect(checkPlacement(s, 'house_shack', spot.x, spot.y)).toBe('cost');
