@@ -24,6 +24,8 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
     audio: { noAudio: true },
     scene: [new DistrictScene(session), new PhaseScene(), new ArenaScene(session)],
   });
+  // Development aid: inspect the scenes from the browser console (never in production builds).
+  if (import.meta.env.DEV) (window as unknown as { __game?: Phaser.Game }).__game = game;
 
   // Simulation time is real time: use raw timestamps, not Phaser's smoothed/capped delta,
   // so a slow device renders fewer frames but the in-game clock keeps the same pace.

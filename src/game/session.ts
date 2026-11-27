@@ -19,6 +19,11 @@ export type GameSpeed = (typeof GAME_SPEEDS)[number];
 export const MS_PER_TICK_AT_X1 = 2000;
 /** Real milliseconds per arena round (one arena hour) at ×1. */
 export const MS_PER_ROUND_AT_X1 = 1400;
+/**
+ * News that does not need a decision: it shows in the arena feed and the games keep playing.
+ * Only a rival in sight, a team member in trouble or the last pact breaking stop the clock.
+ */
+const SOFT_INTERRUPTS = new Set(['arena.order.done', 'arena.capsule', 'arena.feast', 'arena.fire']);
 /** Upper bound of ticks simulated per frame, to avoid a death spiral after a stall. */
 const MAX_TICKS_PER_UPDATE = 8;
 
@@ -43,7 +48,7 @@ export class GameSession {
   private snapshot: SessionSnapshot;
   private readonly listeners = new Set<() => void>();
 
-  /** The arena plays round by round while true; it stops on every interrupt. */
+  /** The arena plays round by round while true; it stops on interrupts that need a decision. */
   private arenaPlaying = false;
   private arenaMs = 0;
 
@@ -144,7 +149,8 @@ export class GameSession {
         this.arenaMs = 0;
         this.dispatch({ type: 'arena/advance', maxRounds: 1 });
         const arena = this.state.arena;
-        if (!arena || arena.interrupt || arena.finished) this.setArenaPlaying(false);
+        const stop = arena?.interrupt && !SOFT_INTERRUPTS.has(arena.interrupt.key);
+        if (!arena || stop || arena.finished) this.setArenaPlaying(false);
       }
     }
     if (!this.isClockRunning() || !(deltaMs > 0)) return;

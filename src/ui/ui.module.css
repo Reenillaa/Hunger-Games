@@ -3315,3 +3315,300 @@
 .results {
   gap: 10px;
 }
+
+/* =====================================================================================
+   UI v5 · MATERIALS (DECISIONS I-78) — not everything is glass. Each control is made of
+   something from the district: a stamped iron badge, a brass plaque, an iron control panel
+   with real keys, a wooden board, a leather strap, a paper note pinned to the wall and a
+   chunky press-button. Glass stays for dialogs, sheets and gauges.
+   ===================================================================================== */
+
+/* Stamped iron badge: the district's name. */
+.crest {
+  padding: 4px 16px 4px 4px;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 10px 8px, rgb(255 255 255 / 0.5) 0 1.5px, transparent 2.5px),
+    radial-gradient(
+      circle at calc(100% - 10px) 8px,
+      rgb(255 255 255 / 0.5) 0 1.5px,
+      transparent 2.5px
+    ),
+    radial-gradient(
+      circle at calc(100% - 10px) calc(100% - 8px),
+      rgb(255 255 255 / 0.4) 0 1.5px,
+      transparent 2.5px
+    ),
+    linear-gradient(180deg, #5b5f66 0%, #3a3d43 55%, #2b2d31 100%);
+  border: 1px solid #1c1d20;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    inset 0 -2px 0 rgb(0 0 0 / 0.35),
+    0 6px 16px rgb(0 0 0 / 0.4);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.crestMedal {
+  background: radial-gradient(circle at 35% 30%, #ffd48a, #c98a2c 70%);
+  color: #3a2508;
+  box-shadow:
+    inset 0 -2px 0 rgb(0 0 0 / 0.25),
+    0 1px 0 rgb(255 255 255 / 0.3);
+}
+
+.crestRibbon {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f1ece2;
+  text-shadow: 0 -1px 0 rgb(0 0 0 / 0.6);
+}
+
+/* Brass plaque with two screws: the date. */
+.datePlaque {
+  position: relative;
+  padding: 6px 26px 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #6b4c17;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.35), transparent 45%),
+    linear-gradient(135deg, #e6c27a 0%, #c39443 45%, #a8772c 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    inset 0 -2px 0 rgb(80 50 10 / 0.35),
+    0 6px 16px rgb(0 0 0 / 0.4);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.datePlaque::before,
+.datePlaque::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff3c9, #8a6424 70%);
+  box-shadow: inset 0 0 0 1px rgb(60 40 10 / 0.5);
+}
+
+.datePlaque::before {
+  display: none;
+}
+
+.datePlaque::after {
+  right: 9px;
+}
+
+.datePlaque .date {
+  color: #2e1f08;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgb(255 240 200 / 0.6);
+}
+
+.datePlaque .countdown {
+  color: #8c1f12;
+  font-weight: 650;
+}
+
+/* The speed controls: an iron panel with chunky keys and an amber pilot light. */
+.speedDial {
+  padding: 5px;
+  gap: 5px;
+  border-radius: 14px;
+  border: 1px solid #17181b;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, #3d4046, #26282c);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 6px 16px rgb(0 0 0 / 0.45);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.speedDial .medal {
+  border-radius: 9px;
+  color: #e9e4d8;
+  background: linear-gradient(180deg, #6a6e76, #4a4d54);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    0 3px 0 #18191c,
+    0 4px 6px rgb(0 0 0 / 0.4);
+  transform: translateY(-1px);
+  transition:
+    transform 0.08s var(--ease),
+    box-shadow 0.08s var(--ease),
+    background 0.2s var(--ease);
+}
+
+.speedDial .medal:hover {
+  background: linear-gradient(180deg, #7a7e86, #55585f);
+  transform: translateY(-1px);
+}
+
+.speedDial .medal:active,
+.speedDial .medal[aria-pressed='true'] {
+  transform: translateY(2px);
+  color: #2a1a02;
+  background: radial-gradient(circle at 50% 40%, #ffe2a0, #f2a93b 75%);
+  box-shadow:
+    inset 0 2px 4px rgb(0 0 0 / 0.35),
+    0 0 0 #18191c,
+    0 0 14px rgb(255 176 64 / 0.55);
+}
+
+/* The menu: carved tiles on a wooden board. */
+.medalRow {
+  padding: 5px;
+  gap: 4px;
+  border-radius: 12px;
+  border: 1px solid #3b2412;
+  background:
+    repeating-linear-gradient(
+      172deg,
+      rgb(255 255 255 / 0.05) 0 2px,
+      transparent 2px 7px,
+      rgb(0 0 0 / 0.06) 7px 9px,
+      transparent 9px 15px
+    ),
+    linear-gradient(180deg, #8a5a33, #6b4325);
+  box-shadow:
+    inset 0 1px 0 rgb(255 220 170 / 0.3),
+    0 6px 16px rgb(0 0 0 / 0.4);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.medalRow .medal {
+  border-radius: 8px;
+  color: #fbeedb;
+  background: rgb(0 0 0 / 0.16);
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.35),
+    0 1px 0 rgb(255 220 170 / 0.25);
+}
+
+.medalRow .medal:hover {
+  background: rgb(255 230 190 / 0.18);
+}
+
+.medalRow .medal[aria-pressed='true'] {
+  background: #fbeedb;
+  color: #4a2c14;
+}
+
+/* Resources: a stitched leather strap with brass studs. */
+.resSlots {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid #2b1a0e;
+  background:
+    radial-gradient(ellipse at 30% 0%, rgb(255 255 255 / 0.12), transparent 60%),
+    linear-gradient(180deg, #6a4329, #4a2e1b);
+  box-shadow:
+    inset 0 0 0 3px #4a2e1b,
+    inset 0 0 0 4px rgb(255 214 160 / 0.35),
+    0 6px 16px rgb(0 0 0 / 0.4);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.resSlots::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 10px;
+  border: 1.5px dashed rgb(255 220 170 / 0.35);
+  pointer-events: none;
+}
+
+.resSlots .resource {
+  color: #fbf1df;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.5);
+}
+
+.resSlots .resIcon {
+  background: radial-gradient(circle at 35% 30%, #ffe3a8, #b98530 75%);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.3);
+}
+
+.resSlots .resource svg {
+  color: #3a2508;
+}
+
+/* Objectives: a note pinned to the notice board. */
+.objectives {
+  position: relative;
+  color: #2b2418;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 21px, rgb(70 110 160 / 0.14) 21px 22px),
+    linear-gradient(180deg, #fbf5e4, #efe4c6);
+  border: 0;
+  border-radius: 3px 3px 6px 6px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.8) inset,
+    0 10px 22px rgb(0 0 0 / 0.35),
+    0 2px 4px rgb(0 0 0 / 0.2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: rotate(-0.8deg);
+  padding-top: 16px;
+}
+
+.objectives::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8a7a, #c0392b 65%, #7a1f16);
+  box-shadow: 0 3px 4px rgb(0 0 0 / 0.35);
+}
+
+.objectives .objHead {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #3a2c18;
+}
+
+.objectives .objCount {
+  background: #3a2c18;
+  color: #fbf5e4;
+}
+
+.objectives .objCheck {
+  border-color: #6b5a3e;
+}
+
+.objectives .objDone .objCheck {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.objectives .objDone .objText {
+  color: #8a7b60;
+}
+
+.objectives .objBar {
+  background: rgb(60 40 20 / 0.15);
+}
+
+.objectives .objBar > i {
+  background: linear-gradient(90deg, #c0392b, #e0752d);
+}
+
+.resSlots .resourceWarn {
+  color: #ff9a85;
+}

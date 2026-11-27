@@ -8,7 +8,8 @@ import { Ambience } from '../district/ambience.ts';
 import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts';
 import { Townsfolk } from '../district/townsfolk.ts';
 import { CeremonyStage } from '../district/ceremony.ts';
-import { GroundPainter, paintFog } from '../district/ground.ts';
+import { D12_PALETTE, GroundPainter, paintFog } from '../district/ground.ts';
+import { Relief } from '../district/relief.ts';
 import { LightingRig } from '../lighting.ts';
 import { TrainView } from '../district/train.ts';
 import { HOME_DISTRICTS, homeProfile } from '../../content/homeDistricts.ts';
@@ -29,6 +30,18 @@ interface Glow {
   image: Phaser.GameObjects.Image;
   strength: number;
 }
+
+/** Templates drawn with real relief (DECISIONS I-76). */
+const RELIEF_TEMPLATES: ReadonlySet<string> = new Set(['d12']);
+/** Woods and boulders on the heights (scenery only, never part of the game state). */
+const RELIEF_DECOR = [
+  'k_pine_tall',
+  'k_pine_round',
+  'k_pine_small',
+  'k_rock_large',
+  'k_rock_tall',
+  'k_tunnel',
+];
 
 /**
  * District XII: pre-rendered terrain chunks + layered sprites (colour, ground shadow, additive
@@ -64,6 +77,9 @@ export class DistrictScene extends Phaser.Scene {
   private ambience?: Ambience;
   private built = false;
   private ground?: GroundPainter;
+  private relief?: Relief;
+  /** Where the rails enter the cliff (set with the relief). */
+  private tunnelAt?: { x: number; y: number };
   private lighting?: LightingRig;
   /** Visiting a neighbour through the fog: its district, generated the same way every time. */
   private visit: { id: string; district: DistrictState } | null = null;
@@ -96,6 +112,7 @@ export class DistrictScene extends Phaser.Scene {
         : null;
     this.built = false;
     this.ground = undefined;
+    this.relief = undefined;
     this.lighting = undefined;
     this.train = undefined;
     this.ceremony = undefined;
@@ -151,6 +168,7 @@ export class DistrictScene extends Phaser.Scene {
         )
         .map(([k]) => k),
       ...district.props.map((p) => p.kind),
+      ...(RELIEF_TEMPLATES.has(district.templateId) ? RELIEF_DECOR : []),
     ]);
     for (const kind of kinds) {
       const asset = sprites.assets[kind];
@@ -178,12 +196,14 @@ export class DistrictScene extends Phaser.Scene {
   private build(sprites: SpriteManifest, district: DistrictState): void {
     this.makeSmokeTexture();
     this.makeGlowTexture();
+    this.makeAoTexture();
 
     // Stylised ground painted at runtime from the template and the roads laid in play.
     this.paintGround();
 
     this.sprites = sprites;
     this.syncWorld();
+    this.decorateRelief();
 
     // Life: townsfolk on their daily routine and small ambient details.
     const template = TEMPLATES[district.templateId];
@@ -249,9 +269,68 @@ export class DistrictScene extends Phaser.Scene {
     this.built = true;
   }
 
-  /** The painted ground is flat, like a board game table: everything stands at height 0. */
-  private heightAt(_x: number, _y: number): number {
-    return 0;
+  /**
+   * Pine woods and boulders on the mountain tops: dense clumps where the ground is level, a few
+   * rocks clinging to the slopes. Deterministic per map, scenery only.
+   */
+  private decorateRelief(): void {
+    const relief = this.relief;
+    const sprites = this.sprites;
+    if (!relief || !sprites) return;
+    const hash = (x: number, y: number, k: number) => {
+      const v = Math.sin(x * 12.9898 + y * 78.233 + k * 37.719) * 43758.5453;
+      return v - Math.floor(v);
+    };
+    const template = TEMPLATES[this.shown().templateId];
+    if (!template) return;
+    const clear = new Set<string>();
+    // Where the rails run into the cliff, the line goes on through a tunnel.
+    for (let y = 1; y < relief.height; y++) {
+      const row = template.terrain[y] ?? '';
+      const x = row.indexOf('t');
+      if (x < 0) continue;
+      // The track's northern end, with the cliff a few steps beyond it.
+      if (![1, 2, 3].some((k) => template.terrain[y - k]?.[x] === 'R')) break;
+      const tunnel = sprites.assets.k_tunnel;
+      if (tunnel)
+        this.addLayers('k_tunnel', tunnel, x + 0.5, y - 1.5, 0, depthOf(x + 1, y - 1) + 8, 2);
+      for (let dy = -4; dy <= 0; dy++)
+        for (let dx = -2; dx <= 3; dx++) clear.add(`${x + dx},${y + dy}`);
+      break;
+    }
+    for (let y = 0; y < relief.height; y++)
+      for (let x = 0; x < relief.width; x++) {
+        if (template.terrain[y]?.[x] !== 'R' || clear.has(`${x},${y}`)) continue;
+        const h = relief.cell(x, y);
+        if (h < 0.6) continue;
+        const level = relief.normal(x, y).z;
+        // Clumps: a slow noise decides where the woods are, a fast one picks the trees.
+        const wood = Math.sin(x * 0.45 + Math.cos(y * 0.3) * 2) + Math.cos(y * 0.5 - x * 0.2);
+        const r = hash(x, y, 1);
+        let kind: string | null = null;
+        if (level > 0.86 && wood > -0.2 && r < 0.62)
+          kind = r < 0.3 ? 'k_pine_tall' : r < 0.5 ? 'k_pine_round' : 'k_pine_small';
+        else if (level <= 0.86 && r < 0.07) kind = r < 0.035 ? 'k_rock_large' : 'k_rock_tall';
+        if (!kind) continue;
+        const ox = (hash(x, y, 2) - 0.5) * 0.6;
+        const oy = (hash(x, y, 3) - 0.5) * 0.6;
+        const asset = sprites.assets[kind];
+        if (!asset) continue;
+        this.addLayers(
+          kind,
+          asset,
+          x + ox,
+          y + oy,
+          relief.at(x + ox, y + oy),
+          depthOf(x + ox, y + oy) + 8,
+          0.8,
+        );
+      }
+  }
+
+  /** The visual relief: the town floor is flat, cliffs and wooded hills rise around it. */
+  private heightAt(x: number, y: number): number {
+    return this.relief?.cell(x, y) ?? 0;
   }
 
   private paintGround(): void {
@@ -260,7 +339,23 @@ export class DistrictScene extends Phaser.Scene {
     this.ground ??= new GroundPainter(this, this.terrainScale === '1x' ? 0.75 : 0.5);
     const roads = new Set<number>(this.shown().roads);
     this.roadsSig = [...roads].join(',');
-    const fresh = this.ground.paint({ template, roads });
+    // District 12 leads the way with real relief (the others follow once it is signed off).
+    if (RELIEF_TEMPLATES.has(template.id) && this.relief?.width !== template.width) {
+      this.relief = new Relief(template, template.id.length * 7 + 3);
+      this.tunnelAt = undefined;
+      for (let y = 1; y < template.height && !this.tunnelAt; y++) {
+        const x = (template.terrain[y] ?? '').indexOf('t');
+        if (x >= 0 && [1, 2, 3].some((k) => template.terrain[y - k]?.[x] === 'R'))
+          this.tunnelAt = { x: x + 0.5, y: y - 1 };
+        if (x >= 0) break;
+      }
+    }
+    const fresh = this.ground.paint({
+      template,
+      roads,
+      relief: this.relief,
+      palette: template.id === 'd12' ? D12_PALETTE : undefined,
+    });
     const alive = (o: { active: boolean }) => o.active;
     this.tinted.splice(0, this.tinted.length, ...this.tinted.filter(alive), ...fresh);
     this.lastAmbient = -1; // re-tint the new ground at the current hour
@@ -386,7 +481,15 @@ export class DistrictScene extends Phaser.Scene {
     if (!asset) return;
     const cx = s.x + (w - 1) / 2;
     const cy = s.y + (d - 1) / 2;
-    const img = this.addLayers(key, asset, cx, cy, 0, depthOf(s.x + w - 1, s.y + d - 1) + 8);
+    const img = this.addLayers(
+      key,
+      asset,
+      cx,
+      cy,
+      0,
+      depthOf(s.x + w - 1, s.y + d - 1) + 8,
+      Math.max(w, d),
+    );
     const bar = this.track(this.add.graphics().setDepth(90000));
     bar.fillStyle(0x16161a, 0.85).fillRect(img.x - 40, img.y - 120, 80, 8);
     bar.fillStyle(PALETTE.lampOchre, 1).fillRect(img.x - 39, img.y - 119, 78 * pct, 6);
@@ -401,7 +504,7 @@ export class DistrictScene extends Phaser.Scene {
     const cx = s.x + (w - 1) / 2;
     const cy = s.y + (d - 1) / 2;
     const depth = depthOf(s.x + w - 1, s.y + d - 1) + 8;
-    const img = this.addLayers(key, asset, cx, cy, Math.max(0, ground), depth);
+    const img = this.addLayers(key, asset, cx, cy, Math.max(0, ground), depth, Math.max(w, d));
     // Lived-in houses: some chimneys smoke, lit windows cast warm light at night.
     const hash = (s.x * 73 + s.y * 151) % 7;
     for (const [dx, dy] of SMOKE_POINTS[s.kind] ?? []) {
@@ -421,9 +524,25 @@ export class DistrictScene extends Phaser.Scene {
 
   private placeProp(p: PlacedProp, asset: SpriteAsset | undefined): void {
     if (!asset) return;
+    // Keep the tunnel mouth and the track in front of it clear of scenery.
+    if (
+      this.tunnelAt &&
+      Math.abs(p.x - this.tunnelAt.x) <= 3 &&
+      Math.abs(p.y - this.tunnelAt.y) <= 3
+    )
+      return;
     const x = p.x + p.ox;
     const y = p.y + p.oy;
-    const img = this.addLayers(p.kind, asset, x, y, this.heightAt(p.x, p.y), depthOf(x, y) + 8);
+    const big = p.kind.includes('tree') || p.kind.includes('pine') || p.kind.includes('oak');
+    const img = this.addLayers(
+      p.kind,
+      asset,
+      x,
+      y,
+      this.heightAt(p.x, p.y),
+      depthOf(x, y) + 8,
+      big ? 0.8 : 0.55,
+    );
     if (p.kind === 'lamp') {
       this.addGlow(img.x - 6, img.y - 8, 2.6, 0xffb565, 0.55, -4000);
       this.addGlow(img.x - 6, img.y - 75, 0.7, 0xffd9a0, 0.9, img.depth + 1);
@@ -438,8 +557,18 @@ export class DistrictScene extends Phaser.Scene {
     cy: number,
     z: number,
     depth: number,
+    foot = 1,
   ) {
     const pos = cellToWorld(cx, cy, z);
+    // Contact shadow: a soft dark pool right under the object, so nothing floats on the ground.
+    if (asset.layers.includes('shadow') && this.textures.exists('ao_blob')) {
+      const ao = this.track(this.add.image(pos.x, pos.y, 'ao_blob'))
+        .setScale(foot * 1.05, foot * 1.05)
+        .setDepth(-4990)
+        .setAlpha(0.55)
+        .setData('ao', true);
+      this.shadows.push(ao);
+    }
     const origin: [number, number] = [
       asset.anchor[0] / asset.size[0],
       asset.anchor[1] / asset.size[1],
@@ -485,6 +614,22 @@ export class DistrictScene extends Phaser.Scene {
       .setDepth(depth)
       .setAlpha(0);
     this.glows.push({ image, strength });
+  }
+
+  /** The contact shadow: a squashed radial pool, darkest at the centre. */
+  private makeAoTexture(): void {
+    if (this.textures.exists('ao_blob')) return;
+    const canvas = this.textures.createCanvas('ao_blob', 128, 64);
+    const ctx = canvas?.getContext();
+    if (!canvas || !ctx) return;
+    ctx.setTransform(1, 0, 0, 0.5, 0, 0);
+    const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 64);
+    g.addColorStop(0, 'rgba(12,14,22,0.7)');
+    g.addColorStop(0.55, 'rgba(12,14,22,0.35)');
+    g.addColorStop(1, 'rgba(12,14,22,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+    canvas.refresh();
   }
 
   private makeGlowTexture(): void {
@@ -559,7 +704,9 @@ export class DistrictScene extends Phaser.Scene {
     if (light.ambient !== this.lastAmbient) {
       this.lastAmbient = light.ambient;
       for (const t of this.tinted) t.setTint(light.ambient);
-      for (const s of this.shadows) s.setAlpha(0.9 * light.shadow);
+      // Cast shadows fade with the sun; contact shadows stay (a softer pool at night).
+      for (const s of this.shadows)
+        s.setAlpha(s.getData('ao') ? 0.35 + 0.25 * light.shadow : 0.9 * light.shadow);
       for (const e of this.emissive) e.setAlpha(light.night);
       for (const g of this.glows) g.image.setAlpha(g.strength * light.night);
     }

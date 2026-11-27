@@ -1761,7 +1761,7 @@ def _palette_for(name: str) -> str | None:
 
 
 def glb(rel: str, height: float, rot: float = 0.0, span: float | None = None,
-        hue: float = 0.0, sat: float = 1.1, val: float = 0.92):
+        hue: float = 0.0, sat: float = 1.1, val: float = 0.92, swaps: dict | None = None):
     """Imports a model; scales it to `height` (or its footprint to `span`); `hue`/`sat`/`val`
     give a district its colour identity on the kit's colour map."""
     def build(m) -> None:
@@ -1806,7 +1806,7 @@ def glb(rel: str, height: float, rot: float = 0.0, span: float | None = None,
                         links.new(src, hs.inputs["Color"])
                         links.new(hs.outputs["Color"], base)
                     else:
-                        swap = _palette_for(mat.name)
+                        swap = next((c for k, c in (swaps or {}).items() if k in mat.name.lower()), None) or _palette_for(mat.name)
                         if swap:
                             base.default_value = S.hex_rgba(swap)
                     b.inputs["Roughness"].default_value = 0.85
@@ -1840,9 +1840,11 @@ KENNEY = {
     "k_mushrooms": (f"{N}/mushroom_redGroup.glb", 0.3, (1, 1), "prop"),
     "k_stump": (f"{N}/stump_roundDetailed.glb", 0.35, (1, 1), "prop"),
     "k_log_stack": (f"{N}/log_stackLarge.glb", 0.6, (1, 1), "prop"),
-    "k_rock_large": (f"{N}/rock_largeA.glb", 0.8, (1, 1), "rock"),
+    "k_rock_large": (f"{N}/rock_largeA.glb", 0.6, (1, 1), "rock"),
     "k_rock_small": (f"{N}/rock_smallC.glb", 0.3, (1, 1), "rock"),
-    "k_rock_tall": (f"{N}/rock_tallB.glb", 1.1, (1, 1), "rock"),
+    "k_rock_tall": (f"{N}/rock_tallB.glb", 0.9, (1, 1), "rock"),
+    # The mine line's tunnel mouth at the foot of the District 12 cliffs.
+    "k_tunnel": (f"{N}/cliff_blockCave_rock.glb", 2.2, (2, 2), "rock", 180),
     "k_corn": (f"{N}/crops_cornStageD.glb", 0.9, (1, 1), "prop"),
     "k_wheat": (f"{N}/crops_wheatStageB.glb", 0.6, (1, 1), "prop"),
     "k_pumpkin": (f"{N}/crop_pumpkin.glb", 0.35, (1, 1), "prop"),
@@ -1875,7 +1877,7 @@ KENNEY = {
     # Mourning and the station.
     "k_coffin": (f"{GRAVE}/coffin.glb", 0.32, (1, 1), "building"),
     "k_gravestone": (f"{GRAVE}/gravestone-cross.glb", 0.6, (1, 1), "prop"),
-    "k_grave": (f"{GRAVE}/grave.glb", 0.3, (1, 1), "prop"),
+    "k_grave": (f"{GRAVE}/grave.glb", 0.22, (1, 1), "prop"),
     "k_candles": (f"{GRAVE}/candle-multiple.glb", 0.3, (1, 1), "prop"),
     # Training centre stations.
     "k_sword": ("kenney_mini-characters/glb/weapon-sword.glb", 0.7, (1, 1), "prop"),
@@ -1883,14 +1885,24 @@ KENNEY = {
     "k_frame": (f"{SURV}/structure.glb", 1.2, (1, 1), "prop"),
     "k_bedroll": (f"{SURV}/bedroll-frame.glb", 0.5, (1, 1), "prop"),
 }
-for _name, (_rel, _h, _fp, _kind) in KENNEY.items():
-    CATALOGUE[_name] = (glb(_rel, _h), _fp, _kind)
+# Earth and raw wood read orange under the warm morning light: a little darker still.
+DARKER = {"k_grave": 0.42, "k_wood_pile": 0.45}
+# Rocks are grey stone with a mossy cap, not the kit's earth colour (one look with the cliffs).
+ROCK_SWAPS = {"dirt": "#8C8880", "grass": "#5E9440"}
+for _name, (_rel, _h, _fp, _kind, *_rot) in KENNEY.items():
+    # The kits' colour maps are candy-bright (orange wood): weathered, as in a mining town.
+    _muted = not _rel.startswith(N)
+    CATALOGUE[_name] = (glb(_rel, _h, rot=float(_rot[0]) if _rot else 0.0,
+                            swaps=({"dirt": "#736D65", "grass": "#558A3B"} if _name == "k_tunnel"
+                                   else ROCK_SWAPS if _kind == "rock" else None),
+                            hue=0.02 if _muted else 0.0, sat=1.0 if _muted else 1.1,
+                            val=DARKER.get(_name, 0.6) if _muted else 0.92), _fp, _kind)
 
 # District architecture from complete Kenney buildings (City Kits, CC0) — DECISIONS I-68.
 SUB, IND, COM = "kenney_city-kit-suburban/glb", "kenney_city-kit-industrial/glb", "kenney_city-kit-commercial/glb"
 # shack L1-L3, terrace L1-L3, town hall, warehouse, shop, (hue, sat, val)
 DISTRICT_BUILDINGS = {
-    "d12": ([f"{SUB}/building-type-h", f"{SUB}/building-type-i", f"{SUB}/building-type-a"], [f"{SUB}/building-type-g", f"{SUB}/building-type-m", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-q", f"{COM}/building-c", (0.0, 0.55, 0.78)),
+    "d12": ([f"{SUB}/building-type-h", f"{SUB}/building-type-i", f"{SUB}/building-type-a"], [f"{SUB}/building-type-g", f"{SUB}/building-type-m", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-q", f"{COM}/building-c", (0.14, 0.38, 0.64)),
     "d11": ([f"{SUB}/building-type-a", f"{SUB}/building-type-e", f"{SUB}/building-type-o"], [f"{SUB}/building-type-g", f"{SUB}/building-type-n", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-h", f"{COM}/building-c", (0.0, 1.05, 1.0)),
     "d4": ([f"{SUB}/building-type-c", f"{SUB}/building-type-p", f"{SUB}/building-type-s"], [f"{SUB}/building-type-u", f"{SUB}/building-type-d", f"{SUB}/building-type-b"], f"{COM}/building-j", f"{IND}/building-s", f"{COM}/building-h", (0.0, 1.1, 1.0)),
     "d7": ([f"{SUB}/building-type-l", f"{SUB}/building-type-r", f"{SUB}/building-type-k"], [f"{SUB}/building-type-s", f"{SUB}/building-type-t", f"{SUB}/building-type-n"], f"{COM}/building-e", f"{IND}/building-p", f"{COM}/building-c", (0.0, 0.9, 0.92)),

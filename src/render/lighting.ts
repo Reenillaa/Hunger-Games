@@ -78,7 +78,7 @@ export class LightingRig {
     this.last = key;
     const m = g.colorMatrix;
     m.reset();
-    m.saturate(0.22 - night * 0.35, true);
+    m.saturate(0.1 - night * 0.35, true);
     m.contrast(0.1 + golden * 0.06, true);
     if (golden > 0) m.hue(-6 * golden, true);
     if (night > 0) {

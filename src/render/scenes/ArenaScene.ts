@@ -11,6 +11,7 @@ import {
 } from '../../core/index.ts';
 import { t } from '../../content/i18n.ts';
 import type { GameSession } from '../../game/session.ts';
+import { MS_PER_ROUND_AT_X1 } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
 import type { SpriteAsset, SpriteManifest } from '../district/assets.ts';
 import { ART_BASE, pickTerrainScale } from '../district/assets.ts';
@@ -45,6 +46,9 @@ const PROPS = [
   'relicario',
 ];
 const MOVE_MS = 650;
+/** Fog canvas pixels per world pixel: soft clouds need little resolution. */
+const FOG_K = 0.16;
+const FOG_MARGIN = 900;
 
 /** Stable per-cell pseudo-random value in [0, 1) (visual only, never simulation). */
 function hash(x: number, y: number, salt: number): number {
@@ -56,7 +60,10 @@ interface ActorView {
   sprite: Phaser.GameObjects.Sprite;
   shadow: Phaser.GameObjects.Image;
   ring: Phaser.GameObjects.Graphics;
-  label: Phaser.GameObjects.Text;
+  label: Phaser.GameObjects.Container;
+  /** Current opacity and the one it eases towards (sighted or not): no popping in and out. */
+  fade: number;
+  shown: boolean;
   from: { x: number; y: number };
   to: { x: number; y: number };
   t: number;
@@ -85,7 +92,10 @@ export class ArenaScene extends Phaser.Scene {
   private readonly trees: Tree[] = [];
   private readonly views = new Map<string, ActorView>();
   private readonly graves = new Map<string, Phaser.GameObjects.Graphics>();
-  private fog?: Phaser.GameObjects.Graphics;
+  /** Two cloud layers: the new fog fades in over the old one after every round. */
+  private fogLayers: Phaser.GameObjects.Image[] = [];
+  private fogKeys: string[] = [];
+  private fogSerial = 0;
   private overlay?: Phaser.GameObjects.Graphics;
   private hover?: Phaser.GameObjects.Graphics;
   private fire?: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -172,7 +182,6 @@ export class ArenaScene extends Phaser.Scene {
     this.makeAnimations(characters);
 
     this.overlay = this.add.graphics().setDepth(-4000);
-    this.fog = this.add.graphics().setDepth(150000);
     this.hover = this.add.graphics().setDepth(150001);
     this.fire = this.add
       .particles(0, 0, 'ember', {
@@ -199,7 +208,12 @@ export class ArenaScene extends Phaser.Scene {
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.drawHover(p));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
     this.unsubscribe = this.session.ui.subscribe(() => this.refreshSelection());
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unsubscribe?.());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubscribe?.();
+      for (const k of this.fogKeys) if (this.textures.exists(k)) this.textures.remove(k);
+      this.fogLayers = [];
+      this.fogKeys = [];
+    });
     this.lighting = new LightingRig(this);
     this.built = true;
     this.sync(true);
@@ -217,6 +231,56 @@ export class ArenaScene extends Phaser.Scene {
       g.fillStyle(0xffffff, 1).fillCircle(4, 4, 4);
       g.generateTexture('ember', 8, 8);
       g.destroy();
+    }
+    // Cloud brushes for the fog of war: a puff (blue-grey belly, white sunlit crown), a thin
+    // haze for remembered ground, and a feathered eraser for what is in sight.
+    if (!tex.exists('fog_puff')) {
+      // A cumulus lump: a shaded belly, a body of round lobes and a sunlit crown (light from
+      // the upper left, like the buildings).
+      const c = tex.createCanvas('fog_puff', 128, 96)!;
+      const ctx = c.getContext();
+      const lobe = (x: number, y: number, r: number, colour: string, hard = 0.78) => {
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, colour);
+        g.addColorStop(hard, colour);
+        g.addColorStop(1, colour.replace(/,1\)$/, ',0)'));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      };
+      lobe(70, 64, 34, 'rgba(150,163,190,1)', 0.6);
+      lobe(42, 62, 26, 'rgba(160,172,198,1)', 0.6);
+      lobe(64, 54, 32, 'rgba(208,216,230,1)');
+      lobe(38, 54, 24, 'rgba(214,222,236,1)');
+      lobe(90, 56, 22, 'rgba(204,212,228,1)');
+      lobe(56, 42, 26, 'rgba(246,248,252,1)');
+      lobe(78, 44, 18, 'rgba(240,244,250,1)');
+      lobe(48, 36, 15, 'rgba(255,255,255,1)', 0.7);
+      c.refresh();
+    }
+    if (!tex.exists('fog_haze')) {
+      const c = tex.createCanvas('fog_haze', 64, 32)!;
+      const ctx = c.getContext();
+      const g = ctx.createRadialGradient(32, 16, 0, 32, 16, 30);
+      g.addColorStop(0, 'rgba(222,230,240,0.85)');
+      g.addColorStop(1, 'rgba(222,230,240,0)');
+      ctx.fillStyle = g;
+      ctx.setTransform(1, 0, 0, 0.5, 0, 8);
+      ctx.fillRect(0, 0, 64, 64);
+      c.refresh();
+    }
+    if (!tex.exists('fog_carve')) {
+      const c = tex.createCanvas('fog_carve', 64, 32)!;
+      const ctx = c.getContext();
+      const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0, 'rgba(0,0,0,1)');
+      g.addColorStop(0.6, 'rgba(0,0,0,1)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.setTransform(1, 0, 0, 0.5, 0, 0);
+      ctx.fillRect(0, 0, 64, 64);
+      c.refresh();
     }
     if (!tex.exists('blob_shadow')) {
       const canvas = tex.createCanvas('blob_shadow', 40, 20);
@@ -355,22 +419,16 @@ export class ArenaScene extends Phaser.Scene {
       )
       .setScale(info ? 1 / info.scale : 0.5);
     const ring = this.add.graphics().setDepth(-4400);
-    const label = this.add
-      .text(pos.x, pos.y - 84, c.name.split(' ')[0]!, {
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: '15px',
-        color: a.player ? '#F2C14E' : '#E9E4D8',
-        stroke: '#0B0B0D',
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5, 1)
-      .setDepth(160000);
+    const label = this.nameTag(c.name.split(' ')[0]!, c.district, a.player);
+    label.setPosition(pos.x, pos.y - 80).setAlpha(0);
     sprite.setInteractive({ useHandCursor: true, pixelPerfect: false });
     v = {
       sprite,
       shadow,
       ring,
       label,
+      fade: 0,
+      shown: true,
       from: { x: a.x, y: a.y },
       to: { x: a.x, y: a.y },
       t: 1,
@@ -404,10 +462,7 @@ export class ArenaScene extends Phaser.Scene {
         this.addGrave(a);
         continue;
       }
-      v.sprite.setVisible(shown);
-      v.shadow.setVisible(shown);
-      v.label.setVisible(shown);
-      v.ring.setVisible(shown);
+      v.shown = shown;
       if (v.to.x !== a.x || v.to.y !== a.y) {
         v.from = this.currentCell(v);
         v.to = { x: a.x, y: a.y };
@@ -426,7 +481,7 @@ export class ArenaScene extends Phaser.Scene {
           .fillStyle(hp > 50 ? 0x7fb069 : hp > 25 ? 0xf2c14e : 0xc0392b, 1)
           .fillRect(-23, 15, (46 * hp) / 100, 4);
       }
-      v.sprite.setAlpha(a.hidden ? 0.55 : 1);
+      v.sprite.setData('hidden', a.hidden);
     }
     for (const id of [...this.views.keys()]) if (!arena.actors[id]?.alive) this.destroyView(id);
     // Floating combat text for the new log lines.
@@ -501,25 +556,148 @@ export class ArenaScene extends Phaser.Scene {
     });
   }
 
-  /** Unknown ground is black, remembered ground is dim, what the team sees now is clear. */
+  /** A name tag: a pill with the district number, gold for the home team. */
+  private nameTag(name: string, district: number, player: boolean): Phaser.GameObjects.Container {
+    const text = this.add
+      .text(0, 0, name, {
+        fontFamily: '"Inter Variable", Inter, system-ui, sans-serif',
+        fontSize: '15px',
+        fontStyle: '700',
+        color: player ? '#1D1408' : '#F4F1EA',
+        resolution: 2,
+      })
+      .setOrigin(0, 0.5);
+    const badge = this.add
+      .text(0, 0, String(district), {
+        fontFamily: '"Inter Variable", Inter, system-ui, sans-serif',
+        fontSize: '11px',
+        fontStyle: '800',
+        color: player ? '#F2C14E' : '#14161C',
+        resolution: 2,
+      })
+      .setOrigin(0.5);
+    const h = 26;
+    const chip = 20;
+    const w = chip + 8 + text.width + 12;
+    const g = this.add.graphics();
+    // Soft drop shadow, the pill, a little pointer towards the figure.
+    g.fillStyle(0x000000, 0.28).fillRoundedRect(-w / 2 + 1, -h + 3, w, h, h / 2);
+    g.fillStyle(player ? 0xf2c14e : 0x14161c, player ? 1 : 0.82).fillRoundedRect(
+      -w / 2,
+      -h,
+      w,
+      h,
+      h / 2,
+    );
+    g.fillTriangle(-6, -1, 6, -1, 0, 6);
+    g.lineStyle(1.5, player ? 0xfff1c2 : 0xffffff, player ? 0.9 : 0.18).strokeRoundedRect(
+      -w / 2,
+      -h,
+      w,
+      h,
+      h / 2,
+    );
+    g.fillStyle(player ? 0x1d1408 : 0xe9e4d8, 1).fillCircle(
+      -w / 2 + 3 + chip / 2,
+      -h / 2,
+      chip / 2,
+    );
+    badge.setPosition(-w / 2 + 3 + chip / 2, -h / 2);
+    text.setPosition(-w / 2 + chip + 9, -h / 2);
+    return this.add.container(0, 0, [g, badge, text]).setDepth(160000);
+  }
+
+  /**
+   * The fog of war as clouds: what nobody on the team has seen lies under thick, sunlit cloud;
+   * remembered ground under a thin haze; what the team sees now is clear, with soft edges. The
+   * new fog cross-fades over the old one, so the clouds part instead of blinking.
+   */
   private drawFog(arena: ArenaState, visible: Set<number>): void {
-    const g = this.fog!;
-    g.clear();
+    const bounds = mapBounds(ARENA_SIZE, ARENA_SIZE);
+    const ox = bounds.x - FOG_MARGIN;
+    const oy = bounds.y - FOG_MARGIN;
+    const w = Math.ceil((bounds.width + FOG_MARGIN * 2) * FOG_K);
+    const h = Math.ceil((bounds.height + FOG_MARGIN * 2) * FOG_K);
+    const key = `arena_fog_${this.fogSerial++}`;
+    const tex = this.textures.createCanvas(key, w, h)!;
+    const ctx = tex.getContext();
     const explored = new Set(arena.explored);
-    // Exact diamonds on the ground plane tile without overlaps (no darker seams).
-    const hw = TILE_W / 2;
-    const hh = TILE_H / 2;
-    for (let y = 0; y < ARENA_SIZE; y++) {
-      for (let x = 0; x < ARENA_SIZE; x++) {
-        const i = y * ARENA_SIZE + x;
-        if (visible.has(i)) continue;
-        const alpha = explored.has(i) ? 0.42 : 0.86;
-        const p = cellToWorld(x, y);
-        g.fillStyle(0x070a08, alpha);
-        g.fillTriangle(p.x, p.y - hh, p.x + hw, p.y, p.x, p.y + hh);
-        g.fillTriangle(p.x, p.y - hh, p.x - hw, p.y, p.x, p.y + hh);
-      }
+    const puff = this.textures.get('fog_puff').getSourceImage() as HTMLCanvasElement;
+    const haze = this.textures.get('fog_haze').getSourceImage() as HTMLCanvasElement;
+    const carve = this.textures.get('fog_carve').getSourceImage() as HTMLCanvasElement;
+    const at = (x: number, y: number) => {
+      const p = cellToWorld(x, y);
+      return { x: (p.x - ox) * FOG_K, y: (p.y - oy) * FOG_K };
+    };
+    const cw = TILE_W * FOG_K;
+    // Beyond the arena it is cloud all the way.
+    // Back to front along the iso depth (x + y), so every lump's crown covers the belly of the
+    // one behind it.
+    const cells: [number, number][] = [];
+    for (let y = -4; y < ARENA_SIZE + 4; y++)
+      for (let x = -4; x < ARENA_SIZE + 4; x++) cells.push([x, y]);
+    cells.sort((p, q) => p[0] + p[1] - (q[0] + q[1]) || p[0] - q[0]);
+    for (const [x, y] of cells) {
+      const inside = x >= 0 && y >= 0 && x < ARENA_SIZE && y < ARENA_SIZE;
+      const i = y * ARENA_SIZE + x;
+      if (inside && (visible.has(i) || explored.has(i))) continue;
+      const p = at(x, y);
+      // A base of mist so no ground shows between the lumps.
+      ctx.drawImage(haze, p.x - cw * 1.2, p.y - cw * 0.6, cw * 2.4, cw * 1.2);
+      ctx.drawImage(haze, p.x - cw * 1.2, p.y - cw * 0.6, cw * 2.4, cw * 1.2);
+      // Every other cell: lumps big enough to overlap, drawn back to front.
+      if ((x + y) % 2 !== 0 && hash(x, y, 7) < 0.6) continue;
+      const r = cw * (1.7 + hash(x, y, 9) * 1.1);
+      const jx = (hash(x, y, 3) - 0.5) * cw * 0.5;
+      const jy = (hash(x, y, 4) - 0.5) * cw * 0.25;
+      ctx.drawImage(puff, p.x + jx - r / 2, p.y + jy - r * 0.6, r, r * 0.75);
     }
+    ctx.globalAlpha = 1;
+    for (const i of explored) {
+      if (visible.has(i)) continue;
+      const p = at(i % ARENA_SIZE, Math.floor(i / ARENA_SIZE));
+      ctx.globalAlpha = 0.3;
+      ctx.drawImage(haze, p.x - cw, p.y - cw * 0.5, cw * 2, cw);
+    }
+    // What the team sees now: the clouds part with feathered edges.
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'destination-out';
+    for (const i of visible) {
+      const p = at(i % ARENA_SIZE, Math.floor(i / ARENA_SIZE));
+      ctx.drawImage(carve, p.x - cw * 0.9, p.y - cw * 0.45, cw * 1.8, cw * 0.9);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    tex.refresh();
+    const img = this.add
+      .image(ox, oy, key)
+      .setOrigin(0, 0)
+      .setScale(1 / FOG_K)
+      .setDepth(150000 + (this.fogSerial % 2))
+      .setAlpha(0);
+    const old = this.fogLayers;
+    const oldKeys = this.fogKeys;
+    this.fogLayers = [img];
+    this.fogKeys = [key];
+    this.tweens.add({
+      targets: img,
+      alpha: 1,
+      duration: old.length ? 700 : 1,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        for (const o of old) o.destroy();
+        for (const k of oldKeys) this.textures.remove(k);
+      },
+    });
+    // The clouds breathe a little.
+    this.tweens.add({
+      targets: img,
+      x: ox + 18,
+      y: oy + 6,
+      duration: 9000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
   }
 
   /** Fire, the closing zone, the selected contestant's order and the rivals' last known spots. */
@@ -658,15 +836,25 @@ export class ArenaScene extends Phaser.Scene {
       for (const s of this.shadows) s.setAlpha(0.9 * light.shadow);
       for (const v of this.views.values()) v.sprite.setTint(light.ambient);
     }
-    // Smooth walking between rounds.
+    // Smooth walking between rounds: while the games play, a step lasts the whole round, so the
+    // figures keep walking instead of hopping and waiting.
+    const playing = this.session.isArenaPlaying() && this.session.getSpeed() > 0;
+    const stepMs = playing ? (MS_PER_ROUND_AT_X1 / this.session.getSpeed()) * 0.96 : MOVE_MS;
+    const fadeStep = Math.min(1, delta / 260);
     for (const v of this.views.values()) {
-      if (v.t < 1) v.t = Math.min(1, v.t + delta / MOVE_MS);
+      if (v.t < 1) v.t = Math.min(1, v.t + delta / stepMs);
+      v.fade += ((v.shown ? 1 : 0) - v.fade) * fadeStep;
+      const hidden = v.sprite.getData('hidden') === true;
+      v.sprite.setAlpha(v.fade * (hidden ? 0.55 : 1)).setVisible(v.fade > 0.02);
+      v.shadow.setAlpha(v.fade).setVisible(v.fade > 0.02);
+      v.ring.setAlpha(v.fade).setVisible(v.fade > 0.02);
+      v.label.setAlpha(v.fade).setVisible(v.fade > 0.02);
       const c = this.currentCell(v);
       const p = cellToWorld(c.x, c.y, this.heightAt(c.x, c.y));
       v.sprite.setPosition(p.x, p.y).setDepth(depthOf(c.x, c.y) + 9);
       v.shadow.setPosition(p.x, p.y);
       v.ring.setPosition(p.x, p.y);
-      v.label.setPosition(p.x, p.y - 80);
+      v.label.setPosition(p.x, p.y - 78);
       const key = `${v.sheet}_walk_${DIRS[v.dir]}`;
       if (v.t < 1) {
         if (v.sprite.anims.currentAnim?.key !== key || !v.sprite.anims.isPlaying)
