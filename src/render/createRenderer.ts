@@ -8,6 +8,14 @@ import { DISTRICT_SCENE, DistrictScene } from './scenes/DistrictScene.ts';
 import { PHASE_SCENE, PhaseScene } from './scenes/PhaseScene.ts';
 
 /** Creates the Phaser game inside `parent` and keeps the active scene in sync with the session phase. */
+/**
+ * Development aid: `window.__game` is the live game (React's dev double-mount can create and
+ * destroy one in between), for inspecting scenes from the console. Never in production builds.
+ */
+const liveGames: Phaser.Game[] = [];
+if (import.meta.env.DEV)
+  Object.defineProperty(window, '__game', { configurable: true, get: () => liveGames.at(-1) });
+
 export function mountRenderer(parent: HTMLElement, session: GameSession): RendererHandle {
   const game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -24,8 +32,7 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
     audio: { noAudio: true },
     scene: [new DistrictScene(session), new PhaseScene(), new ArenaScene(session)],
   });
-  // Development aid: inspect the scenes from the browser console (never in production builds).
-  if (import.meta.env.DEV) (window as unknown as { __game?: Phaser.Game }).__game = game;
+  if (import.meta.env.DEV) liveGames.push(game);
 
   // Simulation time is real time: use raw timestamps, not Phaser's smoothed/capped delta,
   // so a slow device renders fewer frames but the in-game clock keeps the same pace.
@@ -73,6 +80,7 @@ export function mountRenderer(parent: HTMLElement, session: GameSession): Render
   return {
     destroy() {
       offPhase();
+      liveGames.splice(liveGames.indexOf(game) >>> 0, 1);
       game.destroy(true);
     },
   };
