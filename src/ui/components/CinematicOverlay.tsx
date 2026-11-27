@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { ageOf, fullName } from '../../core/index.ts';
 import { t } from '../../content/i18n.ts';
 import type { CinematicPlayer, CineView } from '../../game/cinematic.ts';
+import { DEFAULT_TRANSITION } from '../../game/cinematic.ts';
 import type { GameSession } from '../../game/session.ts';
 import { useSession } from '../useSession.ts';
 import { CineShot } from './CineShot.tsx';
@@ -41,7 +42,13 @@ export function CinematicOverlay({ session }: { session: GameSession }) {
   return (
     <div className={styles.cinema} data-testid="cinematic" aria-live="polite">
       {step?.kind === 'shot' && (
-        <CineShot key={view.index} shot={step.shot} state={state} ms={step.ms} />
+        <CineShot
+          key={view.index}
+          shot={step.shot}
+          state={state}
+          ms={step.ms}
+          transition={step.transition ?? DEFAULT_TRANSITION[step.shot.type]}
+        />
       )}
       <div className={`${styles.cinemaBlack} ${view.black ? styles.cinemaBlackOn : ''}`} />
       <div className={styles.letterboxTop} />

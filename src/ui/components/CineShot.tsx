@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { Citizen, GameState, PortraitGenes } from '../../core/index.ts';
 import { ageOf, fullName } from '../../core/index.ts';
 import { t } from '../../content/i18n.ts';
-import type { Shot } from '../../game/cinematic.ts';
+import type { Shot, Transition } from '../../game/cinematic.ts';
 import { Portrait } from './Portrait.tsx';
 import css from './cinema.module.css';
 import { DISTRICT_CHARIOT_COLOURS, PARADE_HERO, PARADE_PLATES } from '../../content/parade.ts';
@@ -381,10 +381,23 @@ interface Props {
   shot: Shot;
   state: Readonly<GameState>;
   ms: number;
+  transition?: Transition;
+}
+
+/** Wraps a shot with its entrance (whip pan, iris, zoom, flash or fade) and a light leak. */
+export function CineShot(props: Props) {
+  const t = props.transition ?? 'fade';
+  return (
+    <div className={`${css.transition} ${css[`in_${t}`]}`}>
+      <ShotBody {...props} />
+      {t === 'flash' && <div className={css.flashOut} aria-hidden="true" />}
+      {t === 'whip' && <div className={css.whipStreak} aria-hidden="true" />}
+    </div>
+  );
 }
 
 /** One composed close shot of a cinematic, keyed by step so its animations restart. */
-export function CineShot({ shot, state, ms }: Props) {
+function ShotBody({ shot, state, ms }: Props) {
   const day = Math.floor(state.clock.tick / 24);
   const cit = (id: string) => state.population.citizens[id];
   const style = { '--shot-ms': `${ms}ms` } as CSSProperties;

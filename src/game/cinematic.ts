@@ -28,11 +28,35 @@ export type Shot =
   /** A pine coffin on the platform, the portrait on the lid, someone who mourns. */
   | { type: 'coffin'; citizenId: string; mournerId: string | null };
 
+export type Transition = 'fade' | 'whip' | 'iris' | 'zoom' | 'flash';
+
+/** The cut each kind of shot uses unless the script says otherwise. */
+export const DEFAULT_TRANSITION: Record<Shot['type'], Transition> = {
+  herald: 'flash',
+  guard: 'whip',
+  faces: 'zoom',
+  face: 'iris',
+  urn: 'zoom',
+  pair: 'flash',
+  farewell: 'fade',
+  train: 'whip',
+  plate: 'zoom',
+  coffin: 'fade',
+};
+
 export type CineStep =
   | { kind: 'fade'; to: 'black' | 'clear'; ms: number }
   /** `glide` is how fast the camera eases towards the mark (per frame, default 0.045). */
   | { kind: 'camera'; cell: { x: number; y: number }; zoom: number; glide?: number; ms: number }
-  | { kind: 'shot'; shot: Shot; line?: string; speaker?: string; ms: number }
+  | {
+      kind: 'shot';
+      shot: Shot;
+      line?: string;
+      speaker?: string;
+      /** How the shot comes in (DECISIONS I-64); each kind of shot has its default. */
+      transition?: Transition;
+      ms: number;
+    }
   /** In-engine: the citizen walks from the crowd up to the stage, flanked by guards. */
   | { kind: 'walk'; citizenId: string; line?: string; ms: number }
   /** In-engine: the Capitol train on the district's rails. */
