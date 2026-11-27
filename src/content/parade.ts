@@ -3,6 +3,9 @@
  * the riders stand in the hero plate (fractions of the 16:9 image, top-left origin), written
  * by the same script to public/assets/capital/parade.json.
  */
+/** Off until the parade is staged with real, licensed models (horses, chariots, crowd). */
+export const PARADE_READY = false;
+
 export const PARADE_PLATES = {
   wide: 'assets/capital/parade_wide.jpg',
   side: 'assets/capital/parade_side.jpg',

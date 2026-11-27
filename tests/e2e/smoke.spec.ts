@@ -73,9 +73,6 @@ test('walking skeleton: district → selection → capital → arena → return'
   await expect(page.getByTestId('date')).toContainText('Otoño · Día 1');
   await expect(sheet).toContainText('Ofrendas:');
   await sheet.getByRole('button', { name: 'Partir hacia el Capitolio' }).click();
-  // The chariot parade opens the week in the Capitol: filmed, and skippable.
-  await expect(page.locator('[data-shot^="parade-"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Saltar' }).click();
 
   const capital = page.getByTestId('capital');
   for (let day = 1; day <= 7; day++) {

@@ -1,3 +1,4 @@
+import { PARADE_READY } from '../content/parade.ts';
 import type { Command, CommandResult, DomainEvent, GameState } from '../core/index.ts';
 import { advanceTick, applyCommand, collectingContext } from '../core/index.ts';
 import { EventBus } from './eventBus.ts';
@@ -54,7 +55,7 @@ export class GameSession {
     this.snapshot = this.makeSnapshot();
     this.events.on('phase/changed', (e) => {
       if (e.to === 'selection') this.playSelectionCeremony();
-      if (e.to === 'capital') {
+      if (e.to === 'capital' && PARADE_READY) {
         const parade = buildParade(this.state);
         if (parade.length > 0) this.playCinematic('parade', parade);
       }
