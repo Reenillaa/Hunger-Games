@@ -44,6 +44,9 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F11-09 | Retratos v3 | ✅ | Muestra visual revisada |
 | F11-10 | Niebla en los bordes, visitas a distritos vecinos y fronteras en el mapa del mundo | ✅ | Test de vecinos; prueba manual en navegador |
 | F11-11 | Arenas con el suelo cartoon | ✅ | Captura del bosque |
+| F11-15 | Edificios rehechos con piezas del Fantasy Town Kit (hoy las casas renderizadas a código aún desentonan con los modelos nuevos) | P0 | — |
+| F11-16 | Centro de entrenamiento interactivo (escena propia con estaciones), patrocinadores y entrevista escenificada | P0 | — |
+| F11-17 | Gente del pueblo, guardias y tributos con los Mini Characters de Kenney | P0 | — |
 | F11-13 | Pantalla de créditos en el juego (obligatoria por la licencia CC BY del carro de EqualizerX) | P0 | — |
 | F11-14 | Estilo visual único: renderizar todos los modelos externos con los mismos materiales cartoon, paleta y luz | P0 | — |
 | F11-12 | Sustituir modelos hechos a código (caballos, carros, personajes, tren) por assets reales CC0/CC BY | P0 | Candidatos presentados al cliente; esperando su elección |

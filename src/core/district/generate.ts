@@ -4,7 +4,7 @@ import type { DistrictTemplate, PropKind, StructureKind, TerrainCode } from './t
 import { isBuildable, terrainAt } from './template.ts';
 import { buildWalkGrid, entranceOf } from './walkGrid.ts';
 import type { HomeDistrictProfile } from '../../content/homeDistricts.ts';
-import { HOME_DISTRICTS } from '../../content/homeDistricts.ts';
+import { HOME_DISTRICTS, LIFE } from '../../content/homeDistricts.ts';
 
 export interface PlacedStructure {
   id: string;
@@ -232,8 +232,10 @@ export function generateDistrict(
   };
   if (treeSpot)
     props.push({ kind: 'hanging_tree', x: treeSpot.x, y: treeSpot.y, ox: 0.5, oy: 0.5 });
-  const pines: PropKind[] = profile.trees;
-  const rocks: PropKind[] = ['rock_a', 'rock_b', 'rock_c'];
+  const life = LIFE[profile.id];
+  // Real tree models of the district (one style for the whole world).
+  const pines: PropKind[] = [...life.trees];
+  const rocks: PropKind[] = ['k_rock_small', 'k_rock_large', 'k_rock_tall'];
   for (let y = 0; y < template.height; y++) {
     for (let x = 0; x < template.width; x++) {
       if (occupied.has(key(x, y))) continue;
@@ -256,6 +258,73 @@ export function generateDistrict(
       if ((x * 7 + y * 13) % 5 === 0) addProp('lamp', x, y, false);
     }
   }
+  // Life (DECISIONS I-66): clutter by the doors, the plaza's stalls, crops, meadow details,
+  // lilies on the water and a small cemetery on the edge of town.
+  const free = (x: number, y: number) =>
+    !occupied.has(key(x, y)) &&
+    isBuildable(template, x, y) &&
+    !hasNeighbour(template, x, y, 0, 'r');
+  for (const st of structures) {
+    if (!st.kind.startsWith('house')) continue;
+    const { w, d } = footprints[st.kind];
+    const around: [number, number][] = [
+      [st.x - 1, st.y + d - 1],
+      [st.x + w, st.y],
+      [st.x + w, st.y + d - 1],
+      [st.x - 1, st.y],
+    ];
+    for (const [x, y] of around)
+      if (free(x, y) && nextFloat(rng) < 0.45) addProp(pick(rng, life.doorstep), x, y);
+  }
+  let stalls = 0;
+  for (let y = plaza.y0 - 1; y <= plaza.y1 + 1 && stalls < 6; y++)
+    for (let x = plaza.x0 - 1; x <= plaza.x1 + 1 && stalls < 6; x++) {
+      const edge =
+        x === plaza.x0 - 1 || x === plaza.x1 + 1 || y === plaza.y0 - 1 || y === plaza.y1 + 1;
+      if (!edge || occupied.has(key(x, y))) continue;
+      const code = terrainAt(template, x, y);
+      if (code !== 'd' && code !== 'g') continue;
+      if (nextFloat(rng) < 0.3) {
+        addProp(life.plaza[stalls % life.plaza.length]!, x, y, false);
+        stalls += 1;
+      }
+    }
+  for (let y = 0; y < template.height; y++)
+    for (let x = 0; x < template.width; x++) {
+      if (occupied.has(key(x, y))) continue;
+      const code = terrainAt(template, x, y);
+      const roll = nextFloat(rng);
+      if (code === 'c' && roll < 0.55) addProp(pick(rng, life.crops), x, y);
+      else if (code === 'g' && Math.hypot(x - px, y - py) > 6 && roll < 0.07)
+        addProp(pick(rng, life.meadow), x, y);
+      else if (code === 'w' && roll < 0.05 && hasNeighbour(template, x, y, 1, 'g'))
+        addProp('k_lily', x, y);
+    }
+  // A few graves on the edge of town: the district remembers its dead.
+  const cemetery = (() => {
+    for (let r = 12; r < 22; r++)
+      for (let a = 0; a < 16; a++) {
+        const x = Math.round(px + Math.cos((a / 16) * Math.PI * 2) * r);
+        const y = Math.round(py + Math.sin((a / 16) * Math.PI * 2) * r);
+        let ok = true;
+        for (let dy = 0; dy < 3 && ok; dy++)
+          for (let dx = 0; dx < 3 && ok; dx++) ok = free(x + dx, y + dy);
+        if (ok) return { x, y };
+      }
+    return null;
+  })();
+  if (cemetery)
+    for (let dy = 0; dy < 3; dy++)
+      for (let dx = 0; dx < 3; dx++) {
+        if ((dx + dy) % 2 === 1) continue;
+        addProp(
+          dx === 1 && dy === 1 ? 'k_candles' : nextFloat(rng) < 0.5 ? 'k_gravestone' : 'k_grave',
+          cemetery.x + dx,
+          cemetery.y + dy,
+          false,
+        );
+      }
+
   // Working clutter of the district's trade (coal heaps, hay, boats in the harbour).
   const clutter = profile.clutter;
   for (const [kind, x, y] of clutter) if (!occupied.has(key(x, y))) addProp(kind, x, y);

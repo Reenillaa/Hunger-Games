@@ -1735,6 +1735,149 @@ for _name in [k for k in list(CATALOGUE) if k in ("house_shack", "house_terrace"
         CATALOGUE[f"{_name}_l{_lvl}"] = (upgraded(_b, _fp, _lvl), _fp, _kind)
 
 
+# ---------------------------------------------------------------------------------------------
+# Real models by artists (DECISIONS I-63/I-65): Kenney packs (CC0) rendered with the game's
+# camera and a single matte cartoon finish. Geometry is never touched; only size and the
+# material response (no gloss) are unified so every model belongs to the same world.
+MODELS = ROOT / "assets/models"
+
+
+# Flat-coloured materials of the packs, renamed into the game's palette (one world, one look).
+PALETTE_SWAPS = [
+    ("leafsdark", "#3F7F2E"), ("leafsfall", "#D9822B"), ("leafs", "#5FAE3E"), ("grass", "#6DBB45"),
+    ("bark", "#7A4E33"), ("wooddark", "#5E3B26"), ("wood", "#A36B42"), ("stonedark", "#6E7078"),
+    ("stone", "#9A9CA3"), ("rock", "#8E9097"), ("dirt", "#9C7448"), ("sand", "#E1C98F"),
+    ("water", "#41B9E8"), ("flower", "#E34B5C"), ("yellow", "#F2C14E"), ("purple", "#9C5BD4"),
+    ("red", "#D8433A"), ("mushroom", "#D8433A"), ("cloth", "#C9A27A"), ("snow", "#F4F7FA"),
+]
+
+
+def _palette_for(name: str) -> str | None:
+    n = name.lower()
+    for key, colour in PALETTE_SWAPS:
+        if key in n:
+            return colour
+    return None
+
+
+def glb(rel: str, height: float, rot: float = 0.0):
+    def build(m) -> None:
+        before = set(bpy.context.scene.objects)
+        bpy.ops.import_scene.gltf(filepath=str(MODELS / rel))
+        new = [o for o in bpy.context.scene.objects if o not in before]
+        bpy.context.view_layer.update()
+        meshes = [o for o in new if o.type == "MESH"]
+        xs, ys, zs = [], [], []
+        for o in meshes:
+            for c in o.bound_box:
+                v = o.matrix_world @ Vector(c)
+                xs.append(v.x)
+                ys.append(v.y)
+                zs.append(v.z)
+        k = height / max(1e-6, max(zs) - min(zs))
+        cx, cy, z0 = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, min(zs)
+        pivot = bpy.data.objects.new("Pivot", None)
+        bpy.context.scene.collection.objects.link(pivot)
+        for o in new:
+            if o.parent is None:
+                o.parent = pivot
+        for o in new:
+            if o.parent is pivot:
+                o.location = (o.location.x - cx, o.location.y - cy, o.location.z - z0)
+        pivot.scale = (k, k, k)
+        pivot.rotation_euler = (0, 0, math.radians(rot))
+        for o in meshes:
+            for slot in o.material_slots:
+                mat = slot.material
+                if mat and mat.node_tree and "Principled BSDF" in mat.node_tree.nodes:
+                    b = mat.node_tree.nodes["Principled BSDF"]
+                    base = b.inputs["Base Color"]
+                    if base.is_linked:
+                        # Colour-map textures: a gentle push towards the game's warmer palette.
+                        nodes, links = mat.node_tree.nodes, mat.node_tree.links
+                        src = base.links[0].from_socket
+                        hs = nodes.new("ShaderNodeHueSaturation")
+                        hs.inputs["Saturation"].default_value = 1.1
+                        hs.inputs["Value"].default_value = 0.92
+                        links.new(src, hs.inputs["Color"])
+                        links.new(hs.outputs["Color"], base)
+                    else:
+                        swap = _palette_for(mat.name)
+                        if swap:
+                            base.default_value = S.hex_rgba(swap)
+                    b.inputs["Roughness"].default_value = 0.85
+                    b.inputs["Metallic"].default_value = 0.0
+                    if "Specular IOR Level" in b.inputs:
+                        b.inputs["Specular IOR Level"].default_value = 0.25
+    return build
+
+
+N, TOWN, SURV, GRAVE, TRAIN, SHOP = ("kenney_nature-kit/glb", "kenney_fantasy-town-kit/glb",
+                                     "kenney_survival-kit/glb", "kenney_graveyard-kit/glb",
+                                     "kenney_train-kit/glb", "kenney_mini-shop/glb")
+KENNEY = {
+    # Trees and plants.
+    "k_oak": (f"{N}/tree_oak.glb", 2.2, (1, 1), "tree"),
+    "k_tree": (f"{N}/tree_default.glb", 2.0, (1, 1), "tree"),
+    "k_tree_fat": (f"{N}/tree_fat.glb", 1.9, (1, 1), "tree"),
+    "k_tree_detailed": (f"{N}/tree_detailed.glb", 2.1, (1, 1), "tree"),
+    "k_tree_fall": (f"{N}/tree_oak_fall.glb", 2.1, (1, 1), "tree"),
+    "k_pine_round": (f"{N}/tree_pineRoundA.glb", 2.3, (1, 1), "tree"),
+    "k_pine_tall": (f"{N}/tree_pineTallA_detailed.glb", 2.7, (1, 1), "tree"),
+    "k_pine_small": (f"{N}/tree_pineSmallA.glb", 1.4, (1, 1), "tree"),
+    "k_palm": (f"{N}/tree_palmTall.glb", 2.6, (1, 1), "tree"),
+    "k_bush": (f"{N}/plant_bush.glb", 0.55, (1, 1), "prop"),
+    "k_bush_large": (f"{N}/plant_bushLarge.glb", 0.8, (1, 1), "prop"),
+    "k_bush_detailed": (f"{N}/plant_bushDetailed.glb", 0.7, (1, 1), "prop"),
+    "k_flowers_red": (f"{N}/flower_redA.glb", 0.45, (1, 1), "prop"),
+    "k_flowers_yellow": (f"{N}/flower_yellowB.glb", 0.45, (1, 1), "prop"),
+    "k_flowers_purple": (f"{N}/flower_purpleC.glb", 0.45, (1, 1), "prop"),
+    "k_grass": (f"{N}/grass_large.glb", 0.35, (1, 1), "prop"),
+    "k_mushrooms": (f"{N}/mushroom_redGroup.glb", 0.3, (1, 1), "prop"),
+    "k_stump": (f"{N}/stump_roundDetailed.glb", 0.35, (1, 1), "prop"),
+    "k_log_stack": (f"{N}/log_stackLarge.glb", 0.6, (1, 1), "prop"),
+    "k_rock_large": (f"{N}/rock_largeA.glb", 0.8, (1, 1), "rock"),
+    "k_rock_small": (f"{N}/rock_smallC.glb", 0.3, (1, 1), "rock"),
+    "k_rock_tall": (f"{N}/rock_tallB.glb", 1.1, (1, 1), "rock"),
+    "k_corn": (f"{N}/crops_cornStageD.glb", 0.9, (1, 1), "prop"),
+    "k_wheat": (f"{N}/crops_wheatStageB.glb", 0.6, (1, 1), "prop"),
+    "k_pumpkin": (f"{N}/crop_pumpkin.glb", 0.35, (1, 1), "prop"),
+    "k_lily": (f"{N}/lily_large.glb", 0.08, (1, 1), "prop"),
+    "k_campfire": (f"{N}/campfire_stones.glb", 0.4, (1, 1), "prop"),
+    "k_tent": (f"{N}/tent_detailedOpen.glb", 1.1, (2, 2), "prop"),
+    "k_canoe": (f"{N}/canoe.glb", 0.35, (1, 2), "prop"),
+    # Town life.
+    "k_cart": (f"{TOWN}/cart.glb", 0.9, (1, 2), "prop"),
+    "k_stall_red": (f"{TOWN}/stall-red.glb", 1.3, (2, 1), "prop"),
+    "k_stall_green": (f"{TOWN}/stall-green.glb", 1.3, (2, 1), "prop"),
+    "k_lantern": (f"{TOWN}/lantern.glb", 1.3, (1, 1), "prop"),
+    "k_fountain": (f"{TOWN}/fountain-round.glb", 0.9, (2, 2), "prop"),
+    "k_hedge": (f"{TOWN}/hedge.glb", 0.6, (1, 1), "prop"),
+    "k_banner": (f"{TOWN}/banner-red.glb", 1.6, (1, 1), "prop"),
+    "k_tree_crooked": (f"{TOWN}/tree-high-crooked.glb", 2.6, (2, 2), "tree"),
+    "k_barrel": (f"{SURV}/barrel.glb", 0.45, (1, 1), "prop"),
+    "k_crates": (f"{SURV}/box-large.glb", 0.45, (1, 1), "prop"),
+    "k_bucket": (f"{SURV}/bucket.glb", 0.22, (1, 1), "prop"),
+    "k_workbench": (f"{SURV}/workbench.glb", 0.6, (1, 1), "prop"),
+    "k_wood_pile": (f"{SURV}/resource-wood.glb", 0.4, (1, 1), "prop"),
+    "k_signpost": (f"{SURV}/signpost.glb", 1.0, (1, 1), "prop"),
+    "k_bench": (f"{GRAVE}/bench.glb", 0.5, (1, 1), "prop"),
+    "k_hay": (f"{GRAVE}/hay-bale.glb", 0.45, (1, 1), "prop"),
+    "k_fire_basket": (f"{GRAVE}/fire-basket.glb", 0.8, (1, 1), "prop"),
+    "k_lightpost": (f"{GRAVE}/lightpost-single.glb", 1.5, (1, 1), "prop"),
+    "k_market_fruit": (f"{SHOP}/display-fruit.glb", 0.7, (1, 1), "prop"),
+    "k_market_bread": (f"{SHOP}/display-bread.glb", 0.7, (1, 1), "prop"),
+    "k_market_flowers": (f"{SHOP}/display-flowers.glb", 0.7, (1, 1), "prop"),
+    # Mourning and the station.
+    "k_coffin": (f"{GRAVE}/coffin.glb", 0.32, (1, 1), "building"),
+    "k_gravestone": (f"{GRAVE}/gravestone-cross.glb", 0.6, (1, 1), "prop"),
+    "k_grave": (f"{GRAVE}/grave.glb", 0.3, (1, 1), "prop"),
+    "k_candles": (f"{GRAVE}/candle-multiple.glb", 0.3, (1, 1), "prop"),
+}
+for _name, (_rel, _h, _fp, _kind) in KENNEY.items():
+    CATALOGUE[_name] = (glb(_rel, _h), _fp, _kind)
+
+
 def frame_for(objects) -> tuple[int, int, float]:
     """Image size and vertical centre (px at SCALE) covering the model and its ground shadow."""
     ppu = S.px_per_unit(SCALE)

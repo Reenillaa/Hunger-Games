@@ -3699,6 +3699,1194 @@
         "shadow",
         "normal"
       ]
+    },
+    "k_oak": {
+      "name": "k_oak",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        465,
+        427
+      ],
+      "anchor": [
+        232.5,
+        381.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_pine_tall": {
+      "name": "k_pine_tall",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        381,
+        459
+      ],
+      "anchor": [
+        190.5,
+        432.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_cart": {
+      "name": "k_cart",
+      "kind": "prop",
+      "footprint": [
+        1,
+        2
+      ],
+      "size": [
+        473,
+        318
+      ],
+      "anchor": [
+        236.5,
+        224.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_stall_red": {
+      "name": "k_stall_red",
+      "kind": "prop",
+      "footprint": [
+        2,
+        1
+      ],
+      "size": [
+        408,
+        311
+      ],
+      "anchor": [
+        204.0,
+        251.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_coffin": {
+      "name": "k_coffin",
+      "kind": "building",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        193,
+        134
+      ],
+      "anchor": [
+        96.5,
+        88.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_flowers_red": {
+      "name": "k_flowers_red",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        121,
+        107
+      ],
+      "anchor": [
+        60.5,
+        85.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_rock_large": {
+      "name": "k_rock_large",
+      "kind": "rock",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        598,
+        395
+      ],
+      "anchor": [
+        299.0,
+        233.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_tree": {
+      "name": "k_tree",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        358,
+        348
+      ],
+      "anchor": [
+        179.0,
+        325.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_tree_fat": {
+      "name": "k_tree_fat",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        383,
+        342
+      ],
+      "anchor": [
+        191.5,
+        310.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_tree_detailed": {
+      "name": "k_tree_detailed",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        430,
+        397
+      ],
+      "anchor": [
+        215.0,
+        373.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_tree_fall": {
+      "name": "k_tree_fall",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        445,
+        409
+      ],
+      "anchor": [
+        222.5,
+        365.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_pine_round": {
+      "name": "k_pine_round",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        333,
+        425
+      ],
+      "anchor": [
+        166.5,
+        378.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_pine_small": {
+      "name": "k_pine_small",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        235,
+        270
+      ],
+      "anchor": [
+        117.5,
+        237.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_palm": {
+      "name": "k_palm",
+      "kind": "tree",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        585,
+        493
+      ],
+      "anchor": [
+        292.5,
+        463.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_bush": {
+      "name": "k_bush",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        214,
+        151
+      ],
+      "anchor": [
+        107.0,
+        128.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_bush_large": {
+      "name": "k_bush_large",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        338,
+        210
+      ],
+      "anchor": [
+        169.0,
+        174.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_bush_detailed": {
+      "name": "k_bush_detailed",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        227,
+        170
+      ],
+      "anchor": [
+        113.5,
+        131.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_flowers_yellow": {
+      "name": "k_flowers_yellow",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        196,
+        126
+      ],
+      "anchor": [
+        98.0,
+        86.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_flowers_purple": {
+      "name": "k_flowers_purple",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        153,
+        124
+      ],
+      "anchor": [
+        76.5,
+        95.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_grass": {
+      "name": "k_grass",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        167,
+        105
+      ],
+      "anchor": [
+        83.5,
+        67.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_mushrooms": {
+      "name": "k_mushrooms",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        101,
+        91
+      ],
+      "anchor": [
+        50.5,
+        65.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_stump": {
+      "name": "k_stump",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        149,
+        127
+      ],
+      "anchor": [
+        74.5,
+        89.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_log_stack": {
+      "name": "k_log_stack",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        329,
+        237
+      ],
+      "anchor": [
+        164.5,
+        159.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_rock_small": {
+      "name": "k_rock_small",
+      "kind": "rock",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        169,
+        120
+      ],
+      "anchor": [
+        84.5,
+        67.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_rock_tall": {
+      "name": "k_rock_tall",
+      "kind": "rock",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        238,
+        250
+      ],
+      "anchor": [
+        119.0,
+        195.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_corn": {
+      "name": "k_corn",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        166,
+        170
+      ],
+      "anchor": [
+        83.0,
+        154.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_wheat": {
+      "name": "k_wheat",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        193,
+        153
+      ],
+      "anchor": [
+        96.5,
+        114.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_pumpkin": {
+      "name": "k_pumpkin",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        138,
+        100
+      ],
+      "anchor": [
+        69.0,
+        69.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_lily": {
+      "name": "k_lily",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        73,
+        51
+      ],
+      "anchor": [
+        36.5,
+        28.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_campfire": {
+      "name": "k_campfire",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        533,
+        294
+      ],
+      "anchor": [
+        266.5,
+        163.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_tent": {
+      "name": "k_tent",
+      "kind": "prop",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        408,
+        326
+      ],
+      "anchor": [
+        204.0,
+        220.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_canoe": {
+      "name": "k_canoe",
+      "kind": "prop",
+      "footprint": [
+        1,
+        2
+      ],
+      "size": [
+        350,
+        208
+      ],
+      "anchor": [
+        175.0,
+        137.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_stall_green": {
+      "name": "k_stall_green",
+      "kind": "prop",
+      "footprint": [
+        2,
+        1
+      ],
+      "size": [
+        408,
+        311
+      ],
+      "anchor": [
+        204.0,
+        251.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_lantern": {
+      "name": "k_lantern",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        216,
+        242
+      ],
+      "anchor": [
+        108.0,
+        221.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_fountain": {
+      "name": "k_fountain",
+      "kind": "prop",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        1278,
+        726
+      ],
+      "anchor": [
+        639.0,
+        422.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_hedge": {
+      "name": "k_hedge",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        438,
+        296
+      ],
+      "anchor": [
+        219.0,
+        187.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_banner": {
+      "name": "k_banner",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        345,
+        314
+      ],
+      "anchor": [
+        172.5,
+        291.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_tree_crooked": {
+      "name": "k_tree_crooked",
+      "kind": "tree",
+      "footprint": [
+        2,
+        2
+      ],
+      "size": [
+        344,
+        449
+      ],
+      "anchor": [
+        172.0,
+        420.5
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_barrel": {
+      "name": "k_barrel",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        143,
+        127
+      ],
+      "anchor": [
+        71.5,
+        98.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_crates": {
+      "name": "k_crates",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        244,
+        176
+      ],
+      "anchor": [
+        122.0,
+        123.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_bucket": {
+      "name": "k_bucket",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        71,
+        66
+      ],
+      "anchor": [
+        35.5,
+        47.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_workbench": {
+      "name": "k_workbench",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        221,
+        175
+      ],
+      "anchor": [
+        110.5,
+        130.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_wood_pile": {
+      "name": "k_wood_pile",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        235,
+        150
+      ],
+      "anchor": [
+        117.5,
+        91.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_signpost": {
+      "name": "k_signpost",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        195,
+        189
+      ],
+      "anchor": [
+        97.5,
+        171.7
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_bench": {
+      "name": "k_bench",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        223,
+        169
+      ],
+      "anchor": [
+        111.5,
+        122.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_hay": {
+      "name": "k_hay",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        232,
+        166
+      ],
+      "anchor": [
+        116.0,
+        117.6
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_fire_basket": {
+      "name": "k_fire_basket",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        415,
+        282
+      ],
+      "anchor": [
+        207.5,
+        203.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_lightpost": {
+      "name": "k_lightpost",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        270,
+        278
+      ],
+      "anchor": [
+        135.0,
+        262.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_market_fruit": {
+      "name": "k_market_fruit",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        222,
+        165
+      ],
+      "anchor": [
+        111.0,
+        128.8
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_market_bread": {
+      "name": "k_market_bread",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        334,
+        238
+      ],
+      "anchor": [
+        167.0,
+        177.9
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_market_flowers": {
+      "name": "k_market_flowers",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        250,
+        215
+      ],
+      "anchor": [
+        125.0,
+        150.2
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_gravestone": {
+      "name": "k_gravestone",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        119,
+        136
+      ],
+      "anchor": [
+        59.5,
+        109.3
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_grave": {
+      "name": "k_grave",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        545,
+        298
+      ],
+      "anchor": [
+        272.5,
+        149.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "k_candles": {
+      "name": "k_candles",
+      "kind": "prop",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        131,
+        99
+      ],
+      "anchor": [
+        65.5,
+        65.4
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
     }
   }
 }

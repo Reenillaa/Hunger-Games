@@ -476,60 +476,108 @@ export class GroundPainter {
 }
 
 /**
- * Mist beyond the playable diamond (DECISIONS I-61): a soft white veil that thickens outwards,
- * drawn once at low resolution above everything on the map, breathing slowly.
+ * Volumetric mist beyond the playable diamond (DECISIONS I-61, I-67): hundreds of soft cloud
+ * puffs — a cool shadow underneath, a bright crown on top — thicker the further from the land,
+ * in two layers that drift slowly against each other. Painted once at low resolution.
  */
 export function paintFog(scene: Phaser.Scene, template: DistrictTemplate): void {
-  const k = 0.2;
+  const k = 0.22;
   const bounds = mapBounds(template.width, template.height);
-  const m = 1400;
+  const m = 1600;
   const ox = bounds.x - m;
   const oy = bounds.y - m;
   const w = bounds.width + m * 2;
   const h = bounds.height + m * 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.ceil(w * k);
-  canvas.height = Math.ceil(h * k);
-  const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = 'rgba(226, 233, 238, 0.96)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'destination-out';
-  const inset = 2.5;
-  const pts = [
-    cellToWorld(inset, inset),
-    cellToWorld(template.width - 1 - inset, inset),
-    cellToWorld(template.width - 1 - inset, template.height - 1 - inset),
-    cellToWorld(inset, template.height - 1 - inset),
-  ].map((p) => [(p.x - ox) * k, (p.y - oy) * k] as const);
-  // Several passes, each a little larger and fainter: a soft gradient into the mist.
-  for (let i = 0; i < 14; i++) {
-    const grow = 1 + i * 0.018;
-    const cx = (pts[0]![0] + pts[2]![0]) / 2;
-    const cy = (pts[0]![1] + pts[2]![1]) / 2;
-    ctx.globalAlpha = i === 0 ? 1 : 0.13;
+  // Distance (in cells) outside the playable area of a world point; ≤ 0 inside.
+  const outside = (wx: number, wy: number) => {
+    const a = wx / (TILE_W / 2);
+    const b = wy / (TILE_H / 2);
+    const cx = (a + b) / 2;
+    const cy = (b - a) / 2;
+    const inset = 2.5;
+    const lo = inset;
+    const hi = template.width - 1 - inset;
+    return Math.max(lo - cx, cx - hi, lo - cy, cy - hi);
+  };
+  const layer = (seed: number, density: number): string => {
+    const rand = mulberry32(hashString(template.id) + seed);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(w * k);
+    canvas.height = Math.ceil(h * k);
+    const ctx = canvas.getContext('2d')!;
+    const puff = (x: number, y: number, r: number, colour: string, alpha: number) => {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, colour);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r * 0.62, 0, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const n = Math.round(1400 * density);
+    for (let i = 0; i < n; i++) {
+      const wx = ox + rand() * w;
+      const wy = oy + rand() * h;
+      const d = outside(wx, wy);
+      if (d < -1.5) continue;
+      const thick = Math.min(1, (d + 1.5) / 7);
+      if (rand() > 0.25 + thick) continue;
+      const x = (wx - ox) * k;
+      const y = (wy - oy) * k;
+      const r = (90 + rand() * 170) * k * (0.7 + thick);
+      puff(x + r * 0.18, y + r * 0.16, r, 'rgba(150,170,190,1)', 0.22 + thick * 0.25);
+      puff(x, y, r, 'rgba(236,241,246,1)', 0.35 + thick * 0.45);
+      puff(x - r * 0.22, y - r * 0.2, r * 0.6, 'rgba(255,255,255,1)', 0.3 + thick * 0.3);
+    }
+    // Far away it is all mist.
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'destination-over';
+    ctx.fillStyle = 'rgba(214,224,233,1)';
     ctx.beginPath();
-    pts.forEach(([x, y], j) => {
-      const px = cx + (x - cx) * grow;
-      const py = cy + (y - cy) * grow;
-      if (j === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    });
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    const pts = [
+      cellToWorld(-6, -6),
+      cellToWorld(template.width + 5, -6),
+      cellToWorld(template.width + 5, template.height + 5),
+      cellToWorld(-6, template.height + 5),
+    ].map((p) => [(p.x - ox) * k, (p.y - oy) * k] as const);
+    ctx.moveTo(pts[0]![0], pts[0]![1]);
+    for (const [px, py] of pts.slice(1).reverse()) ctx.lineTo(px, py);
     ctx.closePath();
-    ctx.fill();
-  }
-  const key = `fog_${template.id}_${Date.now().toString(36)}`;
-  const tex = scene.textures.createCanvas(key, canvas.width, canvas.height)!;
-  tex.getContext().drawImage(canvas, 0, 0);
-  tex.refresh();
-  const img = scene.add
-    .image(ox, oy, key)
+    ctx.fill('evenodd');
+    const key = `fog_${template.id}_${seed}_${Date.now().toString(36)}`;
+    const tex = scene.textures.createCanvas(key, canvas.width, canvas.height)!;
+    tex.getContext().drawImage(canvas, 0, 0);
+    tex.refresh();
+    return key;
+  };
+  const back = scene.add
+    .image(ox, oy, layer(1, 1))
     .setOrigin(0, 0)
     .setScale(1 / k)
     .setDepth(60000);
+  const front = scene.add
+    .image(ox, oy, layer(2, 0.55))
+    .setOrigin(0, 0)
+    .setScale(1 / k)
+    .setDepth(60001)
+    .setAlpha(0.85);
   scene.tweens.add({
-    targets: img,
-    alpha: { from: 0.88, to: 1 },
-    duration: 4200,
+    targets: back,
+    x: ox + 60,
+    y: oy + 20,
+    duration: 16000,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.easeInOut',
+  });
+  scene.tweens.add({
+    targets: front,
+    x: ox - 90,
+    y: oy - 25,
+    alpha: { from: 0.7, to: 0.95 },
+    duration: 11000,
     yoyo: true,
     repeat: -1,
     ease: 'Sine.easeInOut',

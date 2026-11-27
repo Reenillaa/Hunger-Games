@@ -65,10 +65,14 @@ describe('generateDistrict', () => {
 
   it('grows a forest and scatters rocks on the scree', () => {
     const d = gen('nature');
-    const trees = d.props.filter((p) => p.kind.startsWith('pine'));
+    // Pines of the mining district: the real models (k_pine_*) and the older ones.
+    const trees = d.props.filter((p) => p.kind.startsWith('pine') || p.kind.startsWith('k_pine'));
     expect(trees.length).toBeGreaterThan(150);
+    // Life: doorstep clutter, meadow details and a small cemetery.
+    expect(d.props.filter((p) => p.kind.startsWith('k_')).length).toBeGreaterThan(200);
+    expect(d.props.some((p) => p.kind === 'k_gravestone' || p.kind === 'k_grave')).toBe(true);
     expect(
-      d.props.some((p) => p.kind.startsWith('rock') && terrainAt(template, p.x, p.y) === 's'),
+      d.props.some((p) => p.kind.startsWith('k_rock') && terrainAt(template, p.x, p.y) === 's'),
     ).toBe(true);
     expect(d.props.filter((p) => p.kind === 'lamp').length).toBeGreaterThan(4);
   });

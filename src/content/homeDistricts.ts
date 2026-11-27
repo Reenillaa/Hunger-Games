@@ -411,3 +411,115 @@ export const COMMON_BUILDINGS: readonly StructureKind[] = [
 export function canBuildIn(homeDistrictId: string, kind: StructureKind): boolean {
   return COMMON_BUILDINGS.includes(kind) || homeProfile(homeDistrictId).trades.includes(kind);
 }
+
+/**
+ * What makes each district feel lived in (DECISIONS I-66): its trees, the clutter by the doors,
+ * what grows in the fields and what the plaza sells. All are real models (Kenney, CC0).
+ */
+export interface DistrictLife {
+  trees: PropKind[];
+  doorstep: PropKind[];
+  meadow: PropKind[];
+  crops: PropKind[];
+  plaza: PropKind[];
+}
+
+const MEADOW: PropKind[] = [
+  'k_bush',
+  'k_bush_large',
+  'k_bush_detailed',
+  'k_flowers_red',
+  'k_flowers_yellow',
+  'k_flowers_purple',
+  'k_grass',
+  'k_mushrooms',
+  'k_stump',
+  'k_rock_small',
+];
+
+export const LIFE: Record<HomeDistrictProfile['id'], DistrictLife> = {
+  d1: {
+    trees: ['k_tree_detailed', 'k_oak', 'k_tree'],
+    doorstep: ['k_flowers_red', 'k_flowers_purple', 'k_bush_detailed', 'k_hedge'],
+    meadow: MEADOW,
+    crops: ['k_pumpkin'],
+    plaza: ['k_market_flowers', 'k_market_bread', 'k_lantern', 'k_bench', 'k_fountain'],
+  },
+  d2: {
+    trees: ['k_pine_tall', 'k_pine_round', 'k_pine_small'],
+    doorstep: ['k_crates', 'k_workbench', 'k_barrel'],
+    meadow: [...MEADOW, 'k_rock_large', 'k_rock_tall'],
+    crops: ['k_wheat'],
+    plaza: ['k_cart', 'k_bench', 'k_lantern', 'k_stall_green'],
+  },
+  d3: {
+    trees: ['k_tree', 'k_tree_detailed'],
+    doorstep: ['k_crates', 'k_bucket', 'k_flowers_yellow'],
+    meadow: MEADOW,
+    crops: ['k_corn'],
+    plaza: ['k_stall_green', 'k_lantern', 'k_bench', 'k_market_bread'],
+  },
+  d4: {
+    trees: ['k_palm', 'k_tree', 'k_tree_fat'],
+    doorstep: ['k_barrel', 'k_bucket', 'k_crates'],
+    meadow: MEADOW,
+    crops: ['k_pumpkin'],
+    plaza: ['k_stall_red', 'k_market_fruit', 'k_cart', 'k_lantern'],
+  },
+  d5: {
+    trees: ['k_tree', 'k_pine_round'],
+    doorstep: ['k_crates', 'k_barrel', 'k_workbench'],
+    meadow: [...MEADOW, 'k_rock_large'],
+    crops: ['k_corn'],
+    plaza: ['k_lantern', 'k_cart', 'k_bench'],
+  },
+  d6: {
+    trees: ['k_tree', 'k_pine_round', 'k_tree_fall'],
+    doorstep: ['k_crates', 'k_barrel', 'k_wood_pile'],
+    meadow: MEADOW,
+    crops: ['k_wheat'],
+    plaza: ['k_cart', 'k_stall_red', 'k_lantern', 'k_signpost'],
+  },
+  d7: {
+    trees: ['k_pine_tall', 'k_pine_round', 'k_oak', 'k_tree_fall'],
+    doorstep: ['k_log_stack', 'k_wood_pile', 'k_stump'],
+    meadow: [...MEADOW, 'k_log_stack'],
+    crops: ['k_pumpkin'],
+    plaza: ['k_cart', 'k_stall_green', 'k_bench', 'k_lantern'],
+  },
+  d8: {
+    trees: ['k_tree', 'k_tree_fat'],
+    doorstep: ['k_crates', 'k_barrel', 'k_flowers_purple'],
+    meadow: MEADOW,
+    crops: ['k_corn'],
+    plaza: ['k_stall_red', 'k_stall_green', 'k_market_flowers', 'k_lantern'],
+  },
+  d9: {
+    trees: ['k_oak', 'k_tree_fat', 'k_tree_fall'],
+    doorstep: ['k_crates', 'k_barrel', 'k_flowers_yellow'],
+    meadow: MEADOW,
+    crops: ['k_wheat', 'k_corn'],
+    plaza: ['k_market_bread', 'k_cart', 'k_stall_green', 'k_crates'],
+  },
+  d10: {
+    trees: ['k_oak', 'k_tree', 'k_tree_fat'],
+    doorstep: ['k_crates', 'k_bucket', 'k_barrel'],
+    meadow: MEADOW,
+    crops: ['k_corn', 'k_pumpkin'],
+    plaza: ['k_cart', 'k_stall_red', 'k_crates', 'k_lantern'],
+  },
+  d11: {
+    trees: ['k_tree_fat', 'k_oak', 'k_tree_detailed'],
+    doorstep: ['k_crates', 'k_bucket', 'k_flowers_red'],
+    meadow: MEADOW,
+    crops: ['k_pumpkin', 'k_corn', 'k_wheat'],
+    plaza: ['k_market_fruit', 'k_stall_green', 'k_cart', 'k_lantern'],
+  },
+  d12: {
+    trees: ['k_pine_tall', 'k_pine_round', 'k_pine_small'],
+    doorstep: ['k_wood_pile', 'k_barrel', 'k_bucket'],
+    meadow: [...MEADOW, 'k_rock_large'],
+    crops: ['k_pumpkin'],
+    plaza: ['k_cart', 'k_lantern', 'k_bench', 'k_stall_red'],
+  },
+};
