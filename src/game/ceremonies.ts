@@ -346,6 +346,84 @@ export function buildReturnCeremony(state: Readonly<GameState>, edition: number)
 
 import { homeProfile } from '../content/homeDistricts.ts';
 
+/**
+ * The chariot parade on the first night in the Capitol (DECISIONS I-60): an aerial of the avenue
+ * under the fireworks, chariots passing the stands, our tributes on the leading chariot in their
+ * costume, close-ups, and the Capitol's welcome. Built from the real tributes.
+ */
+export function buildParade(state: Readonly<GameState>): CineStep[] {
+  const games = state.games;
+  if (!games) return [];
+  const profile = homeProfile(state.meta.homeDistrictId);
+  const n = String(profile.number);
+  const ours = games.order
+    .map((id) => games.contestants[id]!)
+    .filter((c) => c.player && c.citizenId)
+    .map((c) => c.citizenId!);
+  const herald = t('cri.herald');
+  const steps: CineStep[] = [
+    { kind: 'title', title: t('par.title'), subtitle: t('par.subtitle'), ms: 3400 },
+    { kind: 'fade', to: 'clear', ms: 500 },
+    {
+      kind: 'shot',
+      shot: { type: 'plate', plate: 'wide', move: 'crane', fx: ['fireworks', 'beams', 'flashes'] },
+      line: t('par.crowd'),
+      ms: 5600,
+    },
+    {
+      kind: 'shot',
+      shot: { type: 'plate', plate: 'side', move: 'panLeft', fx: ['flashes', 'confetti'] },
+      speaker: herald,
+      line: t('par.d1'),
+      ms: 4400,
+    },
+    {
+      kind: 'shot',
+      shot: { type: 'plate', plate: 'side', move: 'panRight', fx: ['flashes', 'beams'] },
+      line: t('par.passing'),
+      ms: 4200,
+    },
+    {
+      kind: 'shot',
+      shot: {
+        type: 'plate',
+        plate: 'hero',
+        move: 'push',
+        fx: ['confetti', 'flashes', 'beams'],
+        riders: ours,
+      },
+      speaker: herald,
+      line: t('par.ours', { n }),
+      ms: 5600,
+    },
+  ];
+  for (const id of ours) {
+    const c = state.population.citizens[id];
+    if (!c) continue;
+    steps.push({
+      kind: 'shot',
+      shot: {
+        type: 'face',
+        citizenId: id,
+        mood: 70,
+        caption: t(`cap.opt.identity.${profile.id}` as LocaleKey),
+      },
+      line: t('par.wave', { name: c.firstName }),
+      ms: 3600,
+    });
+  }
+  steps.push(
+    {
+      kind: 'shot',
+      shot: { type: 'plate', plate: 'wide', move: 'push', fx: ['fireworks', 'flashes'] },
+      line: t('par.welcome'),
+      ms: 5200,
+    },
+    { kind: 'fade', to: 'black', ms: 800 },
+  );
+  return steps;
+}
+
 /** The opening of a new game: the world in four lines, over the district itself. */
 export function buildPrologue(state: Readonly<GameState>): CineStep[] {
   const profile = homeProfile(state.meta.homeDistrictId);

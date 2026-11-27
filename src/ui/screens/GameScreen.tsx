@@ -12,6 +12,7 @@ import { PhaseSheet } from '../components/PhaseSheet.tsx';
 import { ArenaPanel } from '../components/ArenaPanel.tsx';
 import { EventDialog } from '../components/EventDialog.tsx';
 import { MishapNotice } from '../components/MishapNotice.tsx';
+import { FogGate } from '../components/FogGate.tsx';
 import { ChroniclePanel } from '../components/ChroniclePanel.tsx';
 import { LawsPanel } from '../components/LawsPanel.tsx';
 import { ObjectivesCard } from '../components/ObjectivesCard.tsx';
@@ -76,15 +77,20 @@ export function GameScreen({ session, onExit, onExport, notify }: Props) {
       <div ref={host} className={styles.canvasHost} data-testid="game-canvas" />
       <div className={styles.overlay}>
         <TopBar session={session} onSave={() => setSaveOpen(true)} onMenu={onExit} />
-        <ResourceBar session={session} />
-        <ObjectivesCard session={session} />
-        <BuildMenu session={session} />
+        {!ui.visiting && (
+          <>
+            <ResourceBar session={session} />
+            <ObjectivesCard session={session} />
+            <BuildMenu session={session} />
+          </>
+        )}
         <SelectionPanel session={session} />
         <PhaseSheet session={session} />
         <CapitalPanel session={session} />
         <ArenaPanel session={session} />
         <EventDialog session={session} />
         <MishapNotice session={session} />
+        <FogGate session={session} />
         {debug && <DebugPanel session={session} />}
       </div>
       <CinematicOverlay session={session} />

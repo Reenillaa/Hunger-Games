@@ -2,7 +2,12 @@ import type { Command, CommandResult, DomainEvent, GameState } from '../core/ind
 import { advanceTick, applyCommand, collectingContext } from '../core/index.ts';
 import { EventBus } from './eventBus.ts';
 import { UiStore } from './uiStore.ts';
-import { buildPrologue, buildReturnCeremony, buildSelectionCeremony } from './ceremonies.ts';
+import {
+  buildParade,
+  buildPrologue,
+  buildReturnCeremony,
+  buildSelectionCeremony,
+} from './ceremonies.ts';
 import type { CineStep } from './cinematic.ts';
 import { CinematicPlayer } from './cinematic.ts';
 
@@ -49,6 +54,10 @@ export class GameSession {
     this.snapshot = this.makeSnapshot();
     this.events.on('phase/changed', (e) => {
       if (e.to === 'selection') this.playSelectionCeremony();
+      if (e.to === 'capital') {
+        const parade = buildParade(this.state);
+        if (parade.length > 0) this.playCinematic('parade', parade);
+      }
       const last = this.state.competition.history.at(-1);
       if (e.from === 'aftermath' && e.to === 'district' && last) {
         const steps = buildReturnCeremony(this.state, last.edition);

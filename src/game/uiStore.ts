@@ -13,6 +13,10 @@ export interface UiState {
   panel: 'population' | 'chronicle' | 'settings' | 'laws' | null;
   /** Arena: the contestant of the home team the player is directing. */
   arenaActorId: string | null;
+  /** Neighbouring district being visited through the fog (read-only view), or null at home. */
+  visiting: string | null;
+  /** The camera reached the fog at an edge: the district that lies beyond it. */
+  edge: { dir: 'n' | 'e' | 's' | 'w'; district: string } | null;
 }
 
 export class UiStore {
@@ -24,6 +28,8 @@ export class UiStore {
     citizenId: null,
     panel: null,
     arenaActorId: null,
+    visiting: null,
+    edge: null,
   };
   private readonly listeners = new Set<() => void>();
 
@@ -62,6 +68,17 @@ export class UiStore {
 
   togglePanel(panel: UiState['panel']): void {
     this.set({ panel: this.state.panel === panel ? null : panel });
+  }
+
+  /** Shown while the camera presses against the fog at an edge (cheap: only on change). */
+  setEdge(edge: UiState['edge']): void {
+    const a = this.state.edge;
+    if (a?.dir === edge?.dir && a?.district === edge?.district) return;
+    this.set({ edge });
+  }
+
+  visit(district: string | null): void {
+    this.set({ visiting: district, edge: null, mode: 'view', placeKind: null, selectedId: null });
   }
 
   selectArenaActor(id: string | null): void {

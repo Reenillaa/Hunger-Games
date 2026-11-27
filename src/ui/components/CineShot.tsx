@@ -5,6 +5,8 @@ import { t } from '../../content/i18n.ts';
 import type { Shot } from '../../game/cinematic.ts';
 import { Portrait } from './Portrait.tsx';
 import css from './cinema.module.css';
+import { DISTRICT_CHARIOT_COLOURS, PARADE_HERO, PARADE_PLATES } from '../../content/parade.ts';
+import { homeProfile } from '../../content/homeDistricts.ts';
 
 /** The herald and the guards are not citizens of the district: fixed, original looks. */
 const HERALD_GENES: PortraitGenes = {
@@ -124,6 +126,57 @@ function Confetti() {
         />
       ))}
     </div>
+  );
+}
+
+/** Effects over the parade plates: flashes from the stands, sweeping lights, fireworks. */
+function ParadeFx({ fx }: { fx: ('confetti' | 'flashes' | 'beams' | 'fireworks')[] }) {
+  const r = scatter(120, 29);
+  return (
+    <>
+      {fx.includes('beams') && (
+        <div className={css.beams} aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} style={{ left: `${10 + i * 26}%`, animationDelay: `${-i * 1.3}s` }} />
+          ))}
+        </div>
+      )}
+      {fx.includes('fireworks') && (
+        <div className={css.fireworks} aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((k) => (
+            <div
+              key={k}
+              className={css.burst}
+              style={{
+                left: `${12 + r[k * 7]! * 76}%`,
+                top: `${6 + r[k * 7 + 1]! * 30}%`,
+                animationDelay: `${r[k * 7 + 2]! * 2.4}s`,
+                color: ['#FFD23F', '#FF5FA2', '#3FD4D9', '#B46CFF', '#FFFFFF'][k]!,
+              }}
+            >
+              {Array.from({ length: 14 }, (_, i) => (
+                <i key={i} style={{ rotate: `${(i / 14) * 360}deg` }} />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+      {fx.includes('flashes') && (
+        <div className={css.flashes} aria-hidden="true">
+          {Array.from({ length: 26 }, (_, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${r[i * 3]! * 100}%`,
+                top: `${45 + r[i * 3 + 1]! * 45}%`,
+                animationDelay: `${r[i * 3 + 2]! * 2.2}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+      {fx.includes('confetti') && <Confetti />}
+    </>
   );
 }
 
@@ -442,6 +495,42 @@ export function CineShot({ shot, state, ms }: Props) {
             <Face c={c} day={day} mood={v ? 12 : 20} outfit="tribute" />
           </div>
           <div className={css.dust} />
+        </div>
+      );
+    }
+    case 'plate': {
+      const colour =
+        DISTRICT_CHARIOT_COLOURS[homeProfile(state.meta.homeDistrictId).number - 1] ?? '#E9A23B';
+      const riders = (shot.riders ?? []).map(cit).filter((c): c is Citizen => !!c);
+      return (
+        <div
+          className={`${css.shot} ${css.opaque}`}
+          style={style}
+          data-shot={`parade-${shot.plate}`}
+        >
+          <div className={`${css.plate} ${css[shot.move]}`}>
+            <img src={PARADE_PLATES[shot.plate]} alt="" draggable={false} />
+            {shot.plate === 'hero' &&
+              riders.slice(0, 2).map((c, i) => {
+                const [x, y] = i === 0 ? PARADE_HERO.left : PARADE_HERO.right;
+                return (
+                  <div
+                    key={c.id}
+                    className={css.rider}
+                    style={{
+                      left: `${x * 100}%`,
+                      top: `${y * 100}%`,
+                      height: `${PARADE_HERO.riderHeight * 260}%`,
+                      ['--glow' as string]: colour,
+                    }}
+                  >
+                    <Face c={c} day={day} mood={72} outfit="tribute" />
+                  </div>
+                );
+              })}
+          </div>
+          <ParadeFx fx={shot.fx} />
+          <div className={css.vignette} />
         </div>
       );
     }

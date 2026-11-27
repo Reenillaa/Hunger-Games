@@ -16,6 +16,15 @@ export type Shot =
   | { type: 'pair'; citizenIds: string[] }
   | { type: 'farewell'; citizenId: string; visitorId: string | null }
   | { type: 'train'; citizenIds: string[] }
+  /** A pre-rendered plate of the Capitol parade, animated with a camera move and effects. */
+  | {
+      type: 'plate';
+      plate: 'wide' | 'side' | 'hero';
+      move: 'push' | 'crane' | 'panLeft' | 'panRight';
+      fx: ('confetti' | 'flashes' | 'beams' | 'fireworks')[];
+      /** Our tributes riding the hero chariot. */
+      riders?: string[];
+    }
   /** A pine coffin on the platform, the portrait on the lid, someone who mourns. */
   | { type: 'coffin'; citizenId: string; mournerId: string | null };
 

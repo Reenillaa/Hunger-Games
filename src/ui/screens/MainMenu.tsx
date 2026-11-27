@@ -5,6 +5,7 @@ import { PLAYABLE_DISTRICTS, profileByNumber } from '../../content/homeDistricts
 import type { LocaleKey } from '../../content/i18n.ts';
 import { t } from '../../content/i18n.ts';
 import world from '../../content/maps/world.json' with { type: 'json' };
+import { WorldBorders } from '../components/WorldBorders.tsx';
 import type { SlotMeta } from '../../persistence/saveRepository.ts';
 import type { Quality } from '../../platform/settings.ts';
 import { getQuality, setQuality } from '../../platform/settings.ts';
@@ -100,6 +101,11 @@ export function MainMenu({ onNewGame, onContinue, onLoad }: Props) {
             src={small ? 'assets/ui/worldmap_small.jpg' : world.image}
             alt={t('map.title')}
             draggable={false}
+          />
+          <WorldBorders
+            markers={MARKERS}
+            aspect={(world as { aspect?: number }).aspect ?? 16 / 9}
+            selected={selected}
           />
           <div className={styles.candle} aria-hidden="true" />
           {Object.entries(MARKERS).map(([id, [x, y]]) => {

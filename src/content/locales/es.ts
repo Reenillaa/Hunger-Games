@@ -229,6 +229,21 @@ export const es = {
     'El tren del Capitolio entra en la estación sin hacer ruido. Nadie del distrito ha subido nunca a uno.',
   'cri.board': 'Los guardias los llevan por el andén. La puerta se cierra con un siseo.',
   'cri.depart': 'El tren arranca. El Distrito {n} se queda en el andén, mirando.',
+  'par.title': 'El desfile',
+  'par.subtitle': 'Primera noche en el Capitolio',
+  'par.crowd':
+    'Cien mil personas en las gradas. Fuegos artificiales, focos, música. Nadie en el Capitolio se ha perdido nunca un desfile.',
+  'par.d1': '¡Abren el desfile los carros del Distrito 1! ¡Oro y diamante, como siempre!',
+  'par.passing':
+    'Los carros avanzan uno a uno por la avenida. El público grita nombres que olvidará mañana.',
+  'par.ours': 'Y ahora… ¡el Distrito {n}! ¡Mirad qué carro!',
+  'par.wave': '{name} levanta la mano. Al principio con miedo. Luego, la gente responde.',
+  'par.welcome':
+    'Desde el palco, la voz del Capitolio da la bienvenida a los veinticuatro. Que empiece la semana.',
+  'fog.beyond': 'Más allá de la niebla',
+  'fog.cross': 'Cruzar',
+  'fog.visiting': 'De visita',
+  'fog.home': 'Volver a casa',
   'fw.title': 'La despedida',
   'fw.subtitle': 'Una hora en el ayuntamiento. Tres minutos por visita.',
   'fw.mother':

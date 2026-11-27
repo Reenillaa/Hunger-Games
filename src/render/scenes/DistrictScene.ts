@@ -1,14 +1,16 @@
 import * as Phaser from 'phaser';
 import type { DistrictState, PlacedProp, PlacedStructure } from '../../core/index.ts';
-import { buildWalkGrid } from '../../core/index.ts';
+import { buildWalkGrid, generateDistrict, seedFromString } from '../../core/index.ts';
+import { neighbourOf } from '../../content/neighbours.ts';
+import type { EdgeDir } from '../../content/neighbours.ts';
 import { TEMPLATES } from '../../content/maps/index.ts';
 import { Ambience } from '../district/ambience.ts';
 import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts';
 import { Townsfolk } from '../district/townsfolk.ts';
 import { CeremonyStage } from '../district/ceremony.ts';
-import { GroundPainter } from '../district/ground.ts';
+import { GroundPainter, paintFog } from '../district/ground.ts';
 import { TrainView } from '../district/train.ts';
-import { homeProfile } from '../../content/homeDistricts.ts';
+import { HOME_DISTRICTS, homeProfile } from '../../content/homeDistricts.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { GameSession } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
@@ -61,6 +63,9 @@ export class DistrictScene extends Phaser.Scene {
   private ambience?: Ambience;
   private built = false;
   private ground?: GroundPainter;
+  /** Visiting a neighbour through the fog: its district, generated the same way every time. */
+  private visit: { id: string; district: DistrictState } | null = null;
+  private camBounds?: { x: number; y: number; width: number; height: number };
   private train?: TrainView;
   private rail?: { x: number; stationY: number };
   private trainSeen = { train: -1, unload: -1, board: -1 };
@@ -69,6 +74,48 @@ export class DistrictScene extends Phaser.Scene {
   constructor(session: GameSession) {
     super(DISTRICT_SCENE);
     this.session = session;
+  }
+
+  init(data?: { visit?: string }): void {
+    const id = data?.visit;
+    const template = id ? TEMPLATES[id] : undefined;
+    const profile = id ? HOME_DISTRICTS[id as keyof typeof HOME_DISTRICTS] : undefined;
+    this.visit =
+      id && template && profile
+        ? {
+            id,
+            district: generateDistrict(
+              template,
+              STRUCTURE_FOOTPRINTS,
+              seedFromString(`visit-${id}`),
+              profile,
+            ),
+          }
+        : null;
+    this.built = false;
+    this.ground = undefined;
+    this.train = undefined;
+    this.ceremony = undefined;
+    this.townsfolk = undefined;
+    this.ambience = undefined;
+    this.structureViews.clear();
+    this.propViews.clear();
+    this.tinted.length = 0;
+    this.shadows.length = 0;
+    this.emissive.length = 0;
+    this.glows.length = 0;
+    this.smoke.length = 0;
+    this.lastVersion = -1;
+    this.roadsSig = '';
+  }
+
+  /** The district on screen: ours, or the neighbour we are visiting. */
+  private shown(): DistrictState {
+    return this.visit?.district ?? this.session.getState().district;
+  }
+
+  private shownHome(): string {
+    return this.visit?.id ?? this.session.getState().meta.homeDistrictId;
   }
 
   preload(): void {
@@ -80,7 +127,7 @@ export class DistrictScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor(PALETTE.coal);
     const sprites = this.cache.json.get('spriteManifest') as SpriteManifest;
-    const district = this.session.getState().district;
+    const district = this.shown();
 
     // Second loading pass: only the art this district actually uses.
     const characters = (
@@ -150,7 +197,7 @@ export class DistrictScene extends Phaser.Scene {
         district,
         characters,
         coarse ? 40 : 70,
-        this.townspeople(),
+        this.visit ? [] : this.townspeople(),
         (id) => this.session.ui.openCitizen(id),
       );
       const mines = district.structures
@@ -158,10 +205,10 @@ export class DistrictScene extends Phaser.Scene {
         .map((st) => ({ x: st.x + 1, y: st.y + 1 }));
       this.ambience = new Ambience(this, template, mines);
       // The station: rails by the platform, where the Capitol train comes and goes.
-      const station = homeProfile(this.session.getState().meta.homeDistrictId).station;
+      const station = homeProfile(this.shownHome()).station;
       const row = template.terrain[station.y] ?? '';
       const railX = row.indexOf('t');
-      if (railX > 0) {
+      if (railX > 0 && !this.visit) {
         this.rail = { x: railX, stationY: station.y };
         this.train = new TrainView(this, sprites, characters, this.rail, (img, shadow) => {
           this.tinted.push(img);
@@ -173,17 +220,20 @@ export class DistrictScene extends Phaser.Scene {
     this.hover = this.add.graphics().setDepth(100000);
     const size = template?.width ?? 64;
     const bounds = mapBounds(size, size);
+    // Inset so the dark corners beyond the playable diamond stay off screen.
+    this.camBounds = {
+      x: bounds.x + bounds.width * 0.08,
+      y: bounds.y - 260,
+      width: bounds.width * 0.84,
+      height: bounds.height * 0.94 + 260,
+    };
     this.controller = new CameraController(this, {
       minZoom: 0.3,
       maxZoom: 1.6,
-      // Inset so the dark corners beyond the playable diamond stay off screen.
-      bounds: {
-        x: bounds.x + bounds.width * 0.12,
-        y: bounds.y - 260,
-        width: bounds.width * 0.76,
-        height: bounds.height * 0.9 + 260,
-      },
+      bounds: this.camBounds,
     });
+    // Mist beyond the edges: the land goes on, but nobody from here has seen it.
+    if (template) paintFog(this, template);
     const pz = template?.plaza ?? { x0: 24, y0: 20, x1: 29, y1: 26 };
     const plaza = cellToWorld((pz.x0 + pz.x1) / 2, (pz.y0 + pz.y1) / 2);
     // Small screens start further out so the whole town core is visible.
@@ -201,10 +251,10 @@ export class DistrictScene extends Phaser.Scene {
   }
 
   private paintGround(): void {
-    const template = TEMPLATES[this.session.getState().district.templateId];
+    const template = TEMPLATES[this.shown().templateId];
     if (!template) return;
     this.ground ??= new GroundPainter(this, this.terrainScale === '1x' ? 0.75 : 0.5);
-    const roads = new Set<number>(this.session.getState().district.roads);
+    const roads = new Set<number>(this.shown().roads);
     this.roadsSig = [...roads].join(',');
     const fresh = this.ground.paint({ template, roads });
     const alive = (o: { active: boolean }) => o.active;
@@ -215,7 +265,7 @@ export class DistrictScene extends Phaser.Scene {
   /** Visual variant (same footprint, other materials) chosen from the position: stable per save. */
   private spriteKey(s: PlacedStructure, sprites: SpriteManifest): string {
     // Regional architecture first (e.g. house_shack__d11): every district builds its own way.
-    const regional = `${s.kind}__${this.session.getState().meta.homeDistrictId}`;
+    const regional = `${s.kind}__${this.shownHome()}`;
     // Upgraded homes look better off (annex, flower boxes, a fenced yard at level 3).
     if (s.level >= 2) {
       const base = sprites.assets[regional] ? regional : s.kind;
@@ -250,7 +300,7 @@ export class DistrictScene extends Phaser.Scene {
   private syncWorld(): void {
     const sprites = this.sprites;
     if (!sprites) return;
-    const district = this.session.getState().district;
+    const district = this.shown();
     // New paths were laid: repaint the ground.
     if (district.roads.join(',') !== this.roadsSig) this.paintGround();
     const seen = new Set<string>();
@@ -481,7 +531,14 @@ export class DistrictScene extends Phaser.Scene {
   }
 
   override update(time: number, delta: number): void {
+    // Crossing the fog: the scene is rebuilt for the neighbour (or for home on the way back).
+    const visiting = this.session.ui.get().visiting;
+    if (visiting !== (this.visit?.id ?? null)) {
+      this.scene.restart(visiting ? { visit: visiting } : {});
+      return;
+    }
     if (!this.built) return;
+    this.updateEdge();
     this.controller?.update(delta);
     const version = this.session.getSnapshot().version;
     if (version !== this.lastVersion) {
@@ -545,6 +602,24 @@ export class DistrictScene extends Phaser.Scene {
       );
       if (view.camera) cam.setZoom(cam.zoom + (view.camera.zoom - cam.zoom) * k);
     }
+  }
+
+  /** Pressing the camera against the fog shows which district lies beyond it. */
+  private updateEdge(): void {
+    const b = this.camBounds;
+    if (!b || this.session.getState().phase.kind !== 'district' || this.session.cinematic) {
+      this.session.ui.setEdge(null);
+      return;
+    }
+    const v = this.cameras.main.worldView;
+    const near = 6;
+    let dir: EdgeDir | null = null;
+    if (v.y <= b.y + near) dir = 'n';
+    else if (v.bottom >= b.y + b.height - near) dir = 's';
+    else if (v.x <= b.x + near) dir = 'w';
+    else if (v.right >= b.x + b.width - near) dir = 'e';
+    const district = dir ? neighbourOf(this.shownHome(), dir) : null;
+    this.session.ui.setEdge(dir && district ? { dir, district } : null);
   }
 
   /** The Capitol train follows the cinematic's orders; once it ends the line is empty again. */
@@ -654,6 +729,7 @@ export class DistrictScene extends Phaser.Scene {
 
   /** A tap (not a drag) places the building in placement mode, or selects one in view mode. */
   private onTap(pointer: Phaser.Input.Pointer): void {
+    if (this.visit) return; // a visitor only looks
     if (this.controller?.gestureConsumed || pointer.rightButtonReleased()) {
       if (pointer.rightButtonReleased()) this.session.ui.cancel();
       return;

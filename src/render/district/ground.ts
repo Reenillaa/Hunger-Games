@@ -438,3 +438,64 @@ export class GroundPainter {
     this.keys = [];
   }
 }
+
+/**
+ * Mist beyond the playable diamond (DECISIONS I-61): a soft white veil that thickens outwards,
+ * drawn once at low resolution above everything on the map, breathing slowly.
+ */
+export function paintFog(scene: Phaser.Scene, template: DistrictTemplate): void {
+  const k = 0.2;
+  const bounds = mapBounds(template.width, template.height);
+  const m = 1400;
+  const ox = bounds.x - m;
+  const oy = bounds.y - m;
+  const w = bounds.width + m * 2;
+  const h = bounds.height + m * 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(w * k);
+  canvas.height = Math.ceil(h * k);
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = 'rgba(226, 233, 238, 0.96)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'destination-out';
+  const inset = 2.5;
+  const pts = [
+    cellToWorld(inset, inset),
+    cellToWorld(template.width - 1 - inset, inset),
+    cellToWorld(template.width - 1 - inset, template.height - 1 - inset),
+    cellToWorld(inset, template.height - 1 - inset),
+  ].map((p) => [(p.x - ox) * k, (p.y - oy) * k] as const);
+  // Several passes, each a little larger and fainter: a soft gradient into the mist.
+  for (let i = 0; i < 14; i++) {
+    const grow = 1 + i * 0.018;
+    const cx = (pts[0]![0] + pts[2]![0]) / 2;
+    const cy = (pts[0]![1] + pts[2]![1]) / 2;
+    ctx.globalAlpha = i === 0 ? 1 : 0.13;
+    ctx.beginPath();
+    pts.forEach(([x, y], j) => {
+      const px = cx + (x - cx) * grow;
+      const py = cy + (y - cy) * grow;
+      if (j === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.fill();
+  }
+  const key = `fog_${template.id}_${Date.now().toString(36)}`;
+  const tex = scene.textures.createCanvas(key, canvas.width, canvas.height)!;
+  tex.getContext().drawImage(canvas, 0, 0);
+  tex.refresh();
+  const img = scene.add
+    .image(ox, oy, key)
+    .setOrigin(0, 0)
+    .setScale(1 / k)
+    .setDepth(60000);
+  scene.tweens.add({
+    targets: img,
+    alpha: { from: 0.88, to: 1 },
+    duration: 4200,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.easeInOut',
+  });
+}
