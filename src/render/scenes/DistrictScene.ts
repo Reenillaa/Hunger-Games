@@ -7,6 +7,8 @@ import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts
 import { Townsfolk } from '../district/townsfolk.ts';
 import { CeremonyStage } from '../district/ceremony.ts';
 import { GroundPainter } from '../district/ground.ts';
+import { TrainView } from '../district/train.ts';
+import { homeProfile } from '../../content/homeDistricts.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
 import type { GameSession } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
@@ -59,6 +61,9 @@ export class DistrictScene extends Phaser.Scene {
   private ambience?: Ambience;
   private built = false;
   private ground?: GroundPainter;
+  private train?: TrainView;
+  private rail?: { x: number; stationY: number };
+  private trainSeen = { train: -1, unload: -1, board: -1 };
   private roadsSig = '';
 
   constructor(session: GameSession) {
@@ -152,6 +157,17 @@ export class DistrictScene extends Phaser.Scene {
         .filter((st) => st.kind === 'mine_headframe')
         .map((st) => ({ x: st.x + 1, y: st.y + 1 }));
       this.ambience = new Ambience(this, template, mines);
+      // The station: rails by the platform, where the Capitol train comes and goes.
+      const station = homeProfile(this.session.getState().meta.homeDistrictId).station;
+      const row = template.terrain[station.y] ?? '';
+      const railX = row.indexOf('t');
+      if (railX > 0) {
+        this.rail = { x: railX, stationY: station.y };
+        this.train = new TrainView(this, sprites, characters, this.rail, (img, shadow) => {
+          this.tinted.push(img);
+          if (shadow) this.shadows.push(shadow);
+        });
+      }
     }
 
     this.hover = this.add.graphics().setDepth(100000);
@@ -474,6 +490,7 @@ export class DistrictScene extends Phaser.Scene {
     }
     this.updatePlacement();
     this.updateCeremony();
+    this.updateTrain();
     const state = this.session.getState();
     const hour = (state.clock.tick % 24) + this.session.getTickProgress();
     const light = daylightAt(hour);
@@ -527,6 +544,45 @@ export class DistrictScene extends Phaser.Scene {
         cam.midPoint.y + (target.y - cam.midPoint.y) * k,
       );
       if (view.camera) cam.setZoom(cam.zoom + (view.camera.zoom - cam.zoom) * k);
+    }
+  }
+
+  /** The Capitol train follows the cinematic's orders; once it ends the line is empty again. */
+  private updateTrain(): void {
+    const train = this.train;
+    if (!train || !this.rail) return;
+    const view = this.session.cinematic?.get();
+    if (!view || view.done) {
+      if (this.trainSeen.train >= 0 || this.trainSeen.unload >= 0) {
+        train.hide();
+        this.trainSeen = { train: -1, unload: -1, board: -1 };
+      }
+      return;
+    }
+    const live = (index: number) => view.index === index;
+    if (view.train && view.train.index !== this.trainSeen.train) {
+      this.trainSeen.train = view.train.index;
+      const ms = live(view.train.index) ? view.train.ms : 0;
+      if (view.train.action === 'arrive') train.arrive(ms);
+      else if (view.train.action === 'depart') train.depart(ms);
+      else if (view.train.action === 'park') train.park();
+      else train.hide();
+    }
+    if (view.boarded && view.boarded.index !== this.trainSeen.board) {
+      this.trainSeen.board = view.boarded.index;
+      const ms = live(view.boarded.index) ? view.boarded.ms : 0;
+      this.ceremony?.boardTrain(view.boarded.citizenIds, this.rail.x, this.rail.stationY, ms);
+    }
+    if (view.unloaded && view.unloaded.index !== this.trainSeen.unload) {
+      this.trainSeen.unload = view.unloaded.index;
+      const ms = live(view.unloaded.index) ? view.unloaded.ms : 0;
+      const state = this.session.getState();
+      const day = Math.floor(state.clock.tick / 24);
+      const roles = view.unloaded.survivors.map((id): Role => {
+        const c = state.population.citizens[id];
+        return c && c.sex === 'F' ? 'woman' : ageOf(c!, day) < 14 ? 'child' : 'worker';
+      });
+      train.unload(roles, view.unloaded.coffins, ms);
     }
   }
 

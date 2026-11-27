@@ -499,3 +499,39 @@
   animation-duration: 1ms !important;
   animation-iteration-count: 1 !important;
 }
+
+/* ---------- Coffin on the platform ---------- */
+.coffin {
+  position: absolute;
+  right: 4vw;
+  bottom: 8vh;
+  width: min(62vw, 900px);
+  filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.55));
+}
+
+.coffinPortrait {
+  position: absolute;
+  right: calc(4vw + min(62vw, 900px) * 0.42);
+  bottom: calc(8vh + min(62vw, 900px) * 0.3);
+  width: min(12vw, 170px);
+  padding: 6px;
+  background: linear-gradient(180deg, #2a2420, #120e0c);
+  border: 3px solid #c9a44c;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.6);
+  rotate: -4deg;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.coffinPortrait svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mourner {
+  filter: brightness(0.85) drop-shadow(0 30px 40px rgb(0 0 0 / 0.55));
+}
+
+.mourner svg {
+  height: 70vh;
+}

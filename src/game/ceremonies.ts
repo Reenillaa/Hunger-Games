@@ -248,16 +248,26 @@ export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
         ms: 4000,
       });
   }
-  // The train: the district recedes through the window (the real one, the camera pulls away).
+  // The station: the Capitol train glides in, the tributes are taken aboard, it pulls away;
+  // inside, the real district recedes through the window.
+  const S = profile.station;
   steps.push(
-    { kind: 'camera', cell: profile.station, zoom: 1.1, glide: 1, ms: 0 },
+    { kind: 'fade', to: 'black', ms: 500 },
+    { kind: 'camera', cell: { x: S.x + 2, y: S.y + 2 }, zoom: 0.9, glide: 1, ms: 0 },
+    { kind: 'fade', to: 'clear', ms: 500 },
+    { kind: 'train', action: 'arrive', line: t('cri.station'), ms: 5200 },
+    { kind: 'camera', cell: { x: S.x + 1, y: S.y + 1 }, zoom: 1.25, glide: 0.03, ms: 0 },
+    { kind: 'board', citizenIds: chosen, line: t('cri.board'), ms: 4200 },
+    { kind: 'camera', cell: { x: S.x + 4, y: S.y + 10 }, zoom: 0.75, glide: 0.012, ms: 0 },
+    { kind: 'train', action: 'depart', line: t('cri.depart', { n }), ms: 5200 },
+    { kind: 'camera', cell: S, zoom: 1.1, glide: 1, ms: 0 },
     {
       kind: 'shot',
       shot: { type: 'train', citizenIds: chosen },
       line: t('cri.train'),
       ms: 4200,
     },
-    { kind: 'camera', cell: PLAZA, zoom: 0.32, glide: 0.006, ms: 0 },
+    { kind: 'camera', cell: PLAZA, zoom: 0.3, glide: 0.025, ms: 0 },
     {
       kind: 'shot',
       shot: { type: 'train', citizenIds: chosen },
@@ -269,42 +279,66 @@ export function buildSelectionCeremony(state: Readonly<GameState>): CineStep[] {
   return steps;
 }
 
-/** The return of the delegation: built from the recorded results of the edition. */
+/**
+ * The return, filmed at the station: the train glides in, the survivors step down, the coffins
+ * are carried out onto the platform; a close-up for each one, with who mourns them.
+ */
 export function buildReturnCeremony(state: Readonly<GameState>, edition: number): CineStep[] {
   const { PLAZA } = marks(state);
-  const STATION = homeProfile(state.meta.homeDistrictId).station;
+  const profile = homeProfile(state.meta.homeDistrictId);
+  const S = profile.station;
+  const n = String(profile.number);
   const result = state.competition.history.find((h) => h.edition === edition)?.result;
   if (!result || result.home.length === 0) return [];
+  const home = [...result.home].sort((a, b) => Number(b.alive) - Number(a.alive));
+  const survivors = home.filter((r) => r.alive).map((r) => r.citizenId);
+  const dead = home.filter((r) => !r.alive);
   const steps: CineStep[] = [
-    { kind: 'camera', cell: STATION, zoom: 0.85, ms: 0 },
+    { kind: 'camera', cell: { x: S.x + 2, y: S.y + 3 }, zoom: 0.85, glide: 1, ms: 0 },
     { kind: 'title', title: t('ret.title'), ms: 3200 },
     { kind: 'fade', to: 'clear', ms: 600 },
+    { kind: 'train', action: 'arrive', line: t('ret.train', { n }), ms: 5200 },
+    { kind: 'camera', cell: { x: S.x + 1, y: S.y }, zoom: 1.3, glide: 0.03, ms: 0 },
     {
-      kind: 'line',
-      text: t('ret.train', { n: String(homeProfile(state.meta.homeDistrictId).number) }),
-      ms: 3800,
+      kind: 'unload',
+      survivors,
+      coffins: dead.length,
+      line: t(dead.length > 0 ? 'ret.unload.coffins' : 'ret.unload', { n: dead.length }),
+      ms: 4400,
     },
   ];
-  for (const r of [...result.home].sort((a, b) => Number(b.alive) - Number(a.alive))) {
+  for (const r of home) {
     const c = state.population.citizens[r.citizenId];
     if (!c) continue;
-    steps.push(
-      { kind: 'camera', cell: STATION, zoom: 1.2, ms: 0 },
-      {
-        kind: 'reveal',
-        citizenId: c.id,
-        caption: t(r.alive ? 'ret.hero' : 'ret.coffin', { name: c.firstName }),
+    if (r.alive) {
+      steps.push({
+        kind: 'shot',
+        shot: { type: 'face', citizenId: c.id, mood: 35, caption: t('ret.hero.caption') },
+        line: t('ret.hero', { name: c.firstName }),
         ms: 4400,
-      },
-    );
-    const mother = c.motherId ? state.population.citizens[c.motherId] : null;
-    if (!r.alive && mother?.alive)
-      steps.push({ kind: 'line', text: t('ret.mother', { mother: mother.firstName }), ms: 3400 });
+      });
+      continue;
+    }
+    const mourner = [c.motherId, c.fatherId, c.partnerId]
+      .map((id) => (id ? state.population.citizens[id] : null))
+      .find((x) => x?.alive);
+    steps.push({
+      kind: 'shot',
+      shot: { type: 'coffin', citizenId: c.id, mournerId: mourner?.id ?? null },
+      line: t('ret.coffin', { name: c.firstName }),
+      ms: 4600,
+    });
+    if (mourner)
+      steps.push({
+        kind: 'shot',
+        shot: { type: 'face', citizenId: mourner.id, mood: 2 },
+        line: t('ret.mother', { mother: mourner.firstName }),
+        ms: 3600,
+      });
   }
-  if (!result.home.some((r) => r.alive))
-    steps.push({ kind: 'line', text: t('ret.silence'), ms: 3600 });
+  if (survivors.length === 0) steps.push({ kind: 'line', text: t('ret.silence'), ms: 3600 });
   steps.push(
-    { kind: 'camera', cell: PLAZA, zoom: 0.8, ms: 0 },
+    { kind: 'camera', cell: PLAZA, zoom: 0.8, glide: 0.02, ms: 0 },
     { kind: 'line', text: t('ret.life'), ms: 3200 },
   );
   return steps;

@@ -3586,6 +3586,119 @@
         "normal",
         "emission"
       ]
+    },
+    "train_head": {
+      "name": "train_head",
+      "kind": "building",
+      "footprint": [
+        1,
+        3
+      ],
+      "size": [
+        583,
+        362
+      ],
+      "anchor": [
+        291.5,
+        274.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "train_car": {
+      "name": "train_car",
+      "kind": "building",
+      "footprint": [
+        1,
+        3
+      ],
+      "size": [
+        583,
+        391
+      ],
+      "anchor": [
+        291.5,
+        274.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
+    },
+    "train_tail": {
+      "name": "train_tail",
+      "kind": "building",
+      "footprint": [
+        1,
+        3
+      ],
+      "size": [
+        474,
+        346
+      ],
+      "anchor": [
+        237.0,
+        229.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "platform": {
+      "name": "platform",
+      "kind": "building",
+      "footprint": [
+        1,
+        3
+      ],
+      "size": [
+        539,
+        412
+      ],
+      "anchor": [
+        269.5,
+        283.0
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal",
+        "emission"
+      ]
+    },
+    "coffin": {
+      "name": "coffin",
+      "kind": "building",
+      "footprint": [
+        1,
+        1
+      ],
+      "size": [
+        255,
+        165
+      ],
+      "anchor": [
+        127.5,
+        108.1
+      ],
+      "scale": 2.0,
+      "layers": [
+        "color",
+        "shadow",
+        "normal"
+      ]
     }
   }
 }

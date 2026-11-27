@@ -512,6 +512,77 @@ def hanging_tree(m) -> None:
         loop.data.materials.append(rope)
 
 
+def _train_body(m, length: float, nose: int) -> None:
+    """A Capitol carriage along Y (cell +y is Blender -y). `nose` -1/+1 adds a streamlined nose
+    at that end (Blender y sign); 0 is a middle carriage."""
+    pearl = M.flat("TrainPearl", "#F3F1EC", 0.35)
+    gold = M.flat("TrainGold", "#D4A73A", 0.3, metallic=0.9)
+    glass = M.flat("TrainGlass", "#1D2B3A", 0.1, metallic=0.4)
+    under = M.flat("TrainUnder", "#3A3E46", 0.6)
+    W, H = 0.78, 0.78
+    body_len = length - (0.7 if nose else 0)
+    by = -nose * 0.35 if nose else 0.0
+    K.box((W, body_len, H), (0, by, 0.22 + H / 2), pearl, bevel=0.08, name="Body")
+    K.box((W - 0.12, body_len - 0.1, 0.14), (0, by, 0.12), under, name="Bogie")
+    for yy in (by - body_len / 2 + 0.35, by + body_len / 2 - 0.35):
+        for x in (-0.28, 0.28):
+            K.cylinder(0.09, 0.06, (x, yy, 0.09), under, rot=(0, math.radians(90), 0), verts=12, name="Wheel")
+    # Window band and gold stripe on both sides.
+    for side in (-1, 1):
+        K.box((0.02, body_len - 0.3, 0.2), (side * (W / 2 + 0.005), by, 0.22 + H * 0.62), glass, name="Windows")
+        K.box((0.02, body_len - 0.1, 0.05), (side * (W / 2 + 0.006), by, 0.22 + H * 0.38), gold, name="Stripe")
+    K.box((W * 0.6, body_len - 0.2, 0.05), (0, by, 0.22 + H + 0.02), M.flat("TrainRoof", "#D9D6CF", 0.5), bevel=0.02, name="Roof")
+    if nose:
+        ny = nose * (body_len / 2 - 0.35 + 0.35) + by
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(0, ny + nose * 0.05, 0.22 + H / 2), segments=24, ring_count=12)
+        n = bpy.context.active_object
+        n.scale = (W / 1.0, 0.9, H / 1.0)
+        n.data.materials.append(pearl)
+        bpy.ops.object.shade_smooth()
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.3, location=(0, ny + nose * 0.32, 0.22 + H * 0.68), segments=16, ring_count=8)
+        w = bpy.context.active_object
+        w.scale = (0.85, 0.55, 0.35)
+        w.data.materials.append(glass)
+        bpy.ops.object.shade_smooth()
+        K.box((W * 0.9, 0.05, 0.05), (0, ny + nose * 0.42, 0.22 + H * 0.3), gold, name="NoseStripe")
+        lamp = M.flat("TrainLamp", "#FFF3C4", 0.2, emission="#FFE9A8", strength=4.0)
+        for x in (-0.22, 0.22):
+            K.cylinder(0.05, 0.03, (x, ny + nose * 0.47, 0.32), lamp, rot=(math.radians(90), 0, 0), verts=12, name="Headlamp")
+
+
+def train_head(m): _train_body(m, 2.8, -1)
+def train_car(m): _train_body(m, 2.8, 0)
+def train_tail(m): _train_body(m, 2.8, 1)
+
+
+def platform(m) -> None:
+    """The district's station: a stone platform with a small canopy, a bench and a lamp."""
+    stone = m["stone"]
+    K.box((0.9, 2.8, 0.18), (0, 0, 0.09), stone, bevel=0.02, name="Platform")
+    K.box((0.06, 2.8, 0.04), (0.42, 0, 0.19), M.flat("Edge", "#E3C44A", 0.6), name="Edge")
+    wood = M.flat("CanopyWood", "#6B4A30", 0.8)
+    for y in (-0.9, 0.9):
+        K.box((0.06, 0.06, 0.9), (-0.25, y, 0.63), wood, name="Post")
+    roof = K.box((0.8, 2.3, 0.05), (-0.1, 0, 1.1), M.flat("CanopyRoof", "#7A3A30", 0.7), name="Canopy")
+    roof.rotation_euler = (0, math.radians(-10), 0)
+    K.box((0.18, 0.6, 0.05), (-0.25, 0.3, 0.4), wood, name="BenchSeat")
+    K.box((0.04, 0.6, 0.2), (-0.33, 0.3, 0.52), wood, name="BenchBack")
+    K.lamppost((-0.3, -1.25, 0.18), m)
+
+
+def coffin(m) -> None:
+    """A plain pine coffin with a band of black cloth and a few flowers on the lid."""
+    pine = M.flat("Pine", "#B88A5A", 0.75)
+    K.box((0.42, 1.05, 0.26), (0, 0, 0.13), pine, bevel=0.03, name="Box")
+    K.box((0.46, 1.09, 0.05), (0, 0, 0.285), M.flat("PineLid", "#A57A4C", 0.7), bevel=0.02, name="Lid")
+    K.box((0.47, 0.12, 0.31), (0, 0.15, 0.15), M.flat("Mourning", "#1E1C20", 0.8), name="Band")
+    petals = [M.flat("WreathW", "#F4F1EA", 0.6), M.flat("WreathY", "#F2C94C", 0.6), M.flat("WreathG", "#4F8A3A", 0.8)]
+    for i in range(7):
+        a = i * 0.9
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.05, location=(math.cos(a) * 0.09, -0.2 + math.sin(a) * 0.12, 0.33), segments=8, ring_count=6)
+        bpy.context.active_object.data.materials.append(petals[i % 3])
+
+
 def rock(m, salt: int, size: float) -> None:
     for k in range(3 if size > 0.4 else 1):
         bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=size * (1 - 0.3 * k),
@@ -1524,6 +1595,11 @@ CATALOGUE = {
     "pine_c": (pine_c, (1, 1), "tree"),
     "dead_tree": (dead_tree, (1, 1), "tree"),
     "hanging_tree": (hanging_tree, (2, 2), "tree"),
+    "train_head": (train_head, (1, 3), "building"),
+    "train_car": (train_car, (1, 3), "building"),
+    "train_tail": (train_tail, (1, 3), "building"),
+    "platform": (platform, (1, 3), "building"),
+    "coffin": (coffin, (1, 1), "building"),
     "rock_a": (rock_a, (1, 1), "rock"),
     "rock_b": (rock_b, (1, 1), "rock"),
     "rock_c": (rock_c, (1, 1), "rock"),

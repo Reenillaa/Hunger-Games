@@ -15,7 +15,9 @@ export type Shot =
   | { type: 'urn'; citizenId: string }
   | { type: 'pair'; citizenIds: string[] }
   | { type: 'farewell'; citizenId: string; visitorId: string | null }
-  | { type: 'train'; citizenIds: string[] };
+  | { type: 'train'; citizenIds: string[] }
+  /** A pine coffin on the platform, the portrait on the lid, someone who mourns. */
+  | { type: 'coffin'; citizenId: string; mournerId: string | null };
 
 export type CineStep =
   | { kind: 'fade'; to: 'black' | 'clear'; ms: number }
@@ -23,7 +25,13 @@ export type CineStep =
   | { kind: 'camera'; cell: { x: number; y: number }; zoom: number; glide?: number; ms: number }
   | { kind: 'shot'; shot: Shot; line?: string; speaker?: string; ms: number }
   /** In-engine: the citizen walks from the crowd up to the stage, flanked by guards. */
-  | { kind: 'walk'; citizenId: string; ms: number }
+  | { kind: 'walk'; citizenId: string; line?: string; ms: number }
+  /** In-engine: the Capitol train on the district's rails. */
+  | { kind: 'train'; action: 'arrive' | 'depart' | 'park' | 'hide'; line?: string; ms: number }
+  /** In-engine: the tributes cross the platform and board the train. */
+  | { kind: 'board'; citizenIds: string[]; line?: string; ms: number }
+  /** In-engine: survivors step down and coffins are carried out onto the platform. */
+  | { kind: 'unload'; survivors: string[]; coffins: number; line?: string; ms: number }
   | { kind: 'title'; title: string; subtitle?: string; ms: number }
   | { kind: 'line'; text: string; speaker?: string; ms: number }
   | { kind: 'reveal'; citizenId: string; caption: string; ms: number }
@@ -38,6 +46,10 @@ export interface CineView {
   focus: string | null;
   /** Citizens sent up to the stage so far (they stay there). */
   walked: string[];
+  /** Last train order, with the index of its step (the renderer animates each order once). */
+  train: { action: 'arrive' | 'depart' | 'park' | 'hide'; ms: number; index: number } | null;
+  boarded: { citizenIds: string[]; ms: number; index: number } | null;
+  unloaded: { survivors: string[]; coffins: number; ms: number; index: number } | null;
   done: boolean;
 }
 
@@ -61,6 +73,9 @@ export class CinematicPlayer {
       camera: null,
       focus: null,
       walked: [],
+      train: null,
+      boarded: null,
+      unloaded: null,
       done: steps.length === 0,
     };
     this.enter();
@@ -86,6 +101,16 @@ export class CinematicPlayer {
       v.camera = { cell: step.cell, zoom: step.zoom, glide: step.glide ?? 0.045 };
     if (step?.kind === 'focus') v.focus = step.citizenId;
     if (step?.kind === 'walk') v.walked = [...v.walked, step.citizenId];
+    if (step?.kind === 'train') v.train = { action: step.action, ms: step.ms, index: this.index };
+    if (step?.kind === 'board')
+      v.boarded = { citizenIds: step.citizenIds, ms: step.ms, index: this.index };
+    if (step?.kind === 'unload')
+      v.unloaded = {
+        survivors: step.survivors,
+        coffins: step.coffins,
+        ms: step.ms,
+        index: this.index,
+      };
     this.view = v;
   }
 

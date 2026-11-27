@@ -50,7 +50,7 @@ function Ring({
 
 export function ResourceBar({ session }: { session: GameSession }) {
   const { state } = useSession(session);
-  if (state.phase.kind !== 'district') return null;
+  if (state.phase.kind !== 'district' || session.cinematic) return null;
   const e = state.economy;
   const cap = storageCapacity(state);
   const foodDays = e.resources.food / Math.max(1, dailyFoodNeed(state));

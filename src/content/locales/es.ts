@@ -225,6 +225,10 @@ export const es = {
   'cri.hands': 'Un aplauso para los tributos del Distrito {n}. Vamos, daos la mano.',
   'cri.train': 'El tren del Capitolio arranca. Terciopelo, cristal y comida que nunca han visto.',
   'cri.train.away': 'Por la ventana, el Distrito {n} se hace pequeño hasta desaparecer.',
+  'cri.station':
+    'El tren del Capitolio entra en la estación sin hacer ruido. Nadie del distrito ha subido nunca a uno.',
+  'cri.board': 'Los guardias los llevan por el andén. La puerta se cierra con un siseo.',
+  'cri.depart': 'El tren arranca. El Distrito {n} se queda en el andén, mirando.',
   'fw.title': 'La despedida',
   'fw.subtitle': 'Una hora en el ayuntamiento. Tres minutos por visita.',
   'fw.mother':
@@ -478,6 +482,10 @@ export const es = {
   'ret.title': 'El regreso',
   'ret.train': 'El tren del Capitolio se detiene en la estación del Distrito {n}.',
   'ret.hero': '{name} baja del vagón. Nadie aplaude al principio. Luego, todos.',
+  'ret.hero.caption': 'Ha vuelto a casa',
+  'ret.unload': 'Se abren las puertas.',
+  'ret.unload.coffins':
+    'Se abren las puertas. Después, el vagón de carga: {n} cajas de pino bajan al andén entre dos guardias.',
   'ret.coffin': 'Un ataúd de pino con el nombre de {name}.',
   'ret.mother': '{mother} no suelta la mano de nadie.',
   'ret.silence': 'Esa noche no suena ninguna radio en el distrito.',

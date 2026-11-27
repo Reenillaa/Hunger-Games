@@ -445,6 +445,65 @@ export function CineShot({ shot, state, ms }: Props) {
         </div>
       );
     }
+    case 'coffin': {
+      const c = cit(shot.citizenId);
+      const m = shot.mournerId ? cit(shot.mournerId) : null;
+      if (!c) return null;
+      return (
+        <div className={`${css.shot} ${css.pushIn}`} style={style} data-shot="coffin">
+          <Dof tone="cold" />
+          <svg className={css.coffin} viewBox="0 0 600 300" aria-hidden="true">
+            <defs>
+              <linearGradient id="pineTop" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#D9AE78" />
+                <stop offset="1" stopColor="#A87C4C" />
+              </linearGradient>
+              <linearGradient id="pineSide" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#9A6E40" />
+                <stop offset="1" stopColor="#5E3F22" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="300" cy="282" rx="280" ry="16" fill="#000" opacity="0.4" />
+            <path d="M40 150 L120 90 L560 90 L560 140 L480 200 L40 200Z" fill="url(#pineSide)" />
+            <path d="M40 150 L120 90 L560 90 L480 150Z" fill="url(#pineTop)" />
+            <path d="M40 150 L480 150 L480 270 L40 270Z" fill="url(#pineSide)" />
+            <path d="M480 150 L560 90 L560 210 L480 270Z" fill="#4E331C" />
+            <path
+              d="M330 90 L370 90 L290 150 L250 150Z M250 150 L290 150 L290 270 L250 270Z"
+              fill="#1E1C20"
+            />
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <path
+                key={i}
+                d={`M${60 + i * 70} ${170 + (i % 2) * 30} l60 0`}
+                stroke="#6E4A28"
+                strokeWidth="2"
+                opacity="0.6"
+              />
+            ))}
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <circle
+                key={i}
+                cx={150 + (i % 4) * 22 + (i > 3 ? 11 : 0)}
+                cy={120 - (i > 3 ? 10 : 0)}
+                r="11"
+                fill={['#F4F1EA', '#F2C94C', '#E9877A', '#F4F1EA'][i % 4]}
+              />
+            ))}
+            <path d="M140 132 q40 -24 90 0" stroke="#4F8A3A" strokeWidth="6" fill="none" />
+          </svg>
+          <div className={css.coffinPortrait}>
+            <Face c={c} day={day} mood={45} />
+          </div>
+          {m && (
+            <div className={`${css.subject} ${css.left} ${css.mourner}`}>
+              <Face c={m} day={day} mood={3} />
+            </div>
+          )}
+          <div className={css.dust} />
+        </div>
+      );
+    }
     case 'train':
       return (
         <div className={css.shot} style={style} data-shot="train">

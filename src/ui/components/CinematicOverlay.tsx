@@ -15,6 +15,9 @@ const IDLE: CineView = {
   camera: null,
   focus: null,
   walked: [],
+  train: null,
+  boarded: null,
+  unloaded: null,
   done: true,
 };
 const noop = () => () => {};
@@ -31,6 +34,9 @@ export function CinematicOverlay({ session }: { session: GameSession }) {
   if (!player || view.done) return null;
   const step = view.step;
   const day = Math.floor(state.clock.tick / 24);
+  // Narration: line steps, and any shot or in-engine step that carries a line.
+  const text = step?.kind === 'line' ? step.text : step && 'line' in step ? step.line : undefined;
+  const speaker = step && 'speaker' in step ? step.speaker : undefined;
   const revealed = step?.kind === 'reveal' ? state.population.citizens[step.citizenId] : null;
   return (
     <div className={styles.cinema} data-testid="cinematic" aria-live="polite">
@@ -40,10 +46,10 @@ export function CinematicOverlay({ session }: { session: GameSession }) {
       <div className={`${styles.cinemaBlack} ${view.black ? styles.cinemaBlackOn : ''}`} />
       <div className={styles.letterboxTop} />
       <div className={styles.letterboxBottom}>
-        {(step?.kind === 'line' || (step?.kind === 'shot' && step.line)) && (
+        {text && (
           <p className={styles.cinemaLine} key={view.index}>
-            {step.speaker && <span className={styles.cinemaSpeaker}>{step.speaker}</span>}
-            {step.kind === 'line' ? step.text : step.line}
+            {speaker && <span className={styles.cinemaSpeaker}>{speaker}</span>}
+            {text}
           </p>
         )}
       </div>

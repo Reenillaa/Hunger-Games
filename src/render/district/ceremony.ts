@@ -199,6 +199,43 @@ export class CeremonyStage {
     escortsTo(ms * 0.6);
   }
 
+  /**
+   * Departure: the tributes (already on the stage) are taken to the platform and step into the
+   * train. `ms` 0 jumps to the end (skipped cinematic).
+   */
+  boardTrain(citizenIds: string[], railX: number, stationY: number, ms: number): void {
+    citizenIds.forEach((id, i) => {
+      const sprite = this.byCitizen.get(id);
+      const role = this.roleOf.get(id);
+      if (!sprite || !role) return;
+      const start = cellToWorld(railX - 1.2, stationY + 0.8 + i * 0.7, 0.18);
+      const door = cellToWorld(railX - 0.3, stationY + 0.2 + i * 0.4, 0.18);
+      sprite.setPosition(start.x, start.y).setDepth(depthOf(railX - 1, stationY + 1 + i) + 8.7);
+      if (ms <= 0) {
+        sprite.setVisible(false);
+        return;
+      }
+      sprite.setVisible(true).setAlpha(1).clearTint();
+      sprite.play(`${role}_walk_${DIRS[6]}`, true);
+      this.scene.tweens.add({
+        targets: sprite,
+        x: door.x,
+        y: door.y,
+        delay: i * ms * 0.15,
+        duration: ms * 0.6,
+        ease: 'Sine.easeInOut',
+        onComplete: () => {
+          sprite.anims.stop();
+          this.scene.tweens.add({ targets: sprite, alpha: 0, duration: ms * 0.2 });
+        },
+      });
+    });
+    this.escorts.forEach((e, i) => {
+      const p = cellToWorld(railX - 1.4, stationY - 0.6 + i * 2.6, 0.18);
+      e.setPosition(p.x, p.y).setDepth(depthOf(railX - 1.4, stationY + i * 2.6) + 8.7);
+    });
+  }
+
   focusPoint(citizenId: string | null): { x: number; y: number } | null {
     const s = citizenId ? this.byCitizen.get(citizenId) : undefined;
     return s ? { x: s.x, y: s.y - 40 } : null;

@@ -33,6 +33,11 @@ describe('the Reaping cinematic', () => {
       if (s.type === 'farewell' && s.visitorId)
         expect(state.population.citizens[s.visitorId]?.alive).toBe(true);
     }
+    // At the station the real train arrives, they board, and it leaves.
+    const train = steps.flatMap((st) => (st.kind === 'train' ? [st.action] : []));
+    expect(train).toEqual(['arrive', 'depart']);
+    const board = steps.find((st) => st.kind === 'board');
+    expect(board && board.kind === 'board' && board.citizenIds).toEqual(chosen);
     // The session plays it, and skipping leaves both tributes on the stage.
     expect(session.cinematic?.id).toBe('selection');
     session.cinematic!.skip();
