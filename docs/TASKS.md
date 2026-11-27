@@ -53,6 +53,8 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F11-21 | Distrito 12 de referencia: relieve (acantilados, meseta con pinares, túnel), luz del valle, texturas de suelo, paleta propia, casas de pizarra, sombras de contacto | ✅ | Test del relieve (suelo del pueblo plano, montaña alta, determinista, luz por orientación); capturas revisadas |
 | F11-22 | Llevar el relieve y la paleta del 12 a los otros once distritos | P1 | Pendiente de que el cliente apruebe el 12 |
 | F11-23 | UI v5 con materiales (hierro, latón, madera, cuero, papel, botón grueso) | ✅ | E2E 24/24 sin cambios en los tests |
+| F11-26 | Terreno del 12 renderizado (malla low-poly, sombras y oclusión reales, hierba, pinar, río hundido, plaza, vía y puentes en 3D) y caminos encima | ✅ | E2E 24/24; capturas revisadas de cerca y de lejos |
+| F11-27 | Renderizar el terreno de los otros 11 distritos con el mismo proceso | P1 | Pendiente de visto bueno del 12 (≈5 min de render por distrito) |
 | F11-25 | Cohesión: suelo y acantilados low-poly de color plano, sin desenfoque, objetos de un solo estilo | ✅ | E2E 24/24; capturas revisadas |
 | F11-24 | Arena: niebla de nubes, etiquetas de nombre con fundido, paso continuo y pausas solo cuando hay que decidir | ✅ | E2E del ciclo completo |
 | F11-13 | Pantalla de créditos en el juego (obligatoria por la licencia CC BY del carro de EqualizerX) | P0 | — |

@@ -1,0 +1,12 @@
+{
+  "scale": 0.375,
+  "tile": 2048,
+  "cols": 2,
+  "rows": 2,
+  "width": 3840,
+  "height": 2166,
+  "originAnchor": [
+    1920.0,
+    435.59
+  ]
+}

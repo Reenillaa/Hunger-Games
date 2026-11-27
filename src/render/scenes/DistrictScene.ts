@@ -33,6 +33,22 @@ interface Glow {
 
 /** Templates drawn with real relief (DECISIONS I-76). */
 const RELIEF_TEMPLATES: ReadonlySet<string> = new Set(['d12']);
+/**
+ * Districts whose ground is a baked Blender render (DECISIONS I-81): the image is loaded in
+ * chunks and the game only draws the paths over it. The mountain woods and the tunnel are in it.
+ */
+const BAKED_TERRAIN: ReadonlySet<string> = new Set(['d12']);
+
+interface BakedManifest {
+  scale: number;
+  tile: number;
+  cols: number;
+  rows: number;
+  width: number;
+  height: number;
+  originAnchor: [number, number];
+}
+
 /** Woods and boulders on the heights (scenery only, never part of the game state). */
 const RELIEF_DECOR = [
   'k_pine_tall',
@@ -78,6 +94,8 @@ export class DistrictScene extends Phaser.Scene {
   private built = false;
   private ground?: GroundPainter;
   private relief?: Relief;
+  /** The baked ground's chunks (placed once). */
+  private bakedImages: Phaser.GameObjects.Image[] = [];
   /** Where the rails enter the cliff (set with the relief). */
   private tunnelAt?: { x: number; y: number };
   private lighting?: LightingRig;
@@ -113,6 +131,7 @@ export class DistrictScene extends Phaser.Scene {
     this.built = false;
     this.ground = undefined;
     this.relief = undefined;
+    this.bakedImages = [];
     this.lighting = undefined;
     this.train = undefined;
     this.ceremony = undefined;
@@ -142,6 +161,23 @@ export class DistrictScene extends Phaser.Scene {
     this.terrainScale = pickTerrainScale();
     this.load.json('spriteManifest', `${ART_BASE}/sprites/manifest.json`);
     this.load.json('characterManifest', `${ART_BASE}/characters/manifest.json`);
+    const id = this.shown().templateId;
+    if (BAKED_TERRAIN.has(id))
+      this.load.json(this.bakedKey(id), `${this.bakedPath(id)}/manifest.json`);
+  }
+
+  private bakedPath(id: string): string {
+    return `${ART_BASE}/terrain/${id}/${this.terrainScale === '1x' ? 'hi' : 'lo'}`;
+  }
+
+  private bakedKey(id: string): string {
+    return `baked_${id}_${this.terrainScale}`;
+  }
+
+  private bakedManifest(): BakedManifest | undefined {
+    const id = this.shown().templateId;
+    if (!BAKED_TERRAIN.has(id)) return undefined;
+    return this.cache.json.get(this.bakedKey(id)) as BakedManifest | undefined;
   }
 
   create(): void {
@@ -170,6 +206,14 @@ export class DistrictScene extends Phaser.Scene {
       ...district.props.map((p) => p.kind),
       ...(RELIEF_TEMPLATES.has(district.templateId) ? RELIEF_DECOR : []),
     ]);
+    const baked = this.bakedManifest();
+    if (baked)
+      for (let r = 0; r < baked.rows; r++)
+        for (let c = 0; c < baked.cols; c++)
+          this.load.image(
+            `${this.bakedKey(district.templateId)}_${r}_${c}`,
+            `${this.bakedPath(district.templateId)}/t_${r}_${c}.webp`,
+          );
     for (const kind of kinds) {
       const asset = sprites.assets[kind];
       if (!asset) continue;
@@ -276,7 +320,8 @@ export class DistrictScene extends Phaser.Scene {
   private decorateRelief(): void {
     const relief = this.relief;
     const sprites = this.sprites;
-    if (!relief || !sprites) return;
+    // A baked ground already has its woods, boulders and tunnel (with their real shadows).
+    if (!relief || !sprites || this.bakedManifest()) return;
     const hash = (x: number, y: number, k: number) => {
       const v = Math.sin(x * 12.9898 + y * 78.233 + k * 37.719) * 43758.5453;
       return v - Math.floor(v);
@@ -350,15 +395,40 @@ export class DistrictScene extends Phaser.Scene {
         if (x >= 0) break;
       }
     }
+    const baked = this.bakedManifest();
+    if (baked && this.bakedImages.length === 0) {
+      // The rendered ground: chunk (r, c) starts at pixel (c·tile, r·tile); cell (0, 0) is at
+      // pixel `originAnchor`, i.e. world (0, 0).
+      const [ax, ay] = baked.originAnchor;
+      for (let r = 0; r < baked.rows; r++)
+        for (let c = 0; c < baked.cols; c++) {
+          const key = `${this.bakedKey(template.id)}_${r}_${c}`;
+          if (!this.textures.exists(key)) continue;
+          this.bakedImages.push(
+            this.add
+              .image((c * baked.tile - ax) / baked.scale, (r * baked.tile - ay) / baked.scale, key)
+              .setOrigin(0, 0)
+              .setScale(1 / baked.scale)
+              .setDepth(-10001),
+          );
+        }
+    }
     const fresh = this.ground.paint({
       template,
       roads,
       relief: this.relief,
       palette: template.id === 'd12' ? D12_PALETTE : undefined,
-      lowPoly: RELIEF_TEMPLATES.has(template.id),
+      lowPoly: RELIEF_TEMPLATES.has(template.id) && !baked,
+      pathsOnly: !!baked,
     });
     const alive = (o: { active: boolean }) => o.active;
-    this.tinted.splice(0, this.tinted.length, ...this.tinted.filter(alive), ...fresh);
+    this.tinted.splice(
+      0,
+      this.tinted.length,
+      ...this.tinted.filter(alive),
+      ...fresh,
+      ...this.bakedImages.filter((i) => !this.tinted.includes(i)),
+    );
     this.lastAmbient = -1; // re-tint the new ground at the current hour
   }
 

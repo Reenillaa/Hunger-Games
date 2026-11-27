@@ -1888,7 +1888,7 @@ KENNEY = {
     "k_bedroll": (f"{SURV}/bedroll-frame.glb", 0.5, (1, 1), "prop"),
 }
 # Earth and raw wood read orange under the warm morning light: a little darker still.
-DARKER = {"k_grave": 0.42, "k_wood_pile": 0.45}
+DARKER = {"k_grave": 0.3, "k_wood_pile": 0.45}
 # Rocks are grey stone with a mossy cap, not the kit's earth colour (one look with the cliffs).
 ROCK_SWAPS = {"dirt": "#8C8880", "grass": "#5E9440"}
 for _name, (_rel, _h, _fp, _kind, *_rot) in KENNEY.items():
@@ -1966,6 +1966,11 @@ KIT_BUILDINGS = {
         part(f"{N}/rock_smallB.glb", 0.05, 0.2, 0.0, height=0.2, swaps=COAL),
     ), (1, 1), "prop"),
     "lamp": (kit(part(f"{TOWN}/lantern.glb", 0.0, 0.0, 0.0, height=1.4)), (1, 1), "prop"),
+    # A grave: a stone border with a headstone (the bare earth mound read as an orange blob).
+    "k_grave": (kit(
+        part(f"{GRAVE}/grave-border.glb", 0.0, 0.0, 0.0, span=0.75, rot=90),
+        part(f"{GRAVE}/gravestone-round.glb", -0.33, 0.0, 0.0, height=0.45, rot=90),
+    ), (1, 1), "prop"),
     "supplies": (kit(
         part(f"{SURV_K}/box-large.glb", -0.1, 0.1, 0.0, span=0.45),
         part(f"{SURV_K}/barrel.glb", 0.22, -0.15, 0.0, height=0.45),
