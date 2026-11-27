@@ -19,8 +19,7 @@ describe('district relief (visual heights)', () => {
 
   it('raises the mountain into a clear cliff above the valley', () => {
     let raised = 0;
-    for (let y = 0; y < 10; y++)
-      for (let x = 20; x < 40; x++) if (relief.cell(x, y) > 1) raised++;
+    for (let y = 0; y < 10; y++) for (let x = 20; x < 40; x++) if (relief.cell(x, y) > 1) raised++;
     expect(raised).toBeGreaterThan(150);
     expect(relief.peak).toBeGreaterThan(3);
   });
