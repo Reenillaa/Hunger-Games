@@ -355,6 +355,7 @@ export class DistrictScene extends Phaser.Scene {
       roads,
       relief: this.relief,
       palette: template.id === 'd12' ? D12_PALETTE : undefined,
+      lowPoly: RELIEF_TEMPLATES.has(template.id),
     });
     const alive = (o: { active: boolean }) => o.active;
     this.tinted.splice(0, this.tinted.length, ...this.tinted.filter(alive), ...fresh);
@@ -545,7 +546,8 @@ export class DistrictScene extends Phaser.Scene {
     );
     if (p.kind === 'lamp') {
       this.addGlow(img.x - 6, img.y - 8, 2.6, 0xffb565, 0.55, -4000);
-      this.addGlow(img.x - 6, img.y - 75, 0.7, 0xffd9a0, 0.9, img.depth + 1);
+      // The lantern sits on top of the post (Kenney lamp post, 1.4 cells tall).
+      this.addGlow(img.x, img.y - 104, 0.7, 0xffd9a0, 0.9, img.depth + 1);
     }
   }
 

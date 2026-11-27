@@ -70,17 +70,17 @@ export type GroundPalette = { -readonly [K in keyof typeof DEFAULT_PALETTE]: str
  * earth with coal dust, worn grey cobbles. The reference look for the other districts.
  */
 export const D12_PALETTE: Partial<GroundPalette> = {
-  beyond: '#2C5228',
+  beyond: '#4E8A3A',
   beyondDark: '#21401F',
-  grass: '#6FAE45',
-  grassLight: '#86C259',
+  grass: '#69AA44',
+  grassLight: '#70B049',
   grassDark: '#578F36',
   tuft: '#4C8530',
   tuftLight: '#9BCF68',
-  forest: '#4A8A35',
-  dirt: '#B49673',
+  forest: '#5A9C3B',
+  dirt: '#A88A66',
   dirtEdge: '#8F7353',
-  dirtLight: '#C6AB86',
+  dirtLight: '#AF916C',
   dust: '#4A4440',
   pebble: '#A9A497',
   path: '#D6C29B',
@@ -93,9 +93,10 @@ export const D12_PALETTE: Partial<GroundPalette> = {
   cobble: '#B3AC9F',
   cobbleDark: '#9C958A',
   cobbleLight: '#C2BCAF',
-  water: '#3BA9DB',
-  waterDeep: '#2788C2',
-  shore: '#D9C793',
+  water: '#3EA7D6',
+  waterDeep: '#2F8FC2',
+  shore: '#D8C48E',
+  scree: '#A29C8F',
 };
 
 /** The arena's woods: wilder, deeper greens. */
@@ -169,6 +170,11 @@ export interface GroundInput {
   palette?: Partial<GroundPalette>;
   /** Visual heights: cliffs and hills drawn in relief, light and shadow over the valley. */
   relief?: Relief;
+  /**
+   * The low-poly diorama look (DECISIONS I-80): ground and cliffs as flat-shaded facets with
+   * crisp edges, like the models standing on them.
+   */
+  lowPoly?: boolean;
 }
 
 /** `#rrggbb` → [r, g, b]. */
@@ -265,6 +271,11 @@ export class GroundPainter {
       ctx.lineTo(p.x - (TILE_W / 2) * grow, p.y);
       ctx.closePath();
     };
+
+    if (input.lowPoly) {
+      this.paintLowPoly(ctx, template, input.relief, code, PALETTE);
+      return this.upload(canvas, ox, oy);
+    }
 
     // 1. Beyond the district: a dark woodland rim.
     ctx.fillStyle = PALETTE.beyond;
@@ -674,7 +685,12 @@ export class GroundPainter {
       this.paintRelief(ctx, input.relief, code, PALETTE, rand);
     }
 
-    // Slice into GPU-friendly tiles and place them in the world.
+    return this.upload(canvas, ox, oy);
+  }
+
+  /** Slices the painted canvas into GPU-friendly tiles and places them in the world. */
+  private upload(canvas: HTMLCanvasElement, ox: number, oy: number): Phaser.GameObjects.Image[] {
+    const k = this.k;
     this.destroy();
     const cols = Math.ceil(canvas.width / MAX_TILE);
     const rows = Math.ceil(canvas.height / MAX_TILE);
@@ -700,6 +716,381 @@ export class GroundPainter {
         );
       }
     return this.images;
+  }
+
+  /**
+   * The ground as a low-poly diorama (DECISIONS I-80): every cell is four flat triangles, each
+   * with one colour lit by the sun from its own slant (the same light as the models), so the
+   * floor, the hills and the cliffs read like one more Kenney piece. Borders between grass,
+   * earth and scree follow the triangles (crisp, a little irregular); paths, plaza, rails and
+   * bridges are drawn on top with hard edges and flat colours. No blur anywhere.
+   */
+  private paintLowPoly(
+    ctx: CanvasRenderingContext2D,
+    template: DistrictTemplate,
+    relief: Relief | undefined,
+    code: (x: number, y: number) => TerrainCode | null,
+    P: GroundPalette,
+  ): void {
+    const W = template.width;
+    const H = template.height;
+    const B = 10; // facets beyond the edge, under the mist
+    const seed = 23;
+    const hash = (x: number, y: number, k: number) => {
+      const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453;
+      return v - Math.floor(v);
+    };
+    const inside = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H;
+    const height = (u: number, v: number) =>
+      relief && inside(Math.round(u), Math.round(v)) ? relief.at(u, v) : 0;
+    // Shading-only swell: the floor stays flat for the rules, the light makes it roll.
+    const swell = (u: number, v: number) => fbm(u * 0.11 + 50, v * 0.11 + 50, seed) * 2.2;
+    const col = (hex: string) => rgb(hex);
+    const C = {
+      grass: col(P.grass),
+      grass2: col(P.grassLight),
+      forest: col(P.forest),
+      beyond: col(P.beyond),
+      dirt: col(P.dirt),
+      dirt2: col(P.dirtLight),
+      coal: col(P.coal),
+      scree: col(P.scree),
+      sand: col(P.shore),
+      water: col(P.water),
+      deep: col(P.waterDeep),
+      rock: col('#8C857A'),
+      rock2: col('#7A7368'),
+      moss: col('#5E9A3F'),
+      field: col('#8B6A43'),
+    };
+    const isWater = (c: TerrainCode | null) => c === 'w' || c === 'b';
+    const nearWay = (x: number, y: number) => {
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const c = code(x + dx, y + dy);
+          if (c === 'r' || c === 'p' || c === 't') return true;
+        }
+      return false;
+    };
+    // What a triangle shows: its cell, or (on soft borders) now and then its neighbour.
+    const surface = (
+      x: number,
+      y: number,
+      nx: number,
+      ny: number,
+      t: number,
+    ): TerrainCode | 'x' => {
+      const own = inside(x, y) ? code(x, y) : null;
+      if (!own) return 'x';
+      const other = inside(nx, ny) ? code(nx, ny) : null;
+      const soft = 'gfds';
+      if (
+        other &&
+        other !== own &&
+        soft.includes(own) &&
+        soft.includes(other) &&
+        hash(x, y, t) < 0.3
+      )
+        return other;
+      // Away from paths and the plaza, grass takes the bare earth back in patches.
+      if (own === 'd' && !nearWay(x, y) && fbm(x * 0.21, y * 0.21, 41) > 0.5) return 'g';
+      return own;
+    };
+    type V = [number, number];
+    const tri = (
+      a: V,
+      b: V,
+      c: V,
+      fill: [number, number, number],
+      lit: boolean,
+      flatH: boolean,
+    ) => {
+      const z = (p: V) => height(p[0], p[1]);
+      const sz = (p: V) => z(p) + (flatH ? swell(p[0], p[1]) : swell(p[0], p[1]) * 0.25);
+      // Normal of the shading surface.
+      const ax = b[0] - a[0],
+        ay = b[1] - a[1],
+        az = sz(b) - sz(a);
+      const bx = c[0] - a[0],
+        by = c[1] - a[1],
+        bz = sz(c) - sz(a);
+      let nx = ay * bz - az * by;
+      let ny = az * bx - ax * bz;
+      let nz = ax * by - ay * bx;
+      if (nz < 0) [nx, ny, nz] = [-nx, -ny, -nz];
+      const nl = Math.hypot(nx, ny, nz) || 1;
+      const lambert = (nx * SUN.x + ny * SUN.y + nz * SUN.z) / nl;
+      let f = lit ? 0.5 + 0.56 * lambert : 1;
+      const mx = (a[0] + b[0] + c[0]) / 3;
+      const my = (a[1] + b[1] + c[1]) / 3;
+      if (relief && lit) f *= 1 - relief.occlusion(mx, my) * 0.28;
+      f *= 0.985 + hash(mx * 3.1, my * 2.7, 5) * 0.03;
+      const r = Math.min(255, Math.round(fill[0] * f));
+      const g = Math.min(255, Math.round(fill[1] * f));
+      const bl = Math.min(255, Math.round(fill[2] * f));
+      const style = `rgb(${r},${g},${bl})`;
+      ctx.fillStyle = style;
+      ctx.strokeStyle = style;
+      ctx.lineWidth = 1;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      const pa = cellToWorld(a[0], a[1], z(a));
+      const pb = cellToWorld(b[0], b[1], z(b));
+      const pc = cellToWorld(c[0], c[1], z(c));
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.lineTo(pc.x, pc.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    };
+    // Back to front, so raised facets cover what lies behind them.
+    for (let s = -2 * B; s <= W + H + 2 * B; s++)
+      for (let x = -B; x < W + B; x++) {
+        const y = s - x;
+        if (y < -B || y >= H + B) continue;
+        const ctr: V = [x, y];
+        const nw: V = [x - 0.5, y - 0.5];
+        const ne: V = [x + 0.5, y - 0.5];
+        const se: V = [x + 0.5, y + 0.5];
+        const sw: V = [x - 0.5, y + 0.5];
+        const parts: [V, V, number, number, number][] = [
+          [nw, ne, 0, -1, 1],
+          [sw, nw, -1, 0, 2],
+          [ne, se, 1, 0, 3],
+          [se, sw, 0, 1, 4],
+        ];
+        for (const [p, q, dx, dy, t] of parts) {
+          const kind = surface(x, y, x + dx, y + dy, t);
+          // Broad patches of a second shade (not a per-triangle checkerboard).
+          const tone = fbm(x * 0.22 + 7, y * 0.22, seed + 3) < 0.52;
+          const raised = !!relief && inside(x, y) && !relief.flat(x, y);
+          let fill: [number, number, number];
+          let lit = true;
+          if (kind === 'x') fill = tone ? C.beyond : mix(C.beyond, C.forest, 0.35);
+          else if (isWater(kind)) {
+            const open = [-1, 0, 1].every((oy) =>
+              [-1, 0, 1].every((ox) => isWater(code(x + ox, y + oy))),
+            );
+            fill = open ? C.deep : C.water;
+            lit = false;
+          } else if (kind === 'R' && raised) {
+            const z0 = height(x, y);
+            const n = relief!.normal(x + dx * 0.25, y + dy * 0.25);
+            if (1 - n.z > 0.3)
+              fill = Math.floor(z0 * 1.6 + hash(x, y, 1) * 0.6) % 2 ? C.rock : C.rock2;
+            else fill = tone ? C.moss : mix(C.moss, C.forest, 0.5);
+          } else if (kind === 'f') fill = tone ? C.forest : mix(C.forest, C.grass, 0.3);
+          else if (kind === 'g') {
+            // Beaches: a crisp band of sand along the water.
+            if (isWater(code(x + dx, y + dy))) fill = C.sand;
+            else fill = tone ? C.grass : C.grass2;
+          } else if (kind === 's') fill = tone ? C.scree : mix(C.scree, C.dirt, 0.25);
+          else if (kind === 'v')
+            // Coal-dusted ground with darker seams, not a black hole.
+            fill = hash(x, y, t + 3) < 0.35 ? C.coal : mix(C.coal, C.scree, 0.45);
+          else if (kind === 'c') fill = C.field;
+          else fill = tone ? C.dirt : C.dirt2; // earth under paths, plaza, rails and around houses
+          tri(ctr, p, q, fill, lit, !raised);
+        }
+      }
+
+    // Water: a few crisp white wave marks.
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (code(x, y) !== 'w' || hash(x, y, 31) > 0.22) continue;
+        const p = cellToWorld(x + (hash(x, y, 32) - 0.5) * 0.5, y + (hash(x, y, 33) - 0.5) * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(p.x - 14, p.y);
+        ctx.lineTo(p.x - 4, p.y - 4);
+        ctx.lineTo(p.x + 6, p.y);
+        ctx.lineTo(p.x + 14, p.y - 3);
+        ctx.stroke();
+      }
+
+    // Fields: furrows.
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (code(x, y) !== 'c') continue;
+        for (let i = -1; i <= 1; i++) {
+          const a = cellToWorld(x - 0.45, y + i * 0.3);
+          const b = cellToWorld(x + 0.45, y + i * 0.3);
+          ctx.strokeStyle = '#6E5233';
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+
+    // Paths: hard-edged ribbons (diagonal steps joined too), a darker rim, flat colours.
+    const isWay = (x: number, y: number) => {
+      const c = code(x, y);
+      return c === 'r' || c === 'p' || c === 'b';
+    };
+    const links: [number, number, number, number][] = [];
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (code(x, y) !== 'r') continue;
+        for (const [dx, dy] of [
+          [1, 0],
+          [0, 1],
+          [1, 1],
+          [1, -1],
+        ] as const) {
+          if (!isWay(x + dx, y + dy)) continue;
+          // A diagonal only where no straight step already joins the two cells.
+          if (dx !== 0 && dy !== 0 && (isWay(x + dx, y) || isWay(x, y + dy))) continue;
+          links.push([x, y, x + dx, y + dy]);
+        }
+      }
+    const ribbon = (colour: string, width: number) => {
+      ctx.strokeStyle = colour;
+      ctx.fillStyle = colour;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (const [x0, y0, x1, y1] of links) {
+        const a = cellToWorld(x0, y0);
+        const b = cellToWorld(x1, y1);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+      }
+      ctx.stroke();
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < W; x++) {
+          if (code(x, y) !== 'r') continue;
+          const p = cellToWorld(x, y);
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, width / 2, width / 4, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+    };
+    ribbon(P.pathEdge, 60);
+    ribbon(P.path, 46);
+
+    // The plaza: square stones in two tones with thin grout, and a curb.
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (code(x, y) !== 'p') continue;
+        const corner = (u: number, v: number) => cellToWorld(u, v);
+        const quad = (u0: number, v0: number, u1: number, v1: number, fill: string) => {
+          const a = corner(u0, v0);
+          const b = corner(u1, v0);
+          const c = corner(u1, v1);
+          const d = corner(u0, v1);
+          ctx.fillStyle = fill;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.lineTo(c.x, c.y);
+          ctx.lineTo(d.x, d.y);
+          ctx.closePath();
+          ctx.fill();
+        };
+        quad(x - 0.5, y - 0.5, x + 0.5, y + 0.5, P.grout);
+        const n = 3;
+        const g = 0.025;
+        for (let j = 0; j < n; j++)
+          for (let i = 0; i < n; i++) {
+            const u0 = x - 0.5 + i / n + g;
+            const v0 = y - 0.5 + j / n + g;
+            const tone = hash(x * n + i, y * n + j, 7);
+            quad(
+              u0,
+              v0,
+              u0 + 1 / n - 2 * g,
+              v0 + 1 / n - 2 * g,
+              tone < 0.55 ? P.cobble : tone < 0.85 ? P.cobbleLight : P.cobbleDark,
+            );
+          }
+        for (const [dx, dy, ax, ay, bx, by] of [
+          [1, 0, 0.5, -0.5, 0.5, 0.5],
+          [-1, 0, -0.5, -0.5, -0.5, 0.5],
+          [0, 1, -0.5, 0.5, 0.5, 0.5],
+          [0, -1, -0.5, -0.5, 0.5, -0.5],
+        ] as const) {
+          if (code(x + dx, y + dy) === 'p') continue;
+          const a = cellToWorld(x + ax, y + ay);
+          const b = cellToWorld(x + bx, y + by);
+          ctx.strokeStyle = P.curb;
+          ctx.lineWidth = 8;
+          ctx.lineCap = 'square';
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+
+    // Railway: ballast, sleepers, rails.
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (code(x, y) !== 't') continue;
+        const alongY = code(x, y - 1) === 't' || code(x, y + 1) === 't';
+        const a = alongY ? cellToWorld(x - 0.42, y - 0.5) : cellToWorld(x - 0.5, y - 0.42);
+        const b = alongY ? cellToWorld(x + 0.42, y - 0.5) : cellToWorld(x - 0.5, y + 0.42);
+        const c = alongY ? cellToWorld(x + 0.42, y + 0.5) : cellToWorld(x + 0.5, y + 0.42);
+        const d = alongY ? cellToWorld(x - 0.42, y + 0.5) : cellToWorld(x + 0.5, y - 0.42);
+        ctx.fillStyle = P.rail;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.lineTo(c.x, c.y);
+        ctx.lineTo(d.x, d.y);
+        ctx.closePath();
+        ctx.fill();
+        for (let i = -1; i <= 1; i++) {
+          const s0 = alongY
+            ? cellToWorld(x - 0.35, y + i * 0.33)
+            : cellToWorld(x + i * 0.33, y - 0.35);
+          const s1 = alongY
+            ? cellToWorld(x + 0.35, y + i * 0.33)
+            : cellToWorld(x + i * 0.33, y + 0.35);
+          ctx.strokeStyle = P.tie;
+          ctx.lineWidth = 9;
+          ctx.lineCap = 'butt';
+          ctx.beginPath();
+          ctx.moveTo(s0.x, s0.y);
+          ctx.lineTo(s1.x, s1.y);
+          ctx.stroke();
+        }
+        for (const off of [-0.2, 0.2]) {
+          const r0 = alongY ? cellToWorld(x + off, y - 0.5) : cellToWorld(x - 0.5, y + off);
+          const r1 = alongY ? cellToWorld(x + off, y + 0.5) : cellToWorld(x + 0.5, y + off);
+          ctx.strokeStyle = P.steel;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(r0.x, r0.y);
+          ctx.lineTo(r1.x, r1.y);
+          ctx.stroke();
+        }
+      }
+
+    // Bridges: planks over the water.
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (code(x, y) !== 'b') continue;
+        const p = cellToWorld(x, y);
+        for (const [grow, fill] of [
+          [1.08, P.plankDark],
+          [0.92, P.plank],
+        ] as const) {
+          ctx.fillStyle = fill;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y - (TILE_H / 2) * grow);
+          ctx.lineTo(p.x + (TILE_W / 2) * grow, p.y);
+          ctx.lineTo(p.x, p.y + (TILE_H / 2) * grow);
+          ctx.lineTo(p.x - (TILE_W / 2) * grow, p.y);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
   }
 
   /** A few loose stones around a cell, each with its little shadow. */

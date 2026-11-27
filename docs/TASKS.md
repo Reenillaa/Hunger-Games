@@ -48,11 +48,12 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F11-16 | Centro de entrenamiento interactivo, patrocinadores y entrevista escenificada | ✅ | E2E: estación elegida en la nave; entrevista filmada y saltable |
 | F11-17 | Gente del pueblo, guardias y tributos con los Mini Characters de Kenney | ✅ | Hojas de 8 direcciones con animación real |
 | F11-18 | Luz de cámara (se apaga sola en equipos lentos), panel de obras, recursos detallados y cadena de tareas | ✅ | Medido: 1,3 → 9,7 fps en render por software al apagarse el desenfoque |
-| F11-19 | Edificios de producción (mina, aserradero, cantera, granja, pesquería…) con modelos reales | P0 | — |
-| F11-20 | Regenerar las miniaturas del menú de obras (`assets/ui/thumbs`) desde los sprites nuevos | P1 | Hoy salen los renders antiguos, oscuros |
+| F11-19 | Edificios de producción con modelos reales: mina, aserradero, cantera y huerto hechos con piezas de Kenney ✅; faltan granja, pesquería, molino, panadería, ahumadero, taberna, escuela, enfermería, pozo y mercado | 🟡 | Render revisado |
+| F11-20 | Miniaturas del menú de obras desde los sprites nuevos, con la versión de cada distrito | ✅ | `make_thumbs.py` + índice; E2E sin errores de consola |
 | F11-21 | Distrito 12 de referencia: relieve (acantilados, meseta con pinares, túnel), luz del valle, texturas de suelo, paleta propia, casas de pizarra, sombras de contacto | ✅ | Test del relieve (suelo del pueblo plano, montaña alta, determinista, luz por orientación); capturas revisadas |
 | F11-22 | Llevar el relieve y la paleta del 12 a los otros once distritos | P1 | Pendiente de que el cliente apruebe el 12 |
 | F11-23 | UI v5 con materiales (hierro, latón, madera, cuero, papel, botón grueso) | ✅ | E2E 24/24 sin cambios en los tests |
+| F11-25 | Cohesión: suelo y acantilados low-poly de color plano, sin desenfoque, objetos de un solo estilo | ✅ | E2E 24/24; capturas revisadas |
 | F11-24 | Arena: niebla de nubes, etiquetas de nombre con fundido, paso continuo y pausas solo cuando hay que decidir | ✅ | E2E del ciclo completo |
 | F11-13 | Pantalla de créditos en el juego (obligatoria por la licencia CC BY del carro de EqualizerX) | P0 | — |
 | F11-14 | Estilo visual único: renderizar todos los modelos externos con los mismos materiales cartoon, paleta y luz | P0 | — |

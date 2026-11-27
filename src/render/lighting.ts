@@ -53,7 +53,8 @@ export class LightingRig {
     try {
       this.grade = filters.external.addColorMatrix();
       if (rich && !heavyPassesTooSlow) {
-        if (opts.tiltShift !== false)
+        // The miniature blur smeared the crisp low-poly look: only where a scene asks for it.
+        if (opts.tiltShift === true)
           this.heavy.push(filters.external.addTiltShift(0.18, 1, 0.1, 1, 1, 0.3));
         this.heavy.push(filters.external.addVignette(0.5, 0.5, 0.9, 0.3));
       }

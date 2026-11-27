@@ -1761,7 +1761,8 @@ def _palette_for(name: str) -> str | None:
 
 
 def glb(rel: str, height: float, rot: float = 0.0, span: float | None = None,
-        hue: float = 0.0, sat: float = 1.1, val: float = 0.92, swaps: dict | None = None):
+        hue: float = 0.0, sat: float = 1.1, val: float = 0.92, swaps: dict | None = None,
+        at: tuple = (0.0, 0.0, 0.0)):
     """Imports a model; scales it to `height` (or its footprint to `span`); `hue`/`sat`/`val`
     give a district its colour identity on the kit's colour map."""
     def build(m) -> None:
@@ -1789,6 +1790,7 @@ def glb(rel: str, height: float, rot: float = 0.0, span: float | None = None,
                 o.location = (o.location.x - cx, o.location.y - cy, o.location.z - z0)
         pivot.scale = (k, k, k)
         pivot.rotation_euler = (0, 0, math.radians(rot))
+        pivot.location = at
         for o in meshes:
             for slot in o.material_slots:
                 mat = slot.material
@@ -1897,6 +1899,79 @@ for _name, (_rel, _h, _fp, _kind, *_rot) in KENNEY.items():
                                    else ROCK_SWAPS if _kind == "rock" else None),
                             hue=0.02 if _muted else 0.0, sat=1.0 if _muted else 1.1,
                             val=DARKER.get(_name, 0.6) if _muted else 0.92), _fp, _kind)
+
+# Working buildings assembled from Kenney pieces (DECISIONS I-80): one low-poly family with the
+# houses and the trees, instead of the old textured renders. Positions are in cells from the
+# footprint centre (+x = grid +cx, +y = grid -cy); heights in cells.
+IND_K, SURV_K = "kenney_city-kit-industrial/glb", "kenney_survival-kit/glb"
+COAL = {"dirt": "#2F2C2A", "grass": "#3B3735"}
+MUTED = dict(hue=0.02, sat=1.0, val=0.6)
+
+
+def part(rel, x, y, z=0.0, height=None, span=None, rot=0.0, swaps=None, **grade):
+    g = {**MUTED, **grade} if not rel.startswith(N) else {"sat": 1.1, "val": 0.92, **grade}
+    return glb(rel, height or 1.0, rot=rot, span=span, swaps=swaps, at=(x, y, z), **g)
+
+
+def kit(*parts):
+    def build(m) -> None:
+        for p in parts:
+            p(m)
+    return build
+
+
+KIT_BUILDINGS = {
+    # The pit head: a timber tower with the winding wheel, a coal wagon on its rails, coal heaps.
+    "mine_headframe": (kit(
+        part(f"{SURV_K}/structure.glb", 0.45, 0.35, 0.0, span=1.3),
+        part(f"{SURV_K}/structure.glb", 0.45, 0.35, 1.25, span=1.1),
+        part(f"{TOWN}/wheel.glb", 0.45, 0.35, 2.3, height=0.9, rot=45),
+        part(f"{SURV_K}/structure-roof.glb", -0.75, 0.8, 0.0, span=1.2),
+        part(f"{IND_K}/chimney-medium.glb", -1.05, 1.05, 0.0, height=2.0),
+        part(f"{TRAIN}/track.glb", 0.2, -0.9, 0.0, span=1.0, rot=0),
+        part(f"{TRAIN}/train-carriage-coal.glb", 0.2, -0.9, 0.08, span=0.9, rot=0),
+        part(f"{N}/rock_smallA.glb", -0.85, -0.6, 0.0, height=0.25, swaps=COAL),
+        part(f"{N}/rock_smallC.glb", -1.05, -0.2, 0.0, height=0.2, swaps=COAL),
+        part(f"{N}/rock_smallB.glb", 1.05, -0.7, 0.0, height=0.22, swaps=COAL),
+    ), (3, 3), "building"),
+    # A vegetable plot: furrows with greens and a little fence.
+    "garden": (kit(
+        *[part(f"{N}/crops_dirtDoubleRow.glb", x, y, 0.0, span=0.95) for x in (-0.5, 0.5) for y in (-0.5, 0.5)],
+        *[part(f"{N}/{crop}", x + dx, y, 0.05, height=h)
+          for (x, y, crop, h) in ((-0.5, 0.5, "crops_leafsStageB.glb", 0.4), (0.5, -0.5, "crops_leafsStageB.glb", 0.4),
+                                  (0.5, 0.5, "crops_cornStageB.glb", 0.65), (-0.5, -0.5, "crop_carrot.glb", 0.3))
+          for dx in (-0.22, 0.22)],
+        *[part(f"{N}/fence_simple.glb", x, y, 0.0, span=1.0, rot=r)
+          for (x, y, r) in ((-0.5, -1.0, 0), (0.5, -1.0, 0), (1.0, -0.5, 90), (1.0, 0.5, 90))],
+    ), (2, 2), "building"),
+    # The sawmill yard: an open shed, stacked logs, a workbench and an axe.
+    "lumber_camp": (kit(
+        part(f"{SURV_K}/structure-roof.glb", -0.4, 0.4, 0.0, span=1.3),
+        part(f"{N}/log_stackLarge.glb", 0.45, -0.35, 0.0, span=1.0),
+        part(f"{SURV_K}/workbench.glb", -0.55, -0.55, 0.0, span=0.6),
+        part(f"{N}/stump_roundDetailed.glb", 0.6, 0.6, 0.0, height=0.3),
+        part(f"{SURV_K}/resource-wood.glb", -0.4, 0.4, 0.0, span=0.6),
+    ), (2, 2), "building"),
+    # The quarry: raw rock, cut blocks and tools.
+    "quarry": (kit(
+        part(f"{N}/rock_largeB.glb", -0.35, 0.4, 0.0, height=0.9, swaps=ROCK_SWAPS),
+        part(f"{N}/rock_tallA.glb", 0.5, 0.55, 0.0, height=1.1, swaps=ROCK_SWAPS),
+        part(f"{SURV_K}/resource-stone-large.glb", 0.4, -0.45, 0.0, span=0.6),
+        part(f"{SURV_K}/resource-stone.glb", -0.5, -0.5, 0.0, span=0.45),
+        part(f"{SURV_K}/tool-pickaxe.glb", -0.05, -0.2, 0.0, span=0.45),
+    ), (2, 2), "building"),
+    "coal_heap": (kit(
+        part(f"{N}/rock_smallA.glb", -0.12, 0.05, 0.0, height=0.3, swaps=COAL),
+        part(f"{N}/rock_smallC.glb", 0.15, -0.1, 0.0, height=0.25, swaps=COAL),
+        part(f"{N}/rock_smallB.glb", 0.05, 0.2, 0.0, height=0.2, swaps=COAL),
+    ), (1, 1), "prop"),
+    "lamp": (kit(part(f"{TOWN}/lantern.glb", 0.0, 0.0, 0.0, height=1.4)), (1, 1), "prop"),
+    "supplies": (kit(
+        part(f"{SURV_K}/box-large.glb", -0.1, 0.1, 0.0, span=0.45),
+        part(f"{SURV_K}/barrel.glb", 0.22, -0.15, 0.0, height=0.45),
+    ), (1, 1), "prop"),
+}
+CATALOGUE.update(KIT_BUILDINGS)
 
 # District architecture from complete Kenney buildings (City Kits, CC0) — DECISIONS I-68.
 SUB, IND, COM = "kenney_city-kit-suburban/glb", "kenney_city-kit-industrial/glb", "kenney_city-kit-commercial/glb"

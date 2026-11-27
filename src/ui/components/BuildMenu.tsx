@@ -15,9 +15,12 @@ import {
   WoodIcon,
 } from '../icons/Icons.tsx';
 import { useSession } from '../useSession.ts';
+import thumbIndex from '../../content/thumbIndex.json';
 import { useUi } from '../useUi.ts';
 import styles from '../ui.module.css';
 import css from './build.module.css';
+
+const REGIONAL_THUMBS = new Set<string>(thumbIndex);
 
 const COST_ICONS: Record<ResourceId, () => React.JSX.Element> = {
   food: FoodIcon,
@@ -51,6 +54,13 @@ function CostChips({
       })}
     </span>
   );
+}
+
+/** The district's own version of a building when there is one, else the shared model. */
+function Thumb({ kind, home }: { kind: StructureKind; home: string }) {
+  const regional = `${kind}__${home}`;
+  const name = REGIONAL_THUMBS.has(regional) ? regional : kind;
+  return <img className={css.thumb} src={`assets/ui/thumbs/${name}.webp`} alt="" loading="lazy" />;
 }
 
 export function costText(cost: Partial<Record<ResourceId, number>>): string {
@@ -136,7 +146,7 @@ export function BuildMenu({ session }: { session: GameSession }) {
           session.ui.startPlacing(kind);
         }}
       >
-        <img className={css.thumb} src={`assets/ui/thumbs/${kind}.webp`} alt="" loading="lazy" />
+        <Thumb kind={kind} home={state.meta.homeDistrictId} />
         <span className={css.name}>{t(`b.${kind}` as LocaleKey)}</span>
         <span className={css.facts}>{facts(kind)}</span>
         <CostChips cost={def.cost} have={have} />
@@ -155,7 +165,7 @@ export function BuildMenu({ session }: { session: GameSession }) {
         disabled={!ok}
         onClick={() => session.dispatch({ type: 'build/upgrade', id: s.id })}
       >
-        <img className={css.thumb} src={`assets/ui/thumbs/${s.kind}.webp`} alt="" loading="lazy" />
+        <Thumb kind={s.kind} home={state.meta.homeDistrictId} />
         <span className={css.name}>
           {t(`b.${s.kind}` as LocaleKey)} · {t('build.toLevel', { n: s.level + 1 })}
         </span>
