@@ -35,3 +35,6 @@
 | models `k_*` (coffin, graves, candles, bench, fire basket, lightpost) | Graveyard Kit 5.0 (GLB) | Kenney | https://kenney.nl/assets/graveyard-kit | CC0 1.0 | Rendered to sprites; matte finish |
 | models (trains, carriages, tracks; not used yet) | Train Kit (GLB) | Kenney | https://kenney.nl/assets/train-kit | CC0 1.0 | — |
 | models `k_market_*` | Mini Market 2.1 (GLB) | Kenney | https://kenney.nl/assets/mini-market | CC0 1.0 | Rendered to sprites; matte finish |
+| sprites `house_shack__d*`, `house_terrace__d*` (L1–L3) | City Kit Suburban 2.0 (GLB) | Kenney | https://kenney.nl/assets/city-kit-suburban | CC0 1.0 (`assets/models/kenney_city-kit-suburban/License.txt`) | Rendered to isometric sprites per district; colour grade per district |
+| sprites `warehouse__d*` and industrial props | City Kit Industrial (GLB) | Kenney | https://kenney.nl/assets/city-kit-industrial | CC0 1.0 (`assets/models/kenney_city-kit-industrial/License.txt`) | Rendered to isometric sprites per district |
+| sprites `town_hall__d*`, `economato__d*` | City Kit Commercial (GLB) | Kenney | https://kenney.nl/assets/city-kit-commercial | CC0 1.0 (`assets/models/kenney_city-kit-commercial/License.txt`) | Rendered to isometric sprites per district |

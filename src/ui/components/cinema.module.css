@@ -838,3 +838,64 @@
 :global(.reduce-motion) .transition * {
   animation-duration: 1ms !important;
 }
+
+/* ---------- The interview set ---------- */
+.studio {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 110%, rgb(255 90 170 / 0.35), transparent 60%),
+    linear-gradient(180deg, #120a26, #2a0f3a 60%, #0d0816);
+}
+
+.studioScreen {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  width: 46%;
+  height: 30%;
+  translate: -50% 0;
+  border-radius: 10px;
+  background: linear-gradient(120deg, #3fd4d9, #b46cff 50%, #ff5fa2);
+  opacity: 0.55;
+  filter: blur(2px);
+  animation: screenShift 6s ease-in-out infinite alternate;
+}
+
+@keyframes screenShift {
+  to {
+    filter: blur(2px) hue-rotate(60deg);
+  }
+}
+
+.studioBeamL,
+.studioBeamR {
+  position: absolute;
+  top: -10%;
+  width: 30vw;
+  height: 130%;
+  background: linear-gradient(180deg, rgb(255 240 210 / 0.25), transparent 80%);
+  clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+  animation: sweep 6s ease-in-out infinite alternate;
+}
+
+.studioBeamL {
+  left: 8%;
+}
+
+.studioBeamR {
+  right: 8%;
+  animation-delay: -3s;
+}
+
+.audience {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26%;
+  background:
+    radial-gradient(circle at 10px 18px, #0b0612 0 12px, transparent 13px) 0 0 / 44px 40px,
+    linear-gradient(180deg, transparent, #07040c 40%);
+  opacity: 0.95;
+}

@@ -25,6 +25,8 @@ export type Shot =
       /** Our tributes riding the hero chariot. */
       riders?: string[];
     }
+  /** The interview set: the host or a tribute under the studio lights, the audience behind. */
+  | { type: 'studio'; who: 'host' | string; mood: number; crowd?: boolean }
   /** A pine coffin on the platform, the portrait on the lid, someone who mourns. */
   | { type: 'coffin'; citizenId: string; mournerId: string | null };
 
@@ -42,6 +44,7 @@ export const DEFAULT_TRANSITION: Record<Shot['type'], Transition> = {
   train: 'whip',
   plate: 'zoom',
   coffin: 'fade',
+  studio: 'zoom',
 };
 
 export type CineStep =

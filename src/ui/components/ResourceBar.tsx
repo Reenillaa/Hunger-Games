@@ -6,6 +6,9 @@ import type { GameSession } from '../../game/session.ts';
 import { CoalIcon, CreditsIcon, FoodIcon, StoneIcon, WoodIcon } from '../icons/Icons.tsx';
 import { useSession } from '../useSession.ts';
 import styles from '../ui.module.css';
+import { useState } from 'react';
+import { ResourceDetail, trendOf } from './ResourceDetail.tsx';
+import rcss from './resources.module.css';
 
 const ICONS: Record<ResourceId, () => React.JSX.Element> = {
   food: FoodIcon,
@@ -50,6 +53,7 @@ function Ring({
 
 export function ResourceBar({ session }: { session: GameSession }) {
   const { state } = useSession(session);
+  const [open, setOpen] = useState<ResourceId | null>(null);
   if (state.phase.kind !== 'district' || session.cinematic) return null;
   const e = state.economy;
   const cap = storageCapacity(state);
@@ -69,8 +73,11 @@ export function ResourceBar({ session }: { session: GameSession }) {
             (id === 'food' && foodDays < 2) ||
             (id === quotaRes && id !== 'food' && value < e.quota.required * 0.5);
           return (
-            <span
+            <button
+              type="button"
               key={id}
+              onClick={() => setOpen(open === id ? null : id)}
+              aria-expanded={open === id}
               className={`${styles.resource} ${warn ? styles.resourceWarn : ''}`}
               title={`${t(`res.${id}`)}${id === 'credits' ? '' : ` · ${value}/${cap}`}`}
               data-testid={`res-${id}`}
@@ -79,16 +86,25 @@ export function ResourceBar({ session }: { session: GameSession }) {
                 <Icon />
               </span>
               <span>{value}</span>
+              {(() => {
+                const d = trendOf(state, id);
+                return d !== null && Math.round(d) !== 0 ? (
+                  <b className={`${rcss.trend} ${d > 0 ? rcss.good : rcss.bad}`}>
+                    {d > 0 ? '▲' : '▼'}
+                  </b>
+                ) : null;
+              })()}
               {id !== 'credits' && (
                 <i
                   className={styles.resCap}
                   style={{ width: `${Math.min(100, (value / cap) * 100)}%` }}
                 />
               )}
-            </span>
+            </button>
           );
         })}
       </div>
+      {open && <ResourceDetail state={state} id={open} onClose={() => setOpen(null)} />}
       <div className={styles.gauges}>
         <span className={styles.quota} title={t('hud.quota', { required: e.quota.required })}>
           <small className={styles.quotaLabel}>

@@ -70,6 +70,22 @@ function Herald({ mood }: { mood: number }) {
   );
 }
 
+const HOST_GENES: PortraitGenes = {
+  skin: 1,
+  hair: 2,
+  face: 3,
+  eyes: 2,
+  nose: 0,
+  brow: 1,
+  hairStyle: 1,
+};
+
+function Host({ mood }: { mood: number }) {
+  return (
+    <Portrait genes={HOST_GENES} sex="M" age={45} mood={mood} outfit="herald" bare size={400} />
+  );
+}
+
 function Guard() {
   return (
     <Portrait genes={GUARD_GENES} sex="M" age={30} mood={40} outfit="warden" bare size={400} />
@@ -544,6 +560,28 @@ function ShotBody({ shot, state, ms }: Props) {
           </div>
           <ParadeFx fx={shot.fx} />
           <div className={css.vignette} />
+        </div>
+      );
+    }
+    case 'studio': {
+      const c = shot.who === 'host' ? null : cit(shot.who);
+      return (
+        <div className={`${css.shot} ${css.opaque} ${css.pushIn}`} style={style} data-shot="studio">
+          <div className={css.studio} aria-hidden="true">
+            <span className={css.studioScreen} />
+            <span className={css.studioBeamL} />
+            <span className={css.studioBeamR} />
+            <span className={css.audience} />
+          </div>
+          {shot.crowd && <ParadeFx fx={['flashes', 'confetti']} />}
+          <div className={`${css.subject} ${c ? css.left : css.right}`}>
+            {c ? (
+              <Face c={c} day={day} mood={shot.mood} outfit="tribute" />
+            ) : (
+              <Host mood={shot.mood} />
+            )}
+          </div>
+          {!c && <LowerThird name={t('int.host')} role={t('int.show')} />}
         </div>
       );
     }

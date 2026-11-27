@@ -424,6 +424,62 @@ export function buildParade(state: Readonly<GameState>): CineStep[] {
   return steps;
 }
 
+/**
+ * The interview night (DECISIONS I-75), staged after day 6 from the chosen angle: the host,
+ * each of our tributes answering in their way, the audience's verdict.
+ */
+export function buildInterview(state: Readonly<GameState>): CineStep[] {
+  const games = state.games;
+  if (!games) return [];
+  const ours = games.order.map((id) => games.contestants[id]!).filter((c) => c.player);
+  const steps: CineStep[] = [
+    { kind: 'title', title: t('int.title'), subtitle: t('int.subtitle'), ms: 3000 },
+    { kind: 'fade', to: 'clear', ms: 400 },
+    {
+      kind: 'shot',
+      shot: { type: 'studio', who: 'host', mood: 95, crowd: true },
+      speaker: t('int.host'),
+      line: t('int.hello'),
+      ms: 4200,
+    },
+  ];
+  for (const c of ours) {
+    if (!c.citizenId) continue;
+    const angle = c.choices.interview ?? 'humble';
+    const mood =
+      angle === 'charming' ? 85 : angle === 'defiant' ? 25 : angle === 'tragic' ? 10 : 50;
+    steps.push(
+      {
+        kind: 'shot',
+        shot: { type: 'studio', who: 'host', mood: 80 },
+        speaker: t('int.host'),
+        line: t('int.ask', { name: c.name.split(' ')[0]! }),
+        ms: 3400,
+      },
+      {
+        kind: 'shot',
+        shot: { type: 'studio', who: c.citizenId, mood },
+        speaker: c.name,
+        line: t(`int.a.${angle}` as LocaleKey),
+        ms: 4600,
+      },
+      {
+        kind: 'shot',
+        shot: {
+          type: 'studio',
+          who: 'host',
+          mood: angle === 'defiant' ? 30 : 90,
+          crowd: angle !== 'defiant',
+        },
+        line: t(`int.crowd.${angle}` as LocaleKey),
+        ms: 3600,
+      },
+    );
+  }
+  steps.push({ kind: 'fade', to: 'black', ms: 700 });
+  return steps;
+}
+
 /** The opening of a new game: the world in four lines, over the district itself. */
 export function buildPrologue(state: Readonly<GameState>): CineStep[] {
   const profile = homeProfile(state.meta.homeDistrictId);

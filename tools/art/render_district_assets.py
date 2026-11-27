@@ -1760,7 +1760,10 @@ def _palette_for(name: str) -> str | None:
     return None
 
 
-def glb(rel: str, height: float, rot: float = 0.0):
+def glb(rel: str, height: float, rot: float = 0.0, span: float | None = None,
+        hue: float = 0.0, sat: float = 1.1, val: float = 0.92):
+    """Imports a model; scales it to `height` (or its footprint to `span`); `hue`/`sat`/`val`
+    give a district its colour identity on the kit's colour map."""
     def build(m) -> None:
         before = set(bpy.context.scene.objects)
         bpy.ops.import_scene.gltf(filepath=str(MODELS / rel))
@@ -1774,7 +1777,7 @@ def glb(rel: str, height: float, rot: float = 0.0):
                 xs.append(v.x)
                 ys.append(v.y)
                 zs.append(v.z)
-        k = height / max(1e-6, max(zs) - min(zs))
+        k = (span / max(1e-6, max(xs) - min(xs), max(ys) - min(ys))) if span else height / max(1e-6, max(zs) - min(zs))
         cx, cy, z0 = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, min(zs)
         pivot = bpy.data.objects.new("Pivot", None)
         bpy.context.scene.collection.objects.link(pivot)
@@ -1797,8 +1800,9 @@ def glb(rel: str, height: float, rot: float = 0.0):
                         nodes, links = mat.node_tree.nodes, mat.node_tree.links
                         src = base.links[0].from_socket
                         hs = nodes.new("ShaderNodeHueSaturation")
-                        hs.inputs["Saturation"].default_value = 1.1
-                        hs.inputs["Value"].default_value = 0.92
+                        hs.inputs["Hue"].default_value = 0.5 + hue
+                        hs.inputs["Saturation"].default_value = sat
+                        hs.inputs["Value"].default_value = val
                         links.new(src, hs.inputs["Color"])
                         links.new(hs.outputs["Color"], base)
                     else:
@@ -1873,9 +1877,43 @@ KENNEY = {
     "k_gravestone": (f"{GRAVE}/gravestone-cross.glb", 0.6, (1, 1), "prop"),
     "k_grave": (f"{GRAVE}/grave.glb", 0.3, (1, 1), "prop"),
     "k_candles": (f"{GRAVE}/candle-multiple.glb", 0.3, (1, 1), "prop"),
+    # Training centre stations.
+    "k_sword": ("kenney_mini-characters/glb/weapon-sword.glb", 0.7, (1, 1), "prop"),
+    "k_spear": ("kenney_mini-characters/glb/weapon-spear.glb", 1.0, (1, 1), "prop"),
+    "k_frame": (f"{SURV}/structure.glb", 1.2, (1, 1), "prop"),
+    "k_bedroll": (f"{SURV}/bedroll-frame.glb", 0.5, (1, 1), "prop"),
 }
 for _name, (_rel, _h, _fp, _kind) in KENNEY.items():
     CATALOGUE[_name] = (glb(_rel, _h), _fp, _kind)
+
+# District architecture from complete Kenney buildings (City Kits, CC0) — DECISIONS I-68.
+SUB, IND, COM = "kenney_city-kit-suburban/glb", "kenney_city-kit-industrial/glb", "kenney_city-kit-commercial/glb"
+# shack L1-L3, terrace L1-L3, town hall, warehouse, shop, (hue, sat, val)
+DISTRICT_BUILDINGS = {
+    "d12": ([f"{SUB}/building-type-h", f"{SUB}/building-type-i", f"{SUB}/building-type-a"], [f"{SUB}/building-type-g", f"{SUB}/building-type-m", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-q", f"{COM}/building-c", (0.0, 0.55, 0.78)),
+    "d11": ([f"{SUB}/building-type-a", f"{SUB}/building-type-e", f"{SUB}/building-type-o"], [f"{SUB}/building-type-g", f"{SUB}/building-type-n", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-h", f"{COM}/building-c", (0.0, 1.05, 1.0)),
+    "d4": ([f"{SUB}/building-type-c", f"{SUB}/building-type-p", f"{SUB}/building-type-s"], [f"{SUB}/building-type-u", f"{SUB}/building-type-d", f"{SUB}/building-type-b"], f"{COM}/building-j", f"{IND}/building-s", f"{COM}/building-h", (0.0, 1.1, 1.0)),
+    "d7": ([f"{SUB}/building-type-l", f"{SUB}/building-type-r", f"{SUB}/building-type-k"], [f"{SUB}/building-type-s", f"{SUB}/building-type-t", f"{SUB}/building-type-n"], f"{COM}/building-e", f"{IND}/building-p", f"{COM}/building-c", (0.0, 0.9, 0.92)),
+    "d2": ([f"{SUB}/building-type-r", f"{SUB}/building-type-l", f"{SUB}/building-type-k"], [f"{SUB}/building-type-t", f"{SUB}/building-type-f", f"{SUB}/building-type-n"], f"{COM}/building-k", f"{IND}/building-g", f"{COM}/building-a", (0.0, 0.45, 1.0)),
+    "d1": ([f"{SUB}/building-type-f", f"{SUB}/building-type-t", f"{SUB}/building-type-n"], [f"{SUB}/building-type-n", f"{SUB}/building-type-b", f"{SUB}/building-type-d"], f"{COM}/building-l", f"{COM}/building-j", f"{COM}/building-g", (0.0, 0.6, 1.12)),
+    "d3": ([f"{COM}/building-c", f"{COM}/building-a", f"{COM}/building-b"], [f"{COM}/building-e", f"{COM}/building-k", f"{COM}/building-j"], f"{COM}/building-m", f"{IND}/building-c", f"{COM}/building-h", (0.0, 1.0, 1.0)),
+    "d5": ([f"{IND}/building-i", f"{IND}/building-j", f"{IND}/building-h"], [f"{IND}/building-p", f"{IND}/building-k", f"{IND}/building-t"], f"{IND}/building-f", f"{IND}/building-l", f"{IND}/building-o", (0.0, 0.8, 0.9)),
+    "d6": ([f"{SUB}/building-type-k", f"{SUB}/building-type-c", f"{SUB}/building-type-e"], [f"{IND}/building-s", f"{IND}/building-p", f"{IND}/building-r"], f"{IND}/building-e", f"{IND}/building-r", f"{COM}/building-c", (0.0, 0.9, 0.95)),
+    "d8": ([f"{IND}/building-i", f"{IND}/building-j", f"{IND}/building-o"], [f"{IND}/building-k", f"{IND}/building-t", f"{IND}/building-a"], f"{IND}/building-e", f"{IND}/building-a", f"{COM}/building-d", (0.0, 1.1, 0.95)),
+    "d9": ([f"{SUB}/building-type-e", f"{SUB}/building-type-o", f"{SUB}/building-type-u"], [f"{SUB}/building-type-d", f"{SUB}/building-type-n", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-q", f"{COM}/building-c", (0.0, 1.15, 1.0)),
+    "d10": ([f"{SUB}/building-type-p", f"{SUB}/building-type-q", f"{SUB}/building-type-j"], [f"{SUB}/building-type-m", f"{SUB}/building-type-d", f"{SUB}/building-type-b"], f"{COM}/building-e", f"{IND}/building-h", f"{COM}/building-c", (0.0, 1.2, 0.95)),
+}
+for _d, (_sh, _te, _hall, _wh, _shop, (_h, _s, _v)) in DISTRICT_BUILDINGS.items():
+    _c = dict(hue=_h, sat=_s, val=_v)
+    for _lvl, _rel in enumerate(_sh):
+        _key = f"house_shack__{_d}" + ("" if _lvl == 0 else f"_l{_lvl + 1}")
+        CATALOGUE[_key] = (glb(_rel + ".glb", 1, span=1.8, **_c), (2, 2), "building")
+    for _lvl, _rel in enumerate(_te):
+        _key = f"house_terrace__{_d}" + ("" if _lvl == 0 else f"_l{_lvl + 1}")
+        CATALOGUE[_key] = (glb(_rel + ".glb", 1, span=2.7, **_c), (3, 2), "building")
+    CATALOGUE[f"town_hall__{_d}"] = (glb(_hall + ".glb", 1, span=2.8, **_c), (3, 3), "building")
+    CATALOGUE[f"warehouse__{_d}"] = (glb(_wh + ".glb", 1, span=2.8, **_c), (3, 3), "building")
+    CATALOGUE[f"economato__{_d}"] = (glb(_shop + ".glb", 1, span=1.8, **_c), (2, 2), "building")
 
 
 def frame_for(objects) -> tuple[int, int, float]:

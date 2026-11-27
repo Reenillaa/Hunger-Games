@@ -9,3 +9,4 @@ playwright-report/
 .vite/
 assets/build/
 assets/src/textures/
+__pycache__/

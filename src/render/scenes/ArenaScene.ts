@@ -15,6 +15,7 @@ import { CameraController } from '../camera/cameraController.ts';
 import type { SpriteAsset, SpriteManifest } from '../district/assets.ts';
 import { ART_BASE, pickTerrainScale } from '../district/assets.ts';
 import { daylightAt } from '../district/daylight.ts';
+import { LightingRig } from '../lighting.ts';
 import { ARENA_FOREST_PALETTE, GroundPainter, SNOW_PALETTE } from '../district/ground.ts';
 import type { CharacterSheet } from '../district/townsfolk.ts';
 import { directionIndex } from '../district/townsfolk.ts';
@@ -92,6 +93,7 @@ export class ArenaScene extends Phaser.Scene {
   private lastLog = 0;
   private lastSelected: string | null = null;
   private lastAmbient = -1;
+  private lighting?: LightingRig;
   private built = false;
   private unsubscribe?: () => void;
 
@@ -198,6 +200,7 @@ export class ArenaScene extends Phaser.Scene {
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
     this.unsubscribe = this.session.ui.subscribe(() => this.refreshSelection());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unsubscribe?.());
+    this.lighting = new LightingRig(this);
     this.built = true;
     this.sync(true);
   }
@@ -648,6 +651,7 @@ export class ArenaScene extends Phaser.Scene {
     // Day and night of the arena (its own clock).
     const hour = arenaHour(arena.round) + (this.session.isArenaPlaying() ? 0.5 : 0);
     const light = daylightAt(hour);
+    this.lighting?.update(hour, light.night, delta);
     if (light.ambient !== this.lastAmbient) {
       this.lastAmbient = light.ambient;
       for (const img of this.tinted) img.setTint(light.ambient);

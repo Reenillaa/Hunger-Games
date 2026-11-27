@@ -82,7 +82,10 @@ function requirePhase(state: GameState, kind: PhaseKind): CommandError | null {
 
 const UPGRADE_COST_FACTOR = [0, 1.5, 2.5];
 
-function upgradeCost(kind: StructureKind, toLevel: number): Partial<Record<ResourceId, number>> {
+export function upgradeCost(
+  kind: StructureKind,
+  toLevel: number,
+): Partial<Record<ResourceId, number>> {
   const base = def(kind).cost;
   const f = UPGRADE_COST_FACTOR[toLevel - 1] ?? 3;
   return Object.fromEntries(Object.entries(base).map(([r, n]) => [r, Math.ceil((n ?? 0) * f)]));

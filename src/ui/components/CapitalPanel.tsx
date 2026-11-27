@@ -6,6 +6,9 @@ import { t } from '../../content/i18n.ts';
 import type { GameSession } from '../../game/session.ts';
 import { useSession } from '../useSession.ts';
 import { Portrait } from './Portrait.tsx';
+import { TrainingHall } from './TrainingHall.tsx';
+import { Sponsors } from './Sponsors.tsx';
+import { buildInterview } from '../../game/ceremonies.ts';
 import styles from '../ui.module.css';
 
 type Choice = 'posture' | 'outfit' | 'training' | 'hidden' | 'interview' | 'plan';
@@ -93,6 +96,15 @@ export function CapitalPanel({ session }: { session: GameSession }) {
           ))}
         </ol>
       </header>
+      {CHOICES_BY_DAY[day]!.includes('training') && (
+        <TrainingHall
+          mine={mine}
+          rivals={rivals}
+          day={day}
+          current={(c) => current(c, 'training', day)}
+          onChoose={(c, station) => choose(c, 'training', station)}
+        />
+      )}
       <div className={styles.capitalBody}>
         {mine.map((c) => (
           <section
@@ -164,6 +176,7 @@ export function CapitalPanel({ session }: { session: GameSession }) {
             ))}
           </section>
         ))}
+        <Sponsors mine={mine} />
         <section className={`${styles.panel} ${styles.journal}`}>
           <p className={styles.cardSection}>{t('cap.journal')}</p>
           <ul className={styles.history}>
@@ -216,7 +229,12 @@ export function CapitalPanel({ session }: { session: GameSession }) {
         className={`${styles.button} ${styles.primary} ${styles.capitalNext}`}
         onClick={() => {
           setBudget(0);
+          const wasInterview = day === 6;
           session.dispatch({ type: 'capital/advance-day' });
+          if (wasInterview) {
+            const film = buildInterview(session.getState());
+            if (film.length > 0) session.playCinematic('interview', film);
+          }
         }}
       >
         {day < 7 ? t('cap.next') : t('cap.launch')}

@@ -9,6 +9,7 @@ import type { CharacterSheet, Role, TownsPerson } from '../district/townsfolk.ts
 import { Townsfolk } from '../district/townsfolk.ts';
 import { CeremonyStage } from '../district/ceremony.ts';
 import { GroundPainter, paintFog } from '../district/ground.ts';
+import { LightingRig } from '../lighting.ts';
 import { TrainView } from '../district/train.ts';
 import { HOME_DISTRICTS, homeProfile } from '../../content/homeDistricts.ts';
 import { STRUCTURE_FOOTPRINTS } from '../../content/structures.ts';
@@ -63,6 +64,7 @@ export class DistrictScene extends Phaser.Scene {
   private ambience?: Ambience;
   private built = false;
   private ground?: GroundPainter;
+  private lighting?: LightingRig;
   /** Visiting a neighbour through the fog: its district, generated the same way every time. */
   private visit: { id: string; district: DistrictState } | null = null;
   private camBounds?: { x: number; y: number; width: number; height: number };
@@ -94,6 +96,7 @@ export class DistrictScene extends Phaser.Scene {
         : null;
     this.built = false;
     this.ground = undefined;
+    this.lighting = undefined;
     this.train = undefined;
     this.ceremony = undefined;
     this.townsfolk = undefined;
@@ -232,6 +235,7 @@ export class DistrictScene extends Phaser.Scene {
       maxZoom: 1.6,
       bounds: this.camBounds,
     });
+    this.lighting = new LightingRig(this);
     // Mist beyond the edges: the land goes on, but nobody from here has seen it.
     if (template) paintFog(this, template);
     const pz = template?.plaza ?? { x0: 24, y0: 20, x1: 29, y1: 26 };
@@ -551,6 +555,7 @@ export class DistrictScene extends Phaser.Scene {
     const state = this.session.getState();
     const hour = (state.clock.tick % 24) + this.session.getTickProgress();
     const light = daylightAt(hour);
+    this.lighting?.update(hour, light.night, delta);
     if (light.ambient !== this.lastAmbient) {
       this.lastAmbient = light.ambient;
       for (const t of this.tinted) t.setTint(light.ambient);

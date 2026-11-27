@@ -40,13 +40,16 @@ Hechas. El detalle de lo que existe está en `PROJECT_STATUS.md`; las ejecucione
 | F11-04 | Leyes como decretos firmados | ✅ | E2E con firma a mano (ratón y toque real) |
 | F11-05 | Cambio visual a estilo cartoon (suelo en tiempo real, sin rejilla visible, caminos automáticos, mapa más grande, menos casas al empezar, mejoras visibles en las casas, árbol del ayuntamiento) | ✅ | Test de caminos automáticos; tests de generación adaptados a 64×64 |
 | F11-08 | Colocación libre de verdad (sin casillas en la lógica) y edificios con estilo cartoon renderizados de nuevo | P2 | Hoy la rejilla sigue en la lógica, aunque ya no se ve |
-| F11-06 | Cinemáticas del resto de fases: desfile (guion y efectos hechos, desactivado hasta tener modelos reales de caballos, carros y público), tren de ida y vuelta con ataúdes ✅; pendientes: entrevista y entrada en la arena | 🟡 | Test de los pasos de tren; E2E salta el desfile |
+| F11-06 | Cinemáticas del resto de fases: desfile (guion y efectos hechos, desactivado hasta tener modelos reales de caballos, carros y público), tren de ida y vuelta con ataúdes ✅; entrevista ✅; pendiente: entrada en la arena | 🟡 | Test de los pasos de tren; E2E salta el desfile |
 | F11-09 | Retratos v3 | ✅ | Muestra visual revisada |
 | F11-10 | Niebla en los bordes, visitas a distritos vecinos y fronteras en el mapa del mundo | ✅ | Test de vecinos; prueba manual en navegador |
 | F11-11 | Arenas con el suelo cartoon | ✅ | Captura del bosque |
-| F11-15 | Edificios rehechos con piezas del Fantasy Town Kit (hoy las casas renderizadas a código aún desentonan con los modelos nuevos) | P0 | — |
-| F11-16 | Centro de entrenamiento interactivo (escena propia con estaciones), patrocinadores y entrevista escenificada | P0 | — |
-| F11-17 | Gente del pueblo, guardias y tributos con los Mini Characters de Kenney | P0 | — |
+| F11-15 | Edificios de los 12 distritos con modelos completos de Kenney (casas de 3 niveles, ayuntamiento, almacén, economato) | ✅ | Render revisado; edificios de producción aún los antiguos |
+| F11-16 | Centro de entrenamiento interactivo, patrocinadores y entrevista escenificada | ✅ | E2E: estación elegida en la nave; entrevista filmada y saltable |
+| F11-17 | Gente del pueblo, guardias y tributos con los Mini Characters de Kenney | ✅ | Hojas de 8 direcciones con animación real |
+| F11-18 | Luz de cámara (se apaga sola en equipos lentos), panel de obras, recursos detallados y cadena de tareas | ✅ | Medido: 1,3 → 9,7 fps en render por software al apagarse el desenfoque |
+| F11-19 | Edificios de producción (mina, aserradero, cantera, granja, pesquería…) con modelos reales | P0 | — |
+| F11-20 | Regenerar las miniaturas del menú de obras (`assets/ui/thumbs`) desde los sprites nuevos | P1 | Hoy salen los renders antiguos, oscuros |
 | F11-13 | Pantalla de créditos en el juego (obligatoria por la licencia CC BY del carro de EqualizerX) | P0 | — |
 | F11-14 | Estilo visual único: renderizar todos los modelos externos con los mismos materiales cartoon, paleta y luz | P0 | — |
 | F11-12 | Sustituir modelos hechos a código (caballos, carros, personajes, tren) por assets reales CC0/CC BY | P0 | Candidatos presentados al cliente; esperando su elección |

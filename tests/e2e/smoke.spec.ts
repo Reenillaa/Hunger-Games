@@ -83,6 +83,16 @@ test('walking skeleton: district → selection → capital → arena → return'
       await contestants.nth(i).locator('button[aria-pressed]').first().click();
     }
     await capital.getByRole('button', { name: day < 7 ? 'Terminar el día' : 'A la arena' }).click();
+    if (day === 2) {
+      // Training days happen in the hall: walk a tribute to a station.
+      await expect(page.getByTestId('training-hall')).toBeVisible();
+      await page.getByTestId('station-survival').click();
+    }
+    if (day === 6) {
+      // The interview night is filmed; it can be skipped.
+      await expect(page.locator('[data-shot="studio"]')).toBeVisible();
+      await page.getByRole('button', { name: 'Saltar' }).click();
+    }
   }
   // The arena: play a few rounds, then let the games resolve without the player.
   const arena = page.getByTestId('arena');
@@ -175,9 +185,9 @@ test('population list and citizen sheet with family links', async ({ page }) => 
   await expect(list.getByRole('button').first()).toBeVisible();
   expect(await list.getByRole('button').count()).toBeGreaterThan(40);
   await page.getByRole('button', { name: 'Todos' }).click();
-  const eligible = await list.getByRole('button').count();
-  expect(eligible).toBeGreaterThan(5);
-  expect(eligible).toBeLessThan(40);
+  // The filter re-renders the list: wait for it instead of counting mid-update.
+  await expect.poll(() => list.getByRole('button').count()).toBeLessThan(40);
+  expect(await list.getByRole('button').count()).toBeGreaterThan(0); // small village: a few youths
   await list.getByRole('button').first().click();
   await expect(page.getByTestId('citizen-card')).toBeVisible();
   await expect(page.getByText('Personalidad').or(page.getByText('Atributos'))).toBeVisible();

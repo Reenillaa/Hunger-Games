@@ -1,0 +1,187 @@
+/* The training centre: a hall with stations, tributes walking between them (DECISIONS I-74). */
+.hall {
+  position: relative;
+  height: min(62vh, 560px);
+  min-height: 380px;
+  overflow: hidden;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(255 236 200 / 0.25), transparent 60%),
+    linear-gradient(180deg, #2a3140, #171b24);
+  box-shadow: inset 0 0 60px rgb(0 0 0 / 0.5);
+}
+
+.floor {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 150%;
+  aspect-ratio: 2 / 1;
+  translate: -50% -50%;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background:
+    repeating-linear-gradient(26.5deg, transparent 0 46px, rgb(255 255 255 / 0.05) 46px 48px),
+    repeating-linear-gradient(-26.5deg, transparent 0 46px, rgb(255 255 255 / 0.05) 46px 48px),
+    radial-gradient(ellipse at 50% 40%, #6c7a8e, #3d4758 70%);
+}
+
+.station {
+  position: absolute;
+  /* The pad is the hit area; props and label hang from its centre (the anchor). */
+  width: 140px;
+  height: 70px;
+  margin: -24px 0 0 -70px;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.anchor {
+  position: absolute;
+  left: 70px;
+  top: 24px;
+}
+
+.pad {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(245 179 66 / 0.18), transparent 70%);
+  border: 2px dashed rgb(255 255 255 / 0.18);
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    transform 220ms ease;
+}
+
+.station:hover .pad,
+.occupied .pad {
+  background: radial-gradient(ellipse, rgb(245 179 66 / 0.45), transparent 72%);
+  border-color: var(--accent, #f5b342);
+  transform: scale(1.06);
+}
+
+.prop {
+  position: absolute;
+  width: 64px;
+  height: auto;
+  translate: -50% -50%;
+  filter: drop-shadow(0 6px 6px rgb(0 0 0 / 0.45));
+  pointer-events: none;
+}
+
+.label {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  translate: -50% 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.walker {
+  display: block;
+  background-repeat: no-repeat;
+  background-position-x: 0;
+  transform-origin: 50% 100%;
+}
+
+.walking {
+  animation: walk 0.8s steps(8) infinite;
+}
+
+@keyframes walk {
+  from {
+    background-position-x: -104px;
+  }
+  to {
+    background-position-x: -936px;
+  }
+}
+
+.rival,
+.tribute {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transition:
+    left 900ms cubic-bezier(0.45, 0, 0.3, 1),
+    top 900ms cubic-bezier(0.45, 0, 0.3, 1);
+}
+
+.rival .walker,
+.tribute .walker {
+  position: absolute;
+  left: -52px;
+  top: -190px;
+}
+
+.rival {
+  pointer-events: none; /* scenery: clicks go to the station under them */
+  opacity: 0.85;
+  filter: saturate(0.6) brightness(0.85);
+}
+
+.tribute {
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.tribute::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: -10px;
+  width: 44px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 0.35);
+}
+
+.selectedTribute::before {
+  border-color: var(--accent, #f5b342);
+  box-shadow: 0 0 14px var(--accent, #f5b342);
+  animation: ring 1.4s ease-in-out infinite;
+}
+
+@keyframes ring {
+  50% {
+    scale: 1.15;
+  }
+}
+
+.name {
+  position: absolute;
+  left: 50%;
+  top: -112px; /* above the head, clear of the station label */
+  translate: -50% 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent, #f5b342);
+  color: #1d1408;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.help {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  margin: 0;
+  font-size: 12px;
+  color: rgb(255 255 255 / 0.7);
+}
+
+:global(.reduce-motion) .walking {
+  animation: none;
+}
