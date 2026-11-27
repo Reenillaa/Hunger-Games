@@ -16,7 +16,7 @@ import { TILE_H, TILE_W, cellToWorld, mapBounds } from '../iso/projection.ts';
 const MARGIN = 700;
 const MAX_TILE = 2048;
 
-const PALETTE = {
+const DEFAULT_PALETTE = {
   beyond: '#2E5E2A',
   beyondDark: '#244B22',
   grass: '#79C84F',
@@ -52,6 +52,39 @@ const PALETTE = {
   plank: '#A9733F',
   plankDark: '#7C5128',
 } as const;
+
+export type GroundPalette = { -readonly [K in keyof typeof DEFAULT_PALETTE]: string };
+
+/** The arena's woods: wilder, deeper greens. */
+export const ARENA_FOREST_PALETTE: Partial<GroundPalette> = {
+  grass: '#6DBB45',
+  grassLight: '#86CC57',
+  grassDark: '#559C36',
+  forest: '#3F8530',
+  beyond: '#1F4A22',
+  beyondDark: '#173B1A',
+};
+
+/** The frozen tundra: snow, ice, slush and blue shadows. */
+export const SNOW_PALETTE: Partial<GroundPalette> = {
+  beyond: '#B9C9D6',
+  beyondDark: '#A3B5C4',
+  grass: '#EAF2F8',
+  grassLight: '#F8FCFF',
+  grassDark: '#D3E1EC',
+  tuft: '#B7CCDC',
+  tuftLight: '#FFFFFF',
+  forest: '#CFDDE8',
+  dirt: '#C9D3DB',
+  dirtEdge: '#AEBBC6',
+  path: '#DDE7EF',
+  pathEdge: '#B5C4D0',
+  shore: '#F4F8FB',
+  water: '#8DCBEA',
+  waterDeep: '#4E9CCB',
+  foam: '#FFFFFF',
+  scree: '#C7CFD6',
+};
 
 /** Small deterministic PRNG (render-side decoration only). */
 function mulberry32(seed: number): () => number {
@@ -89,6 +122,8 @@ export interface GroundInput {
   template: DistrictTemplate;
   /** Cells (y * width + x) that are roads laid during the game (on top of the template's). */
   roads: ReadonlySet<number>;
+  /** Colours that differ from the districts' (arenas, snow). */
+  palette?: Partial<GroundPalette>;
 }
 
 export class GroundPainter {
@@ -118,6 +153,7 @@ export class GroundPainter {
   /** Paints (or repaints) the whole ground and returns the images placed in the world. */
   paint(input: GroundInput): Phaser.GameObjects.Image[] {
     const { template } = input;
+    const PALETTE: GroundPalette = { ...DEFAULT_PALETTE, ...input.palette };
     const W = template.width;
     const H = template.height;
     const bounds = mapBounds(W, H);

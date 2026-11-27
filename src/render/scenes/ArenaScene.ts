@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import type { ArenaActor, ArenaLog, ArenaState, GameState } from '../../core/index.ts';
 import {
+  ARENAS,
   ARENA_SIZE,
   setArenaMap,
   arenaCodeAt,
@@ -11,14 +12,10 @@ import {
 import { t } from '../../content/i18n.ts';
 import type { GameSession } from '../../game/session.ts';
 import { CameraController } from '../camera/cameraController.ts';
-import type {
-  HeightMap,
-  SpriteAsset,
-  SpriteManifest,
-  TerrainManifest,
-} from '../district/assets.ts';
+import type { SpriteAsset, SpriteManifest } from '../district/assets.ts';
 import { ART_BASE, pickTerrainScale } from '../district/assets.ts';
 import { daylightAt } from '../district/daylight.ts';
+import { ARENA_FOREST_PALETTE, GroundPainter, SNOW_PALETTE } from '../district/ground.ts';
 import type { CharacterSheet } from '../district/townsfolk.ts';
 import { directionIndex } from '../district/townsfolk.ts';
 import { TILE_H, TILE_W, cellToWorld, depthOf, mapBounds, pickCell } from '../iso/projection.ts';
@@ -26,9 +23,6 @@ import { PALETTE } from '../palette.ts';
 import { getSettings } from '../../platform/settings.ts';
 
 export const ARENA_SCENE = 'arena';
-/** Terrain folder of each arena (the forest predates the others). */
-const arenaBase = (mapId: string) =>
-  mapId === 'arena_forest' ? 'assets/arena' : `assets/${mapId}`;
 const DIRS = ['s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se'];
 const SHEETS = ['contestant', 'contestant_f'];
 const PROPS = [
@@ -85,7 +79,6 @@ export class ArenaScene extends Phaser.Scene {
   private controller?: CameraController;
   private terrainScale: '1x' | '0.5x' = '1x';
   private mapId = 'arena_forest';
-  private heights: number[][] = [];
   private readonly tinted: Phaser.GameObjects.Image[] = [];
   private readonly shadows: Phaser.GameObjects.Image[] = [];
   private readonly trees: Tree[] = [];
@@ -111,28 +104,16 @@ export class ArenaScene extends Phaser.Scene {
     this.terrainScale = pickTerrainScale();
     this.mapId = this.session.getState().arena?.mapId ?? 'arena_forest';
     setArenaMap(this.mapId);
-    const ARENA_BASE = arenaBase(this.mapId);
-    this.load.json(
-      `arenaTerrain_${this.mapId}`,
-      `${ARENA_BASE}/terrain/${this.terrainScale}/manifest.json`,
-    );
-    this.load.json(`arenaHeights_${this.mapId}`, `${ARENA_BASE}/terrain/heights.json`);
     this.load.json('spriteManifest', `${ART_BASE}/sprites/manifest.json`);
     this.load.json('characterManifest', `${ART_BASE}/characters/manifest.json`);
   }
 
   create(): void {
     this.cameras.main.setBackgroundColor(PALETTE.forestDeep);
-    const terrain = this.cache.json.get(`arenaTerrain_${this.mapId}`) as TerrainManifest;
     const sprites = this.cache.json.get('spriteManifest') as SpriteManifest;
     const characters = (
       this.cache.json.get('characterManifest') as { characters: Record<string, CharacterSheet> }
     ).characters;
-    this.heights = (this.cache.json.get(`arenaHeights_${this.mapId}`) as HeightMap).heights;
-    const base = `${arenaBase(this.mapId)}/terrain/${this.terrainScale}`;
-    for (let r = 0; r < terrain.rows; r++)
-      for (let c = 0; c < terrain.cols; c++)
-        this.load.image(`${this.mapId}_${r}_${c}`, `${base}/t_${r}_${c}.jpg`);
     for (const kind of PROPS) {
       const asset = sprites.assets[kind];
       if (!asset || this.textures.exists(kind)) continue;
@@ -148,32 +129,42 @@ export class ArenaScene extends Phaser.Scene {
         frameHeight: sheet.frameHeight,
       });
     }
-    this.load.once('complete', () => this.build(terrain, sprites, characters));
+    this.load.once('complete', () => this.build(sprites, characters));
     this.load.start();
   }
 
-  private build(
-    terrain: TerrainManifest,
-    sprites: SpriteManifest,
-    characters: Record<string, CharacterSheet>,
-  ): void {
-    const s = terrain.scale;
-    const [ax, ay] = terrain.originAnchor;
-    for (let r = 0; r < terrain.rows; r++) {
-      for (let c = 0; c < terrain.cols; c++) {
-        this.tinted.push(
-          this.add
-            .image(
-              (c * terrain.tile - ax) / s,
-              (r * terrain.tile - ay) / s,
-              `${this.mapId}_${r}_${c}`,
-            )
-            .setOrigin(0, 0)
-            .setScale(1 / s)
-            .setDepth(-10000),
-        );
-      }
-    }
+  private build(sprites: SpriteManifest, characters: Record<string, CharacterSheet>): void {
+    // The arena painted in the same cartoon style as the districts (DECISIONS I-62).
+    const arena = ARENAS[this.mapId] ?? ARENAS.arena_forest!;
+    const toGround: Record<string, string> = {
+      c: 'g',
+      F: 'f',
+      D: 'f',
+      b: 'g',
+      r: 's',
+      R: 'R',
+      w: 'w',
+      W: 'w',
+      v: 'R',
+      u: 'p',
+      X: 'd',
+    };
+    const template = {
+      id: arena.id,
+      width: arena.width,
+      height: arena.height,
+      legend: {},
+      plaza: { x0: 0, y0: 0, x1: 0, y1: 0 },
+      terrain: arena.terrain.map((row) => [...row].map((ch) => toGround[ch] ?? 'g').join('')),
+      elevation: arena.elevation,
+    };
+    const painter = new GroundPainter(this, this.terrainScale === '1x' ? 0.75 : 0.5);
+    for (const img of painter.paint({
+      template,
+      roads: new Set(),
+      palette: this.mapId === 'arena_tundra' ? SNOW_PALETTE : ARENA_FOREST_PALETTE,
+    }))
+      this.tinted.push(img);
     this.makeTextures();
     this.placeProps(sprites);
     this.makeAnimations(characters);
@@ -211,10 +202,9 @@ export class ArenaScene extends Phaser.Scene {
     this.sync(true);
   }
 
-  private heightAt(x: number, y: number): number {
-    const cx = Math.max(0, Math.min(ARENA_SIZE - 1, Math.round(x)));
-    const cy = Math.max(0, Math.min(ARENA_SIZE - 1, Math.round(y)));
-    return Math.max(0, this.heights[cy]?.[cx] ?? 0);
+  /** The painted arena is flat, like the districts. */
+  private heightAt(_x: number, _y: number): number {
+    return 0;
   }
 
   private makeTextures(): void {
